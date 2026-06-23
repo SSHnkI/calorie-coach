@@ -17,10 +17,12 @@ export function AuthPage() {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
   const { login, signup } = useApp()
   const navigate = useNavigate()
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
 
@@ -38,12 +40,61 @@ export function AuthPage() {
         setError(t.auth.errorPasswordMatch)
         return
       }
-      signup(email, password)
-      navigate('/onboarding')
-    } else {
-      login(email, password)
-      navigate('/dashboard')
+
+      setIsLoading(true)
+      const result = await signup(email, password)
+      setIsLoading(false)
+
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+
+      // Supabase envia email de confirmação — avisa o usuário
+      setEmailSent(true)
+      return
     }
+
+    // Login
+    setIsLoading(true)
+    const result = await login(email, password)
+    setIsLoading(false)
+
+    if (result.error) {
+      setError(result.error)
+      return
+    }
+
+    navigate('/dashboard')
+  }
+
+  // Tela de confirmação após signup
+  if (emailSent) {
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center bg-obliq-black px-4 py-8">
+        <div className="w-full max-w-md text-center">
+          <Logo size="lg" />
+          <Card className="mt-8">
+            <p className="text-lg font-semibold text-white">Verifique seu e-mail</p>
+            <p className="mt-2 text-sm text-white/60">
+              Enviamos um link de confirmação para <strong>{email}</strong>.
+              Clique no link para ativar sua conta e depois faça login.
+            </p>
+            <Button
+              className="mt-6 w-full"
+              onClick={() => {
+                setEmailSent(false)
+                setTab('login')
+                setPassword('')
+                setConfirm('')
+              }}
+            >
+              Ir para o login
+            </Button>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -63,7 +114,10 @@ export function AuthPage() {
               { id: 'signup', label: t.auth.signup },
             ]}
             active={tab}
-            onChange={setTab}
+            onChange={(newTab) => {
+              setTab(newTab)
+              setError('')
+            }}
           />
 
           <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
@@ -98,8 +152,12 @@ export function AuthPage() {
               <p className="text-sm font-medium text-obliq-red">{error}</p>
             )}
 
-            <Button type="submit" className="mt-2 w-full">
-              {tab === 'signup' ? t.auth.createAccountBtn : t.auth.signInBtn}
+            <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
+              {isLoading
+                ? 'Aguarde...'
+                : tab === 'signup'
+                  ? t.auth.createAccountBtn
+                  : t.auth.signInBtn}
             </Button>
           </form>
         </Card>

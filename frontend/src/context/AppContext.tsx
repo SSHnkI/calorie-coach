@@ -2,11 +2,12 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from 'react'
-import { initialFoodLog } from '../data/mockFood'
+import { supabase } from '../lib/supabase'
 import { calculateDailyKcal } from '../lib/tdee'
 import type {
   FoodEntry,
@@ -15,17 +16,19 @@ import type {
   UserProfile,
 } from '../types'
 
-const STORAGE_KEY = 'obliq_user'
+type AuthResult = { error: string | null }
+type SignupResult = { error: string | null; emailSent?: boolean }
 
 type AppContextValue = {
   user: UserProfile | null
   foodLog: FoodEntry[]
   isAuthenticated: boolean
   isPro: boolean
-  login: (email: string, password: string) => void
-  signup: (email: string, password: string) => void
-  logout: () => void
-  completeOnboarding: (data: OnboardingData) => void
+  loading: boolean
+  login: (email: string, password: string) => Promise<AuthResult>
+  signup: (email: string, password: string) => Promise<SignupResult>
+  logout: () => Promise<void>
+  completeOnboarding: (data: OnboardingData) => Promise<void>
   addFoodEntry: (entry: Omit<FoodEntry, 'id' | 'logged_at'>) => void
   upgradeToPro: () => void
   totals: {
@@ -38,97 +41,82 @@ type AppContextValue = {
 
 const AppContext = createContext<AppContextValue | null>(null)
 
-function loadUser(): UserProfile | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as UserProfile) : null
-  } catch {
-    return null
-  }
-}
-
-function saveUser(user: UserProfile | null) {
-  if (user) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-  } else {
-    localStorage.removeItem(STORAGE_KEY)
-  }
-}
-
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(() => loadUser())
-  const [foodLog, setFoodLog] = useState<FoodEntry[]>(() =>
-    loadUser() ? initialFoodLog : [],
-  )
+  const [user, setUser] = useState<UserProfile | null>(null)
+  const [foodLog, setFoodLog] = useState<FoodEntry[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const persist = useCallback((next: UserProfile | null) => {
-    setUser(next)
-    saveUser(next)
+  // Carrega o perfil do banco a partir do ID do usuário autenticado
+  const loadProfile = useCallback(async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    if (error || !data) return null
+
+    return data as UserProfile
   }, [])
 
-  const login = useCallback(
-    (email: string, _password: string) => {
-      const existing = loadUser()
-      if (existing?.email === email) {
-        setUser(existing)
-        setFoodLog(initialFoodLog)
-        return
+  // Ouve mudanças de sessão do Supabase Auth
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const profile = await loadProfile(session.user.id)
+        setUser(profile)
       }
-      const profile: UserProfile = {
-        email,
-        age: 0,
-        weight_kg: 0,
-        height_cm: 0,
-        sex: 'male',
-        activity: 'moderate',
-        goal: 'maintain',
-        daily_kcal: 2000,
-        subscription_status: 'free',
-        onboarding_complete: false,
-      }
-      persist(profile)
-      setFoodLog([])
-    },
-    [persist],
-  )
+      setLoading(false)
+    })
 
-  const signup = useCallback(
-    (email: string, _password: string) => {
-      const profile: UserProfile = {
-        email,
-        age: 0,
-        weight_kg: 0,
-        height_cm: 0,
-        sex: 'male',
-        activity: 'moderate',
-        goal: 'maintain',
-        daily_kcal: 2000,
-        subscription_status: 'free',
-        onboarding_complete: false,
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (session?.user) {
+          const profile = await loadProfile(session.user.id)
+          setUser(profile)
+        } else {
+          setUser(null)
+          setFoodLog([])
+        }
       }
-      persist(profile)
-      setFoodLog([])
-    },
-    [persist],
-  )
+    )
 
-  const logout = useCallback(() => {
-    persist(null)
-    setFoodLog([])
-  }, [persist])
+    return () => subscription.unsubscribe()
+  }, [loadProfile])
+
+  const login = useCallback(async (email: string, password: string): Promise<AuthResult> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) return { error: error.message }
+    return { error: null }
+  }, [])
+
+  const signup = useCallback(async (email: string, password: string): Promise<SignupResult> => {
+    const { error } = await supabase.auth.signUp({ email, password })
+    if (error) return { error: error.message }
+    return { error: null, emailSent: true }
+  }, [])
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut()
+  }, [])
 
   const completeOnboarding = useCallback(
-    (data: OnboardingData) => {
+    async (data: OnboardingData) => {
       if (!user) return
       const daily_kcal = calculateDailyKcal(data)
-      persist({
-        ...user,
-        ...data,
-        daily_kcal,
-        onboarding_complete: true,
-      })
+      const updated = { ...user, ...data, daily_kcal, onboarding_complete: true }
+
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      await supabase
+        .from('profiles')
+        .update({ ...data, daily_kcal, onboarding_complete: true })
+        .eq('id', session.user.id)
+
+      setUser(updated)
     },
-    [user, persist],
+    [user],
   )
 
   const addFoodEntry = useCallback(
@@ -145,8 +133,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const upgradeToPro = useCallback(() => {
     if (!user) return
-    persist({ ...user, subscription_status: 'active' as SubscriptionStatus })
-  }, [user, persist])
+    setUser({ ...user, subscription_status: 'active' as SubscriptionStatus })
+  }, [user])
 
   const totals = useMemo(
     () =>
@@ -168,6 +156,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       foodLog,
       isAuthenticated: !!user,
       isPro: user?.subscription_status === 'active',
+      loading,
       login,
       signup,
       logout,
@@ -179,6 +168,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [
       user,
       foodLog,
+      loading,
       login,
       signup,
       logout,
