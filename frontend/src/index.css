@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --color-obliq-black: #0a0a0a;
+  --color-obliq-surface: #111111;
+  --color-obliq-border: #1f1f1f;
+  --color-obliq-red: #e8000d;
+  --color-obliq-white: #ffffff;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  --shadow-red-glow: 0 0 20px rgba(232, 0, 13, 0.35);
+  --shadow-red-glow-lg: 0 0 40px rgba(232, 0, 13, 0.45);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    background-color: var(--color-obliq-black);
+    color: var(--color-obliq-white);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    min-height: 100dvh;
+  }
+}
+
+@layer utilities {
+  .bg-red-gradient {
+    background: linear-gradient(135deg, #e8000d 0%, #b8000a 100%);
+  }
+
+  .text-red-gradient {
+    background: linear-gradient(135deg, #e8000d 0%, #ff4d4d 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .shadow-red-glow {
+    box-shadow: var(--shadow-red-glow);
+  }
+
+  .shadow-red-glow-lg {
+    box-shadow: var(--shadow-red-glow-lg);
+  }
+}
