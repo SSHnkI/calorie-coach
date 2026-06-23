@@ -34,8 +34,8 @@ export function OnboardingPage() {
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS + 1))
   const back = () => setStep((s) => Math.max(s - 1, 1))
 
-  const finish = () => {
-    completeOnboarding(data)
+  const finish = async () => {
+    await completeOnboarding(data)
     navigate('/dashboard')
   }
 
@@ -229,6 +229,4 @@ export function OnboardingPage() {
           </div>
         </Card>
       </div>
-    </div>
-  )
-}
+    <

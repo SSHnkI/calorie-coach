@@ -102,21 +102,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const completeOnboarding = useCallback(
     async (data: OnboardingData) => {
-      if (!user) return
-      const daily_kcal = calculateDailyKcal(data)
-      const updated = { ...user, ...data, daily_kcal, onboarding_complete: true }
-
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      await supabase
+      const daily_kcal = calculateDailyKcal(data)
+
+      const { error } = await supabase
         .from('profiles')
         .update({ ...data, daily_kcal, onboarding_complete: true })
         .eq('id', session.user.id)
 
-      setUser(updated)
+      if (error) {
+        console.error('Erro ao salvar onboarding:', error.message)
+        return
+      }
+
+      setUser((prev) => prev ? { ...prev, ...data, daily_kcal, onboarding_complete: true } : prev)
     },
-    [user],
+    [],
   )
 
   const addFoodEntry = useCallback(
@@ -183,7 +186,4 @@ export function AppProvider({ children }: { children: ReactNode }) {
 }
 
 export function useApp() {
-  const ctx = useContext(AppContext)
-  if (!ctx) throw new Error('useApp must be used within AppProvider')
-  return ctx
-}
+  const ctx = useContext(App
