@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { calculateDailyKcal } from '../lib/tdee'
 import type {
@@ -28,7 +29,7 @@ type AppContextValue = {
   login: (email: string, password: string) => Promise<AuthResult>
   signup: (email: string, password: string) => Promise<SignupResult>
   logout: () => Promise<void>
-  completeOnboarding: (data: OnboardingData) => Promise<void>
+  completeOnboarding: (data: OnboardingData) => Promise<{ error: string | null }>
   addFoodEntry: (entry: Omit<FoodEntry, 'id' | 'logged_at'>) => void
   upgradeToPro: () => void
   totals: {
@@ -42,6 +43,7 @@ type AppContextValue = {
 const AppContext = createContext<AppContextValue | null>(null)
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<UserProfile | null>(null)
   const [foodLog, setFoodLog] = useState<FoodEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -62,6 +64,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Ouve mudanças de sessão do Supabase Auth
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      setSession(session)
       if (session?.user) {
         const profile = await loadProfile(session.user.id)
         setUser(profile)
@@ -71,6 +74,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        setSession(session)
         if (session?.user) {
           const profile = await loadProfile(session.user.id)
           setUser(profile)
@@ -101,23 +105,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const completeOnboarding = useCallback(
-    async (data: OnboardingData) => {
+    async (data: OnboardingData): Promise<{ error: string | null }> => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+      if (!session) return { error: 'Sessão expirada. Faça login novamente.' }
 
       const daily_kcal = calculateDailyKcal(data)
 
-      const { error } = await supabase
+      // upsert cria a linha se ela ainda não existir (signup não cria perfil),
+      // ou atualiza se já existir. update() puro não salvava nada quando
+      // a linha não existia (0 linhas afetadas, sem erro).
+      const { data: saved, error } = await supabase
         .from('profiles')
-        .update({ ...data, daily_kcal, onboarding_complete: true })
-        .eq('id', session.user.id)
+        .upsert({
+          id: session.user.id,
+          email: session.user.email,
+          ...data,
+          daily_kcal,
+          subscription_status: 'free',
+          onboarding_complete: true,
+        })
+        .select()
+        .single()
 
       if (error) {
         console.error('Erro ao salvar onboarding:', error.message)
-        return
+        return { error: error.message }
       }
 
-      setUser((prev) => prev ? { ...prev, ...data, daily_kcal, onboarding_complete: true } : prev)
+      setUser(saved as UserProfile)
+      return { error: null }
     },
     [],
   )
@@ -157,7 +173,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       foodLog,
-      isAuthenticated: !!user,
+      isAuthenticated: !!session,
       isPro: user?.subscription_status === 'active',
       loading,
       login,
@@ -169,6 +185,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       totals,
     }),
     [
+      session,
       user,
       foodLog,
       loading,
@@ -186,4 +203,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 }
 
 export function useApp() {
-  const ctx = useContext(App
+  const ctx = useContext(AppContext)
+  if (!ctx) throw new Error('useApp must be used within AppProvider')
+  return ctx
+}

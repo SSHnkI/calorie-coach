@@ -33,7 +33,7 @@ function FeatureList({
 
 export function PricingPage() {
   const { t } = useI18n()
-  const { isPro, upgradeToPro, isAuthenticated } = useApp()
+  const { isPro, isAuthenticated } = useApp()
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
@@ -140,4 +140,23 @@ export function PricingPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-obliq-border text-left text-white/40">
-                <th className="pb-3 pr-4 font-m
+                <th className="pb-3 pr-4 font-medium">{t.pricing.featureCol}</th>
+                <th className="pb-3 pr-4 font-medium">{t.pricing.freeCol}</th>
+                <th className="pb-3 font-medium text-obliq-red">{t.pricing.proCol}</th>
+              </tr>
+            </thead>
+            <tbody className="text-white/70">
+              {t.pricing.compareRows.map((row) => (
+                <tr key={row.feature} className="border-b border-obliq-border/50">
+                  <td className="py-3 pr-4">{row.feature}</td>
+                  <td className="py-3 pr-4 text-white/40">{row.free}</td>
+                  <td className="py-3 font-semibold text-white">{row.pro}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </AppShell>
+  )
+}

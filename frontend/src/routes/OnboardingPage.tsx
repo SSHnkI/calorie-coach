@@ -31,11 +31,21 @@ export function OnboardingPage() {
   const dailyKcal = calculateDailyKcal(data)
   const progress = (step / TOTAL_STEPS) * 100
 
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS + 1))
   const back = () => setStep((s) => Math.max(s - 1, 1))
 
   const finish = async () => {
-    await completeOnboarding(data)
+    setSaving(true)
+    setSaveError('')
+    const { error } = await completeOnboarding(data)
+    setSaving(false)
+    if (error) {
+      setSaveError(error)
+      return
+    }
     navigate('/dashboard')
   }
 
@@ -222,11 +232,18 @@ export function OnboardingPage() {
               </Button>
             )}
             {step === TOTAL_STEPS + 1 && (
-              <Button onClick={finish} className="w-full">
-                {t.onboarding.startTracking}
+              <Button onClick={finish} disabled={saving} className="w-full">
+                {saving ? '...' : t.onboarding.startTracking}
               </Button>
             )}
           </div>
+          {saveError && (
+            <p className="mt-3 text-center text-sm font-medium text-obliq-red">
+              {saveError}
+            </p>
+          )}
         </Card>
       </div>
-    <
+    </div>
+  )
+}

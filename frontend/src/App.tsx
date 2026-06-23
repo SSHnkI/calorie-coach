@@ -11,7 +11,8 @@ import { WorkoutPage } from './routes/WorkoutPage'
 import { PricingPage } from './routes/PricingPage'
 
 function OnboardingGuard() {
-  const { isAuthenticated, user } = useApp()
+  const { isAuthenticated, user, loading } = useApp()
+  if (loading) return null
   if (!isAuthenticated) return <Navigate to="/auth?mode=signup" replace />
   if (user?.onboarding_complete) return <Navigate to="/dashboard" replace />
   return <OnboardingPage />
