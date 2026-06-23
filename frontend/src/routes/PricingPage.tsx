@@ -2,9 +2,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useI18n } from '../i18n/I18nContext'
+import { supabase } from '../lib/supabase'
 import { AppShell } from '../components/layout/AppShell'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
+
+const PRICE_ID = 'price_1TlUaE7FbBrEWaC4hU5oppwd'
+const APP_URL = 'https://obliq-psi.vercel.app'
 
 function FeatureList({
   items,
@@ -40,10 +44,34 @@ export function PricingPage() {
     }
 
     setLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1200))
-    upgradeToPro()
-    setLoading(false)
-    navigate('/dashboard')
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        navigate('/auth')
+        return
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          user_id: session.user.id,
+          email: session.user.email,
+          price_id: PRICE_ID,
+          success_url: `${APP_URL}/dashboard?subscribed=true`,
+          cancel_url: `${APP_URL}/pricing`,
+        },
+      })
+
+      if (error || !data?.url) {
+        console.error('Erro ao criar sessão de checkout:', error)
+        alert('Erro ao redirecionar para o Stripe. Tente novamente.')
+        return
+      }
+
+      window.location.href = data.url
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -112,23 +140,4 @@ export function PricingPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-obliq-border text-left text-white/40">
-                <th className="pb-3 pr-4 font-medium">{t.pricing.featureCol}</th>
-                <th className="pb-3 pr-4 font-medium">{t.pricing.freeCol}</th>
-                <th className="pb-3 font-medium text-obliq-red">{t.pricing.proCol}</th>
-              </tr>
-            </thead>
-            <tbody className="text-white/70">
-              {t.pricing.compareRows.map((row) => (
-                <tr key={row.feature} className="border-b border-obliq-border/50">
-                  <td className="py-3 pr-4">{row.feature}</td>
-                  <td className="py-3 pr-4 text-white/40">{row.free}</td>
-                  <td className="py-3 font-semibold text-white">{row.pro}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-    </AppShell>
-  )
-}
+                <th className="pb-3 pr-4 font-m
