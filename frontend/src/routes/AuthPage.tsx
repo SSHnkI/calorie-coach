@@ -19,23 +19,10 @@ export function AuthPage() {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | null>(null)
+  const [socialLoading, setSocialLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [resetSent, setResetSent] = useState(false)
-  const { login, signup, loginWithGoogle, loginWithApple } = useApp()
-
-  const handleForgotPassword = async () => {
-    if (!email.trim()) {
-      setError('Digite seu e-mail acima primeiro.')
-      return
-    }
-    setIsLoading(true)
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-    setIsLoading(false)
-    setResetSent(true)
-  }
+  const { login, signup, loginWithGoogle } = useApp()
   const navigate = useNavigate()
 
   const handleSubmit = async (e: FormEvent) => {
@@ -56,43 +43,35 @@ export function AuthPage() {
         setError(t.auth.errorPasswordMatch)
         return
       }
-
       setIsLoading(true)
       const result = await signup(email, password)
       setIsLoading(false)
-
-      if (result.error) {
-        setError(result.error)
-        return
-      }
-
+      if (result.error) { setError(result.error); return }
       setEmailSent(true)
       return
     }
 
-    // Login
     setIsLoading(true)
     const result = await login(email, password)
     setIsLoading(false)
-
-    if (result.error) {
-      setError(result.error)
-      return
-    }
-
+    if (result.error) { setError(result.error); return }
     navigate('/dashboard')
   }
 
   const handleGoogle = async () => {
-    setSocialLoading('google')
+    setSocialLoading(true)
     await loginWithGoogle()
-    setSocialLoading(null)
+    setSocialLoading(false)
   }
 
-  const handleApple = async () => {
-    setSocialLoading('apple')
-    await loginWithApple()
-    setSocialLoading(null)
+  const handleForgotPassword = async () => {
+    if (!email.trim()) { setError('Digite seu e-mail acima primeiro.'); return }
+    setIsLoading(true)
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    setIsLoading(false)
+    setResetSent(true)
   }
 
   // Tela de confirmação após signup
@@ -115,31 +94,25 @@ export function AuthPage() {
                 Enviamos um link de confirmação para
               </p>
               <p className="mt-1 font-bold text-white">{email}</p>
-
               <div className="mt-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-left">
                 <p className="text-xs font-bold uppercase tracking-widest text-yellow-400">
                   ⚠ Verifique a pasta de spam
                 </p>
                 <p className="mt-1 text-xs text-yellow-200/70">
-                  O email pode cair na caixa de spam ou lixo eletrônico. Se não encontrar, procure por "Supabase" ou "noreply".
+                  O email pode cair no spam. Procure por "Supabase" ou "noreply".
                 </p>
               </div>
-
               <p className="mt-4 text-xs text-white/40">
-                Após clicar no link, você será redirecionado automaticamente e não precisará fazer login de novo.
+                Após clicar no link você será redirecionado automaticamente, sem precisar logar de novo.
               </p>
             </div>
           </Card>
-
           <p className="mt-4 text-center text-xs text-white/30">
             Não recebeu?{' '}
             <button
               type="button"
               className="text-white/50 underline hover:text-white"
-              onClick={() => {
-                setEmailSent(false)
-                setTab('signup')
-              }}
+              onClick={() => { setEmailSent(false); setTab('signup') }}
             >
               Tentar novamente
             </button>
@@ -166,18 +139,15 @@ export function AuthPage() {
               { id: 'signup', label: t.auth.signup },
             ]}
             active={tab}
-            onChange={(newTab) => {
-              setTab(newTab)
-              setError('')
-            }}
+            onChange={(newTab) => { setTab(newTab); setError(''); setResetSent(false) }}
           />
 
           {/* Login social */}
-          <div className="mt-5 flex flex-col gap-2">
+          <div className="mt-5">
             <button
               type="button"
               onClick={handleGoogle}
-              disabled={!!socialLoading || isLoading}
+              disabled={socialLoading || isLoading}
               className="flex w-full items-center justify-center gap-3 rounded-xl border border-obliq-border py-3 text-sm font-bold text-white/80 transition-all hover:border-white/20 hover:text-white disabled:opacity-50"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -186,9 +156,8 @@ export function AuthPage() {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              {socialLoading === 'google' ? 'Aguarde...' : 'Continuar com Google'}
+              {socialLoading ? 'Aguarde...' : 'Continuar com Google'}
             </button>
-
           </div>
 
           <div className="my-5 flex items-center gap-3">
@@ -246,7 +215,7 @@ export function AuthPage() {
               <p className="text-sm font-medium text-obliq-red">{error}</p>
             )}
 
-            <Button type="submit" className="mt-1 w-full" disabled={isLoading || !!socialLoading}>
+            <Button type="submit" className="mt-1 w-full" disabled={isLoading || socialLoading}>
               {isLoading
                 ? 'Aguarde...'
                 : tab === 'signup'
@@ -262,3 +231,7 @@ export function AuthPage() {
           </Link>
         </p>
       </div>
+    </div>
+  )
+}
+                                                                                                                                                                                                                                                                                                                                                                                                 
