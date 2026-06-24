@@ -52,7 +52,7 @@ export function WorkoutBuilder({
           data.map((e) => ({
             key: e.id,
             exercise_id: e.exercise_id,
-            name: e.exercise?.name ?? 'Exercício',
+            name: e.exercise?.name ?? 'Exercicio',
             muscle_group: e.exercise?.muscle_group ?? '',
             sets: e.sets,
             reps: e.reps,
@@ -115,8 +115,8 @@ export function WorkoutBuilder({
     })
 
   const save = async () => {
-    if (!name.trim()) return setError('Dê um nome ao treino.')
-    if (rows.length === 0) return setError('Adicione pelo menos um exercício.')
+    if (!name.trim()) return setError('De um nome ao treino.')
+    if (rows.length === 0) return setError('Adicione pelo menos um exercicio.')
     setSaving(true)
     setError('')
     try {
@@ -159,10 +159,10 @@ export function WorkoutBuilder({
           onClick={onClose}
           className="text-sm font-bold uppercase tracking-wide text-white/50 hover:text-white"
         >
-          ← Voltar
+          Voltar
         </button>
         <Button onClick={save} disabled={saving} className="px-4 py-2 text-xs">
-          {saving ? 'Salvando…' : 'Salvar treino'}
+          {saving ? 'Salvando...' : 'Salvar treino'}
         </Button>
       </div>
 
@@ -197,14 +197,13 @@ export function WorkoutBuilder({
           <Card key={r.key}>
             <div className="mb-3 flex items-start justify-between gap-2">
               <div className="flex items-center gap-3">
-                {/* Input de ordem + botões ▲▼ */}
                 <div className="flex flex-col items-center gap-0.5">
                   <button
                     type="button"
                     onClick={() => moveRow(r.key, -1)}
                     disabled={i === 0}
                     className="text-white/30 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
-                  >▲</button>
+                  >&#9650;</button>
                   <input
                     type="number"
                     min={1}
@@ -212,14 +211,14 @@ export function WorkoutBuilder({
                     value={i + 1}
                     onChange={(e) => moveToPosition(r.key, Number(e.target.value))}
                     className="w-10 rounded-lg border border-obliq-border bg-obliq-surface text-center text-sm font-black text-white/60 focus:border-obliq-red focus:outline-none py-0.5"
-                    title="Posição do exercício"
+                    title="Posicao do exercicio"
                   />
                   <button
                     type="button"
                     onClick={() => moveRow(r.key, 1)}
                     disabled={i === rows.length - 1}
                     className="text-white/30 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
-                  >▼</button>
+                  >&#9660;</button>
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-white/30">
@@ -239,7 +238,7 @@ export function WorkoutBuilder({
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Input
-                label="Séries"
+                label="Series"
                 type="number"
                 min={1}
                 value={r.sets || ''}
@@ -274,8 +273,8 @@ export function WorkoutBuilder({
 
             <div className="mt-3">
               <Input
-                label="Observações"
-                placeholder="Cadência lenta, foco na contração…"
+                label="Observacoes"
+                placeholder="Cadencia lenta, foco na contracao..."
                 value={r.notes}
                 onChange={(e) => updateRow(r.key, { notes: e.target.value })}
               />
@@ -288,7 +287,7 @@ export function WorkoutBuilder({
           onClick={() => setPickerOpen(true)}
           className="w-full"
         >
-          + Adicionar exercício
+          + Adicionar exercicio
         </Button>
       </div>
 
@@ -333,7 +332,7 @@ function ExercisePicker({
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-obliq-black/95 backdrop-blur-sm">
       <div className="flex items-center justify-between border-b border-obliq-border px-4 py-3">
-        <p className="text-sm font-black uppercase tracking-wide">Adicionar exercício</p>
+        <p className="text-sm font-black uppercase tracking-wide">Adicionar exercicio</p>
         <button
           type="button"
           onClick={onClose}
@@ -362,4 +361,30 @@ function ExercisePicker({
 
       <div className="flex-1 overflow-y-auto px-4 py-3">
         {loading ? (
-        
+          <div className="space-y-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-12 animate-pulse rounded-xl bg-obliq-border/50" />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {filtered.map((ex) => (
+              <button
+                key={ex.id}
+                type="button"
+                onClick={() => onPick(ex)}
+                className="w-full rounded-xl border border-obliq-border bg-obliq-surface px-4 py-3 text-left transition-all hover:border-obliq-red/50 active:scale-[0.98]"
+              >
+                <p className="font-bold text-sm">{ex.name}</p>
+                <p className="text-xs text-white/40">{muscleLabel(ex.muscle_group)}</p>
+              </button>
+            ))}
+            {filtered.length === 0 && (
+              <p className="text-center text-sm text-white/40 pt-8">Nenhum exercicio encontrado.</p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

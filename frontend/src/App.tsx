@@ -41,4 +41,10 @@ export default function App() {
             </Route>
 
             <Route path="/admin" element={<AdminPage />} />
-            <Route path="*" element={<Navigate to="/" 
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AppProvider>
+    </I18nProvider>
+  )
+}
