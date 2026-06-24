@@ -28,6 +28,8 @@ type AppContextValue = {
   loading: boolean
   login: (email: string, password: string) => Promise<AuthResult>
   signup: (email: string, password: string) => Promise<SignupResult>
+  loginWithGoogle: () => Promise<void>
+  loginWithApple: () => Promise<void>
   logout: () => Promise<void>
   completeOnboarding: (data: OnboardingData) => Promise<{ error: string | null }>
   addFoodEntry: (entry: Omit<FoodEntry, 'id' | 'logged_at'>) => void
@@ -102,6 +104,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     })
     if (error) return { error: error.message }
     return { error: null, emailSent: true }
+  }, [])
+
+  const loginWithGoogle = useCallback(async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    })
+  }, [])
+
+  const loginWithApple = useCallback(async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    })
   }, [])
 
   const logout = useCallback(async () => {
@@ -182,6 +198,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       loading,
       login,
       signup,
+      loginWithGoogle,
+      loginWithApple,
       logout,
       completeOnboarding,
       addFoodEntry,
@@ -195,6 +213,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       loading,
       login,
       signup,
+      loginWithGoogle,
+      loginWithApple,
       logout,
       completeOnboarding,
       addFoodEntry,

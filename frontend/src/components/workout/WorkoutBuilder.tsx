@@ -93,6 +93,16 @@ export function WorkoutBuilder({
   const removeRow = (key: string) =>
     setRows((prev) => prev.filter((r) => r.key !== key))
 
+  const moveRow = (key: string, dir: -1 | 1) =>
+    setRows((prev) => {
+      const idx = prev.findIndex((r) => r.key === key)
+      const next = idx + dir
+      if (next < 0 || next >= prev.length) return prev
+      const arr = [...prev]
+      ;[arr[idx], arr[next]] = [arr[next], arr[idx]]
+      return arr
+    })
+
   const save = async () => {
     if (!name.trim()) return setError('Dê um nome ao treino.')
     if (rows.length === 0) return setError('Adicione pelo menos um exercício.')
@@ -175,11 +185,34 @@ export function WorkoutBuilder({
         {rows.map((r, i) => (
           <Card key={r.key}>
             <div className="mb-3 flex items-start justify-between gap-2">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/30">
-                  {i + 1} · {muscleLabel(r.muscle_group)}
-                </p>
-                <h3 className="font-bold">{r.name}</h3>
+              <div className="flex items-center gap-2">
+                {/* Botões de reordenar */}
+                <div className="flex flex-col gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => moveRow(r.key, -1)}
+                    disabled={i === 0}
+                    className="text-white/30 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
+                    title="Mover para cima"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveRow(r.key, 1)}
+                    disabled={i === rows.length - 1}
+                    className="text-white/30 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
+                    title="Mover para baixo"
+                  >
+                    ▼
+                  </button>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/30">
+                    {i + 1} · {muscleLabel(r.muscle_group)}
+                  </p>
+                  <h3 className="font-bold">{r.name}</h3>
+                </div>
               </div>
               <button
                 type="button"

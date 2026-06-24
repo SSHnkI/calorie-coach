@@ -136,34 +136,46 @@ export function MyWorkouts() {
         <div className="space-y-3">
           {plans.map((plan) => (
             <Card key={plan.id}>
-              <div className="flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={() => setEditing(plan)}
-                  className="flex-1 text-left"
+              {/* Cabeçalho: nome abre lista de exercícios */}
+              <button
+                type="button"
+                onClick={() => setEditing(plan)}
+                className="w-full text-left group"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <h3 className="font-bold group-hover:text-obliq-red transition-colors">
+                      {plan.name}
+                    </h3>
+                    <p className="text-xs text-white/40 mt-0.5">
+                      {plan.exercise_count}{' '}
+                      {plan.exercise_count === 1 ? 'exercício' : 'exercícios'}
+                      {plan.goal ? ` · ${GOAL_LABEL[plan.goal] ?? plan.goal}` : ''}
+                    </p>
+                  </div>
+                  <span className="text-white/30 group-hover:text-obliq-red transition-colors text-lg">›</span>
+                </div>
+                <p className="mt-1 text-[10px] text-white/25 font-medium uppercase tracking-widest">
+                  Toque para ver e editar exercícios
+                </p>
+              </button>
+
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <Button
+                  onClick={() => setRunning(plan)}
+                  disabled={plan.exercise_count === 0}
+                  className="flex-1 py-2.5 text-sm"
                 >
-                  <h3 className="font-bold">{plan.name}</h3>
-                  <p className="text-xs text-white/40">
-                    {plan.exercise_count}{' '}
-                    {plan.exercise_count === 1 ? 'exercício' : 'exercícios'}
-                    {plan.goal ? ` · ${GOAL_LABEL[plan.goal] ?? plan.goal}` : ''}
-                  </p>
-                </button>
+                  ▶ Iniciar · ver progresso de carga
+                </Button>
                 <button
                   type="button"
                   onClick={() => handleDelete(plan.id)}
-                  className="text-xs font-bold uppercase text-white/40 hover:text-obliq-red"
+                  className="px-2 text-xs font-bold uppercase text-white/30 hover:text-obliq-red"
                 >
-                  Excluir
+                  ✕
                 </button>
               </div>
-              <Button
-                onClick={() => setRunning(plan)}
-                disabled={plan.exercise_count === 0}
-                className="mt-3 w-full py-2 text-xs"
-              >
-                ▶ Iniciar treino
-              </Button>
             </Card>
           ))}
         </div>

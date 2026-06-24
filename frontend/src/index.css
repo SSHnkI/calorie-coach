@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --color-obliq-black: #0a0a0a;
-  --color-obliq-surface: #111111;
-  --color-obliq-border: #1f1f1f;
+  --color-obliq-black: #0e0e12;
+  --color-obliq-surface: #16161c;
+  --color-obliq-border: #242430;
   --color-obliq-red: #e8000d;
   --color-obliq-white: #ffffff;
 
