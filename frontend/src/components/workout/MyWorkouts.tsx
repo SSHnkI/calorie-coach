@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { deletePlan, fetchPlans, type PlanSummary } from '../../lib/workouts'
+import { PRESETS, createPreset, type Preset } from '../../lib/presets'
 import type { WorkoutPlan } from '../../types'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
@@ -20,6 +21,7 @@ export function MyWorkouts() {
   const [error, setError] = useState(false)
   const [editing, setEditing] = useState<Editing>(null)
   const [running, setRunning] = useState<WorkoutPlan | null>(null)
+  const [presetBusy, setPresetBusy] = useState(false)
 
   const load = useCallback(() => {
     setLoading(true)
@@ -33,6 +35,20 @@ export function MyWorkouts() {
   useEffect(() => {
     load()
   }, [load])
+
+  const applyPreset = async (p: Preset) => {
+    if (!confirm(`Criar os treinos do modelo "${p.label}"?`)) return
+    setPresetBusy(true)
+    try {
+      const n = await createPreset(p)
+      load()
+      alert(`${n} treino${n === 1 ? '' : 's'} criado${n === 1 ? '' : 's'}! 💪`)
+    } catch {
+      alert('Falha ao criar os treinos do modelo.')
+    } finally {
+      setPresetBusy(false)
+    }
+  }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Excluir este treino?')) return
@@ -72,6 +88,25 @@ export function MyWorkouts() {
       <Button onClick={() => setEditing('new')} className="mb-4 w-full">
         + Novo treino
       </Button>
+
+      <div className="mb-4">
+        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-white/40">
+          Modelos rápidos
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {PRESETS.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              disabled={presetBusy}
+              onClick={() => applyPreset(p)}
+              className="rounded-full border border-obliq-border px-3 py-1.5 text-xs font-bold text-white/70 transition-all hover:border-obliq-red/50 disabled:opacity-50"
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {loading && (
         <div className="space-y-3">
