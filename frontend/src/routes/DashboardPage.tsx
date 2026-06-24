@@ -37,6 +37,7 @@ export function DashboardPage() {
   const { user, isPro } = useApp()
   const [entries, setEntries] = useState<FoodEntry[]>([])
   const [tab, setTab] = useState('today')
+  const [macrosOpen, setMacrosOpen] = useState(false)
   const [foodInput, setFoodInput] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
   const [error, setError] = useState('')
@@ -163,14 +164,35 @@ export function DashboardPage() {
       </Card>
 
       <Card className="mb-4">
-        <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-white/50">
-          {t.dashboard.macros}
-        </h2>
-        <div className="flex justify-around">
-          <MacroRing label={t.dashboard.protein} current={totals.protein_g} target={macros.protein_g} />
-          <MacroRing label={t.dashboard.carbs} current={totals.carbs_g} target={macros.carbs_g} color="#FFFFFF" />
-          <MacroRing label={t.dashboard.fat} current={totals.fat_g} target={macros.fat_g} color="#888888" />
-        </div>
+        <button
+          type="button"
+          onClick={() => setMacrosOpen((o) => !o)}
+          className="flex w-full items-center justify-between gap-2 text-left"
+        >
+          <h2 className="text-sm font-bold uppercase tracking-widest text-white/50">
+            {t.dashboard.macros}
+          </h2>
+          <div className="flex items-center gap-3">
+            {!macrosOpen && (
+              <span className="text-xs tabular-nums text-white/40">
+                P {Math.round(totals.protein_g)} · C {Math.round(totals.carbs_g)} · G{' '}
+                {Math.round(totals.fat_g)}
+              </span>
+            )}
+            <span
+              className={`text-white/30 transition-transform ${macrosOpen ? 'rotate-180' : ''}`}
+            >
+              ▾
+            </span>
+          </div>
+        </button>
+        {macrosOpen && (
+          <div className="mt-4 flex justify-around">
+            <MacroRing label={t.dashboard.protein} current={totals.protein_g} target={macros.protein_g} />
+            <MacroRing label={t.dashboard.carbs} current={totals.carbs_g} target={macros.carbs_g} color="#FFFFFF" />
+            <MacroRing label={t.dashboard.fat} current={totals.fat_g} target={macros.fat_g} color="#888888" />
+          </div>
+        )}
       </Card>
 
       {isPro && (

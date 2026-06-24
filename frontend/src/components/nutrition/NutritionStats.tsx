@@ -20,6 +20,7 @@ export function NutritionStats({
 }) {
   const [items, setItems] = useState<FoodEntry[]>([])
   const [loading, setLoading] = useState(true)
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -62,11 +63,30 @@ export function NutritionStats({
 
   return (
     <Card className="mb-4">
-      <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-white/50">
-        Últimos 7 dias
-      </h2>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between gap-2 text-left"
+      >
+        <h2 className="text-sm font-bold uppercase tracking-widest text-white/50">
+          Últimos 7 dias
+        </h2>
+        <div className="flex items-center gap-3">
+          {!open && logged.length > 0 && (
+            <span
+              className={`text-xs font-bold tabular-nums ${weeklyKg > 0 ? 'text-amber-400' : 'text-emerald-400'}`}
+            >
+              {weeklyKg > 0 ? '+' : ''}
+              {weeklyKg.toFixed(2)} kg/sem
+            </span>
+          )}
+          <span className={`text-white/30 transition-transform ${open ? 'rotate-180' : ''}`}>
+            ▾
+          </span>
+        </div>
+      </button>
 
-      <div className="flex h-28 items-end gap-1.5">
+      <div className={`${open ? 'mt-3' : 'hidden'} flex h-28 items-end gap-1.5`}>
         {days.map((d, i) => {
           const h = Math.round((d.kcal / maxScale) * 100)
           const over = d.kcal > target
@@ -84,7 +104,7 @@ export function NutritionStats({
         })}
       </div>
 
-      {logged.length > 0 ? (
+      {open && (logged.length > 0 ? (
         <div className="mt-4 grid grid-cols-2 gap-3 border-t border-obliq-border pt-3">
           <div>
             <p className="text-[10px] uppercase tracking-widest text-white/30">
@@ -115,7 +135,7 @@ export function NutritionStats({
         <p className="mt-4 border-t border-obliq-border pt-3 text-center text-xs text-white/40">
           Registre comida para ver a projeção.
         </p>
-      )}
+      ))}
     </Card>
   )
 }
