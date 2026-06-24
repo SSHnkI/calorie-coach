@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase'
 import { fetchExercises } from '../lib/exercises'
 import { MUSCLE_GROUPS, muscleLabel } from '../components/workout/ExerciseCatalog'
 import { WorkoutBuilder } from '../components/workout/WorkoutBuilder'
+import { Sidebar } from '../components/layout/Sidebar'
+import { BottomNav } from '../components/layout/BottomNav'
 import {
   fetchAllUsers,
   setUserPro,
@@ -86,7 +88,9 @@ export function AdminPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-obliq-black">
+    <div className="min-h-dvh bg-obliq-black md:pl-56">
+      <Sidebar />
+      <BottomNav />
       {/* Header */}
       <div className="sticky top-0 z-40 border-b border-obliq-border bg-obliq-black/95 backdrop-blur-md px-4 py-3">
         <div className="mx-auto max-w-lg flex items-center justify-between">
@@ -110,7 +114,7 @@ export function AdminPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-lg px-4 py-4">
+      <div className="mx-auto max-w-lg px-4 py-4 pb-24 md:pb-4">
         {tab === 'exercicios' && <ExerciciosTab />}
         {tab === 'usuarios' && <UsuariosTab />}
         {tab === 'treinos' && <TreinosTab />}

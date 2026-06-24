@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { supabase } from '../lib/supabase'
 import { WorkoutBuilder } from '../components/workout/WorkoutBuilder'
+import { Sidebar } from '../components/layout/Sidebar'
+import { BottomNav } from '../components/layout/BottomNav'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
@@ -52,7 +54,9 @@ export function TrainerPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-obliq-black">
+    <div className="min-h-dvh bg-obliq-black md:pl-56">
+      <Sidebar />
+      <BottomNav />
       <div className="sticky top-0 z-40 border-b border-obliq-border bg-obliq-black/95 backdrop-blur-md px-4 py-3">
         <div className="mx-auto max-w-lg flex items-center justify-between">
           <div>
@@ -68,7 +72,7 @@ export function TrainerPage() {
           </div>
         </div>
       </div>
-      <div className="mx-auto max-w-lg px-4 py-4">
+      <div className="mx-auto max-w-lg px-4 py-4 pb-24 md:pb-4">
         <TrainerDashboard trainerId={trainerData.id} />
       </div>
     </div>
@@ -87,9 +91,9 @@ function TrainerDashboard({ trainerId }: { trainerId: string }) {
     setLoadingClients(true)
     supabase
       .from('profiles')
-      .select('id, email, full_name, subscription_status, daily_kcal, onboarding_complete')
+      .select('id, email, subscription_status, daily_kcal, onboarding_complete')
       .eq('trainer_id', trainerId)
-      .order('full_name', { ascending: true })
+      .order('email', { ascending: true })
       .then(({ data }) => {
         setClients((data ?? []) as Client[])
         setLoadingClients(false)

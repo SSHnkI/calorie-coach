@@ -15,7 +15,7 @@ export type AdminUser = {
 export async function fetchAllUsers(): Promise<AdminUser[]> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, email, full_name, subscription_status, onboarding_complete, created_at, trainer_id, workout_plans(count)')
+    .select('id, email, subscription_status, onboarding_complete, created_at, trainer_id, workout_plans(count)')
     .order('created_at', { ascending: false })
 
   if (error) throw error
