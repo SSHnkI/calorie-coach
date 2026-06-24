@@ -11,7 +11,7 @@ export function BottomNav() {
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-obliq-border bg-obliq-black/95 backdrop-blur-md">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-obliq-border bg-obliq-black/95 backdrop-blur-md md:hidden">
       <div className="mx-auto flex max-w-lg items-center justify-around px-4 py-2">
         {links.map((link) => (
           <NavLink

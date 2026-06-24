@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { BottomNav } from './BottomNav'
+import { Sidebar } from './Sidebar'
 import { Logo } from './Logo'
 import { useI18n } from '../../i18n/I18nContext'
 
@@ -20,9 +21,10 @@ export function AppShell({ children, showNav = true, titleKey }: AppShellProps) 
     : undefined
 
   return (
-    <div className="min-h-dvh bg-obliq-black">
+    <div className={`min-h-dvh bg-obliq-black ${showNav ? 'md:pl-56' : ''}`}>
+      {showNav && <Sidebar />}
       {title && (
-        <header className="sticky top-0 z-40 border-b border-obliq-border bg-obliq-black/95 backdrop-blur-md">
+        <header className="sticky top-0 z-40 border-b border-obliq-border bg-obliq-black/95 backdrop-blur-md md:hidden">
           <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-4">
             <Logo size="sm" />
             <span className="text-sm font-bold uppercase tracking-wider text-white/60">
@@ -31,7 +33,7 @@ export function AppShell({ children, showNav = true, titleKey }: AppShellProps) 
           </div>
         </header>
       )}
-      <main className={`mx-auto max-w-lg px-4 ${showNav ? 'pb-24 pt-4' : 'py-4'}`}>
+      <main className={`mx-auto max-w-lg px-4 md:max-w-3xl ${showNav ? 'pb-24 pt-4 md:pb-8' : 'py-4'}`}>
         {children}
       </main>
       {showNav && <BottomNav />}
