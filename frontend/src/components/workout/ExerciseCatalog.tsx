@@ -51,7 +51,7 @@ export function ExerciseCatalog() {
 
   return (
     <div>
-      <div className="mb-4 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <div className="mb-4 flex flex-wrap gap-2">
         {[{ key: 'all' as const, label: 'Todos' }, ...MUSCLE_GROUPS].map((g) => (
           <button
             key={g.key}

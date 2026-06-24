@@ -296,7 +296,7 @@ function ExercisePicker({
         </button>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto border-b border-obliq-border px-4 py-2 scrollbar-none">
+      <div className="flex flex-wrap gap-2 border-b border-obliq-border px-4 py-2">
         {[{ key: 'all' as const, label: 'Todos' }, ...MUSCLE_GROUPS].map((g) => (
           <button
             key={g.key}
