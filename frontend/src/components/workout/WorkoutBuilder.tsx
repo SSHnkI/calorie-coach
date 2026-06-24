@@ -104,6 +104,16 @@ export function WorkoutBuilder({
       return arr
     })
 
+  const moveRow = (key: string, dir: -1 | 1) =>
+    setRows((prev) => {
+      const idx = prev.findIndex((r) => r.key === key)
+      const next = idx + dir
+      if (next < 0 || next >= prev.length) return prev
+      const arr = [...prev]
+      ;[arr[idx], arr[next]] = [arr[next], arr[idx]]
+      return arr
+    })
+
   const save = async () => {
     if (!name.trim()) return setError('Dê um nome ao treino.')
     if (rows.length === 0) return setError('Adicione pelo menos um exercício.')
@@ -187,16 +197,30 @@ export function WorkoutBuilder({
           <Card key={r.key}>
             <div className="mb-3 flex items-start justify-between gap-2">
               <div className="flex items-center gap-3">
-                {/* Input de ordem */}
-                <input
-                  type="number"
-                  min={1}
-                  max={rows.length}
-                  value={i + 1}
-                  onChange={(e) => moveToPosition(r.key, Number(e.target.value))}
-                  className="w-10 rounded-lg border border-obliq-border bg-obliq-surface text-center text-sm font-black text-white/60 focus:border-obliq-red focus:outline-none"
-                  title="Posição do exercício"
-                />
+                {/* Input de ordem + botões ▲▼ */}
+                <div className="flex flex-col items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => moveRow(r.key, -1)}
+                    disabled={i === 0}
+                    className="text-white/30 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
+                  >▲</button>
+                  <input
+                    type="number"
+                    min={1}
+                    max={rows.length}
+                    value={i + 1}
+                    onChange={(e) => moveToPosition(r.key, Number(e.target.value))}
+                    className="w-10 rounded-lg border border-obliq-border bg-obliq-surface text-center text-sm font-black text-white/60 focus:border-obliq-red focus:outline-none py-0.5"
+                    title="Posição do exercício"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => moveRow(r.key, 1)}
+                    disabled={i === rows.length - 1}
+                    className="text-white/30 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
+                  >▼</button>
+                </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-white/30">
                     {muscleLabel(r.muscle_group)}
@@ -338,24 +362,4 @@ function ExercisePicker({
 
       <div className="flex-1 overflow-y-auto px-4 py-3">
         {loading ? (
-          <p className="text-center text-sm text-white/40">Carregando…</p>
-        ) : (
-          <div className="space-y-2">
-            {filtered.map((ex) => (
-              <button
-                key={ex.id}
-                type="button"
-                onClick={() => onPick(ex)}
-                className="flex w-full items-center justify-between rounded-xl border border-obliq-border px-4 py-3 text-left transition-colors hover:border-obliq-red/50"
-              >
-                <span className="font-bold">{ex.name}</span>
-                <span className="text-xs text-white/40">{muscleLabel(ex.muscle_group)}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-                                                                                                                                                                                                                                                                                                                                              
+        
