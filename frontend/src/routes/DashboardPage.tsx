@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { useI18n } from '../i18n/I18nContext'
-import { mockAnalyzeFood } from '../data/mockFood'
+import { analyzeFood } from '../lib/analyzeFood'
 import { calculateMacroTargets } from '../lib/tdee'
 import { formatKcal } from '../lib/format'
 import { AppShell } from '../components/layout/AppShell'
@@ -30,8 +30,12 @@ export function DashboardPage() {
     setAnalyzing(true)
     setError('')
     try {
-      const result = await mockAnalyzeFood(foodInput)
-      addFoodEntry(result)
+      const result = await analyzeFood(foodInput)
+      if (!result.ok) {
+        setError(result.error === 'limit_reached' ? t.dashboard.limitReached : t.dashboard.analyzeError)
+        return
+      }
+      addFoodEntry(result.nutrition)
       setFoodInput('')
     } catch {
       setError(t.dashboard.analyzeError)

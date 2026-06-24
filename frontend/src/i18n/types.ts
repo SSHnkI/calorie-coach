@@ -93,6 +93,7 @@ export type TranslationKeys = {
     analyzing: string
     freePlanNote: string
     analyzeError: string
+    limitReached: string
     foodLog: string
     foodLogEmpty: string
   }

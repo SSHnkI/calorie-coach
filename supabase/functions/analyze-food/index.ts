@@ -26,6 +26,10 @@ Deno.serve(async (req) => {
       .eq('id', user.id)
       .single()
 
+    if (!profile) {
+      return new Response(JSON.stringify({ error: 'profile_not_found' }), { status: 404, headers: corsHeaders })
+    }
+
     const today = new Date().toISOString().split('T')[0]
     let analysesToday = profile.analyses_today
     if (profile.analyses_date !== today) {
@@ -48,26 +52,56 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'food_input required' }), { status: 400, headers: corsHeaders })
     }
 
-    // Chama o Gemini
+    // Chama o Gemini — responseSchema força JSON puro (sem cercas ```json)
+    const geminiKey = Deno.env.get('GEMINI_API_KEY')
+    if (!geminiKey) {
+      return new Response(JSON.stringify({ error: 'GEMINI_API_KEY não configurada' }), { status: 500, headers: corsHeaders })
+    }
+
     const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${Deno.env.get('GEMINI_API_KEY')}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           systemInstruction: {
-            parts: [{ text: `Você é um banco de dados nutricional. Receba um alimento em linguagem natural e retorne APENAS JSON válido, sem texto fora do JSON:
-{"name":"string","quantity":number,"unit":"string","kcal":number,"protein_g":number,"carbs_g":number,"fat_g":number,"confidence":"high|medium|low"}
-Se a quantidade não for mencionada, assuma porção padrão. Nunca recuse, sempre estime.` }]
+            parts: [{ text: `Você é um banco de dados nutricional. Receba um alimento em linguagem natural e estime os valores nutricionais. Se a quantidade não for mencionada, assuma uma porção padrão. Nunca recuse, sempre estime.` }]
           },
-          contents: [{ parts: [{ text: food_input }] }]
+          contents: [{ parts: [{ text: food_input }] }],
+          generationConfig: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'OBJECT',
+              properties: {
+                name: { type: 'STRING' },
+                quantity: { type: 'NUMBER' },
+                unit: { type: 'STRING' },
+                kcal: { type: 'NUMBER' },
+                protein_g: { type: 'NUMBER' },
+                carbs_g: { type: 'NUMBER' },
+                fat_g: { type: 'NUMBER' },
+                confidence: { type: 'STRING', enum: ['high', 'medium', 'low'] },
+              },
+              required: ['name', 'quantity', 'unit', 'kcal', 'protein_g', 'carbs_g', 'fat_g', 'confidence'],
+            },
+          },
         })
       }
     )
 
+    if (!geminiRes.ok) {
+      const errBody = await geminiRes.text()
+      console.error('Erro Gemini:', geminiRes.status, errBody)
+      return new Response(JSON.stringify({ error: 'gemini_error' }), { status: 502, headers: corsHeaders })
+    }
+
     const geminiData = await geminiRes.json()
-    const rawText = geminiData.candidates[0].content.parts[0].text.trim()
-    const nutrition = JSON.parse(rawText)
+    const rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text
+    if (!rawText) {
+      console.error('Resposta Gemini sem texto:', JSON.stringify(geminiData))
+      return new Response(JSON.stringify({ error: 'gemini_empty' }), { status: 502, headers: corsHeaders })
+    }
+    const nutrition = JSON.parse(rawText.trim())
 
     await supabase.from('food_log').insert({
       user_id: user.id,
