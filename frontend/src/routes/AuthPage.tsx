@@ -2,6 +2,7 @@ import { type FormEvent, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useI18n } from '../i18n/I18nContext'
+import { supabase } from '../lib/supabase'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
@@ -20,7 +21,21 @@ export function AuthPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | null>(null)
   const [emailSent, setEmailSent] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
   const { login, signup, loginWithGoogle, loginWithApple } = useApp()
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      setError('Digite seu e-mail acima primeiro.')
+      return
+    }
+    setIsLoading(true)
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    setIsLoading(false)
+    setResetSent(true)
+  }
   const navigate = useNavigate()
 
   const handleSubmit = async (e: FormEvent) => {
@@ -210,6 +225,23 @@ export function AuthPage() {
               />
             )}
 
+            {tab === 'login' && (
+              <div className="text-right -mt-2">
+                {resetSent ? (
+                  <p className="text-xs text-green-400">Link enviado! Verifique seu e-mail (e o spam).</p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    disabled={isLoading}
+                    className="text-xs text-white/40 hover:text-white/70 transition-colors"
+                  >
+                    Esqueci minha senha
+                  </button>
+                )}
+              </div>
+            )}
+
             {error && (
               <p className="text-sm font-medium text-obliq-red">{error}</p>
             )}
@@ -230,7 +262,3 @@ export function AuthPage() {
           </Link>
         </p>
       </div>
-    </div>
-  )
-}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
