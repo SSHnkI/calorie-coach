@@ -13,8 +13,8 @@ const BUCKET = 'exercises'
 
 const DIFFICULTIES: { key: Difficulty; label: string }[] = [
   { key: 'iniciante', label: 'Iniciante' },
-  { key: 'intermediario', label: 'Intermediário' },
-  { key: 'avancado', label: 'Avançado' },
+  { key: 'intermediario', label: 'Intermediario' },
+  { key: 'avancado', label: 'Avancado' },
 ]
 
 type FormData = {
@@ -48,10 +48,9 @@ export function AdminPage() {
   const [search, setSearch] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
-  // Verifica se é admin — checa sessão ativa + email exato
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user }, error }) => {
-      if (!error && user?.email === ADMIN_EMAIL && user?.role === 'authenticated') {
+    supabase.auth.getUser().then(({ data: { user }, error: e }) => {
+      if (!e && user?.email === ADMIN_EMAIL && user?.role === 'authenticated') {
         setAuthorized(true)
         load()
       } else {
@@ -68,11 +67,7 @@ export function AdminPage() {
       .finally(() => setLoading(false))
   }
 
-  const openNew = () => {
-    setForm(EMPTY_FORM)
-    setEditing('new')
-    setError('')
-  }
+  const openNew = () => { setForm(EMPTY_FORM); setEditing('new'); setError('') }
 
   const openEdit = (ex: CatalogExercise) => {
     setForm({
@@ -92,7 +87,7 @@ export function AdminPage() {
     const ext = file.name.split('.').pop()
     const path = `${Date.now()}.${ext}`
     const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true })
-    if (upErr) { setError('Erro ao fazer upload da imagem: ' + upErr.message); setUploading(false); return }
+    if (upErr) { setError('Erro no upload: ' + upErr.message); setUploading(false); return }
     const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
     setForm((f) => ({ ...f, image_url: data.publicUrl }))
     setUploading(false)
@@ -105,11 +100,10 @@ export function AdminPage() {
   }
 
   const save = async () => {
-    if (!form.name.trim()) { setError('Nome obrigatório.'); return }
+    if (!form.name.trim()) { setError('Nome obrigatorio.'); return }
     if (!await assertAdmin()) return
     setSaving(true)
     setError('')
-
     const payload = {
       name: form.name.trim(),
       muscle_group: form.muscle_group,
@@ -118,7 +112,6 @@ export function AdminPage() {
       muscles_worked: form.muscles_worked.trim() || null,
       image_url: form.image_url || null,
     }
-
     if (editing === 'new') {
       const { error: e } = await supabase.from('exercises').insert(payload)
       if (e) { setError(e.message); setSaving(false); return }
@@ -126,14 +119,13 @@ export function AdminPage() {
       const { error: e } = await supabase.from('exercises').update(payload).eq('id', editing.id)
       if (e) { setError(e.message); setSaving(false); return }
     }
-
     setSaving(false)
     setEditing(null)
     load()
   }
 
   const remove = async (id: string) => {
-    if (!confirm('Excluir este exercício?')) return
+    if (!confirm('Excluir este exercicio?')) return
     if (!await assertAdmin()) return
     await supabase.from('exercises').delete().eq('id', id)
     load()
@@ -151,92 +143,64 @@ export function AdminPage() {
       <div className="flex min-h-dvh items-center justify-center bg-obliq-black px-4">
         <Card className="text-center max-w-sm w-full">
           <p className="text-obliq-red font-bold text-lg">Acesso restrito</p>
-          <p className="mt-2 text-sm text-white/50">Esta área é exclusiva para administradores.</p>
+          <p className="mt-2 text-sm text-white/50">Esta area e exclusiva para administradores.</p>
           <Button className="mt-4 w-full" onClick={() => navigate('/')}>Voltar</Button>
         </Card>
       </div>
     )
   }
 
-  // Formulário de criação/edição
   if (editing) {
     return (
       <div className="min-h-dvh bg-obliq-black px-4 py-6">
         <div className="mx-auto max-w-lg">
           <div className="mb-4 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setEditing(null)}
-              className="text-sm font-bold uppercase text-white/50 hover:text-white"
-            >
-              ← Voltar
+            <button type="button" onClick={() => setEditing(null)}
+              className="text-sm font-bold uppercase text-white/50 hover:text-white">
+              &larr; Voltar
             </button>
             <h1 className="text-sm font-black uppercase tracking-widest text-white/60">
-              {editing === 'new' ? 'Novo Exercício' : 'Editar Exercício'}
+              {editing === 'new' ? 'Novo Exercicio' : 'Editar Exercicio'}
             </h1>
           </div>
 
           <div className="space-y-4">
-            {/* Imagem */}
             <Card>
               <p className="mb-3 text-xs font-bold uppercase tracking-widest text-white/40">Foto</p>
               {form.image_url && (
-                <img
-                  src={form.image_url}
-                  alt="preview"
-                  className="mb-3 h-48 w-full rounded-xl object-cover"
-                />
+                <img src={form.image_url} alt="preview"
+                  className="mb-3 h-48 w-full rounded-xl object-cover" />
               )}
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }}
-              />
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-                className="w-full rounded-xl border border-dashed border-obliq-border py-3 text-sm text-white/40 hover:border-obliq-red/50 hover:text-white/70 transition-all disabled:opacity-50"
-              >
-                {uploading ? 'Enviando...' : form.image_url ? '📷 Trocar foto' : '📷 Adicionar foto'}
+              <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }} />
+              <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+                className="w-full rounded-xl border border-dashed border-obliq-border py-3 text-sm text-white/40 hover:border-obliq-red/50 hover:text-white/70 transition-all disabled:opacity-50">
+                {uploading ? 'Enviando...' : form.image_url ? 'Trocar foto' : 'Adicionar foto'}
               </button>
               {form.image_url && (
-                <button
-                  type="button"
-                  onClick={() => setForm((f) => ({ ...f, image_url: '' }))}
-                  className="mt-2 w-full text-xs text-white/30 hover:text-obliq-red"
-                >
+                <button type="button" onClick={() => setForm((f) => ({ ...f, image_url: '' }))}
+                  className="mt-2 w-full text-xs text-white/30 hover:text-obliq-red">
                   Remover foto
                 </button>
               )}
             </Card>
 
-            {/* Dados básicos */}
             <Card>
               <div className="space-y-4">
-                <Input
-                  label="Nome do exercício"
-                  placeholder="Ex: Supino reto com barra"
-                  value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                />
+                <Input label="Nome do exercicio" placeholder="Ex: Supino reto com barra"
+                  value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
 
                 <div>
                   <p className="mb-2 text-sm font-medium text-white/70">Grupo muscular</p>
                   <div className="flex flex-wrap gap-2">
                     {MUSCLE_GROUPS.map((g) => (
-                      <button
-                        key={g.key}
-                        type="button"
+                      <button key={g.key} type="button"
                         onClick={() => setForm((f) => ({ ...f, muscle_group: g.key }))}
                         className={`rounded-full border px-3 py-1.5 text-xs font-bold uppercase transition-all ${
                           form.muscle_group === g.key
                             ? 'border-obliq-red bg-obliq-red/10 text-white shadow-red-glow'
                             : 'border-obliq-border text-white/50 hover:border-white/20'
-                        }`}
-                      >
+                        }`}>
                         {g.label}
                       </button>
                     ))}
@@ -247,47 +211,39 @@ export function AdminPage() {
                   <p className="mb-2 text-sm font-medium text-white/70">Dificuldade</p>
                   <div className="flex gap-2">
                     {DIFFICULTIES.map((d) => (
-                      <button
-                        key={d.key}
-                        type="button"
+                      <button key={d.key} type="button"
                         onClick={() => setForm((f) => ({ ...f, difficulty: d.key }))}
                         className={`flex-1 rounded-xl border py-2 text-xs font-bold uppercase transition-all ${
                           form.difficulty === d.key
                             ? 'border-obliq-red bg-obliq-red/10 text-white shadow-red-glow'
                             : 'border-obliq-border text-white/50 hover:border-white/20'
-                        }`}
-                      >
+                        }`}>
                         {d.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <Input
-                  label="Músculos trabalhados"
-                  placeholder="Ex: Peitoral maior, tríceps, deltóide anterior"
+                <Input label="Musculos trabalhados"
+                  placeholder="Ex: Peitoral maior, triceps, deltoide anterior"
                   value={form.muscles_worked}
-                  onChange={(e) => setForm((f) => ({ ...f, muscles_worked: e.target.value }))}
-                />
+                  onChange={(e) => setForm((f) => ({ ...f, muscles_worked: e.target.value }))} />
               </div>
             </Card>
 
-            {/* Descrição */}
             <Card>
               <p className="mb-2 text-sm font-medium text-white/70">Como realizar</p>
-              <textarea
-                value={form.description}
+              <textarea value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder="Descreva a execução passo a passo: posicionamento, movimento, respiração, erros comuns..."
+                placeholder="Descreva a execucao passo a passo..."
                 rows={6}
-                className="w-full resize-none rounded-xl border border-obliq-border bg-obliq-surface px-4 py-3 text-sm text-white placeholder-white/20 focus:border-obliq-red focus:outline-none"
-              />
+                className="w-full resize-none rounded-xl border border-obliq-border bg-obliq-surface px-4 py-3 text-sm text-white placeholder-white/20 focus:border-obliq-red focus:outline-none" />
             </Card>
 
             {error && <p className="text-center text-sm font-medium text-obliq-red">{error}</p>}
 
             <Button onClick={save} disabled={saving} className="w-full">
-              {saving ? 'Salvando...' : editing === 'new' ? 'Criar exercício' : 'Salvar alterações'}
+              {saving ? 'Salvando...' : editing === 'new' ? 'Criar exercicio' : 'Salvar alteracoes'}
             </Button>
           </div>
         </div>
@@ -295,28 +251,23 @@ export function AdminPage() {
     )
   }
 
-  // Lista de exercícios
   return (
     <div className="min-h-dvh bg-obliq-black px-4 py-6">
       <div className="mx-auto max-w-lg">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-black uppercase tracking-wide">Admin</h1>
-            <p className="text-xs text-white/40">Catálogo de exercícios</p>
+            <p className="text-xs text-white/40">Catalogo de exercicios</p>
           </div>
           <Button onClick={openNew} className="px-4 py-2 text-xs">+ Novo</Button>
         </div>
 
-        <input
-          type="text"
-          placeholder="Buscar exercício ou grupo..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="mb-4 w-full rounded-xl border border-obliq-border bg-obliq-surface px-4 py-2.5 text-sm text-white placeholder-white/20 focus:border-obliq-red focus:outline-none"
-        />
+        <input type="text" placeholder="Buscar exercicio ou grupo..."
+          value={search} onChange={(e) => setSearch(e.target.value)}
+          className="mb-4 w-full rounded-xl border border-obliq-border bg-obliq-surface px-4 py-2.5 text-sm text-white placeholder-white/20 focus:border-obliq-red focus:outline-none" />
 
         <p className="mb-3 text-xs text-white/30">
-          {filtered.length} exercício{filtered.length !== 1 ? 's' : ''}
+          {filtered.length} exercicio{filtered.length !== 1 ? 's' : ''}
         </p>
 
         {loading ? (
@@ -330,7 +281,8 @@ export function AdminPage() {
             {filtered.map((ex) => (
               <Card key={ex.id} className="flex items-center gap-3">
                 {ex.image_url ? (
-                  <img src={ex.image_url} alt={ex.name} className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+                  <img src={ex.image_url} alt={ex.name}
+                    className="h-12 w-12 shrink-0 rounded-lg object-cover" />
                 ) : (
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-obliq-border text-xl">
                     💪
@@ -340,24 +292,31 @@ export function AdminPage() {
                   <p className="font-bold truncate">{ex.name}</p>
                   <p className="text-xs text-white/40">{muscleLabel(ex.muscle_group)}</p>
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => openEdit(ex)}
-                    className="text-xs font-bold text-white/40 hover:text-white"
-                  >
+                <div className="flex gap-3 shrink-0">
+                  <button type="button" onClick={() => openEdit(ex)}
+                    className="text-xs font-bold text-white/40 hover:text-white">
                     Editar
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => remove(ex.id)}
-                    className="text-xs font-bold text-white/40 hover:text-obliq-red"
-                  >
-                    ✕
+                  <button type="button" onClick={() => remove(ex.id)}
+                    className="text-xs font-bold text-white/40 hover:text-obliq-red">
+                    X
                   </button>
                 </div>
               </Card>
             ))}
             {filtered.length === 0 && (
               <Card>
-                <p className="text-center text-sm t
+                <p className="text-center text-sm text-white/40">Nenhum exercicio encontrado.</p>
+              </Card>
+            )}
+          </div>
+        )}
+
+        <button type="button" onClick={() => navigate('/')}
+          className="mt-6 w-full text-center text-xs text-white/30 hover:text-white/60">
+          &larr; Voltar ao app
+        </button>
+      </div>
+    </div>
+  )
+}
