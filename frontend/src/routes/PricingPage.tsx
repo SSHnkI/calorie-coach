@@ -6,17 +6,12 @@ import { supabase } from '../lib/supabase'
 import { AppShell } from '../components/layout/AppShell'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
+import { Input } from '../components/ui/Input'
 
 const PRICE_ID = 'price_1TlUaE7FbBrEWaC4hU5oppwd'
 const APP_URL = 'https://obliq-psi.vercel.app'
 
-function FeatureList({
-  items,
-  highlight,
-}: {
-  items: string[]
-  highlight?: boolean
-}) {
+function FeatureList({ items, highlight }: { items: string[]; highlight?: boolean }) {
   return (
     <ul className="mt-4 flex flex-col gap-2">
       {items.map((item) => (
@@ -28,6 +23,90 @@ function FeatureList({
         </li>
       ))}
     </ul>
+  )
+}
+
+function TrainerCodeSection() {
+  const { isPro, isAuthenticated, refreshUser } = useApp()
+  const navigate = useNavigate()
+  const [code, setCode] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState('')
+
+  if (isPro) return null
+
+  const handleActivate = async () => {
+    if (!code.trim()) return
+    if (!isAuthenticated) { navigate('/auth?mode=signup'); return }
+
+    setLoading(true)
+    setError('')
+
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { navigate('/auth'); return }
+
+    // Buscar trainer pelo código
+    const { data: trainer, error: tErr } = await supabase
+      .from('trainers')
+      .select('id')
+      .eq('code', code.trim().toUpperCase())
+      .maybeSingle()
+
+    if (tErr || !trainer) {
+      setError('Código inválido. Verifique com seu treinador.')
+      setLoading(false)
+      return
+    }
+
+    // Vincular trainer + ativar Pro
+    const { error: upErr } = await supabase
+      .from('profiles')
+      .update({ trainer_id: trainer.id, subscription_status: 'active' })
+      .eq('id', session.user.id)
+
+    if (upErr) {
+      setError('Erro ao ativar. Tente novamente.')
+      setLoading(false)
+      return
+    }
+
+    await refreshUser()
+    setSuccess(true)
+    setLoading(false)
+  }
+
+  if (success) {
+    return (
+      <Card className="mt-4 border-obliq-red/30 bg-obliq-red/5">
+        <p className="text-center text-sm font-bold text-obliq-red">
+          ✓ Pro ativado! Seu treinador já pode gerenciar seus treinos.
+        </p>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="mt-4">
+      <p className="text-xs font-bold uppercase tracking-widest text-white/40 mb-3">
+        Tem um código de treinador?
+      </p>
+      <div className="flex gap-2">
+        <Input
+          placeholder="CODIGO123"
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          className="flex-1 font-mono tracking-widest"
+        />
+        <Button onClick={handleActivate} disabled={loading || !code.trim()} className="shrink-0 px-4">
+          {loading ? '...' : 'Ativar'}
+        </Button>
+      </div>
+      {error && <p className="mt-2 text-xs text-obliq-red">{error}</p>}
+      <p className="mt-2 text-[10px] text-white/30">
+        Ativa o plano Pro e vincula você ao seu treinador automaticamente.
+      </p>
+    </Card>
   )
 }
 
@@ -131,6 +210,8 @@ export function PricingPage() {
           </p>
         </Card>
       </div>
+
+      <TrainerCodeSection />
 
       <Card className="mt-6">
         <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-white/50">

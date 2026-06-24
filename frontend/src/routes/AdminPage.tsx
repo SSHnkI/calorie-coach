@@ -9,7 +9,11 @@ import {
   setUserPro,
   fetchPlansForUser,
   copyPlanToUser,
+  fetchAllTrainers,
+  createTrainer,
+  deleteTrainer,
   type AdminUser,
+  type Trainer,
 } from '../lib/admin'
 import type { CatalogExercise, Difficulty, MuscleGroup, WorkoutPlan } from '../types'
 import { Button } from '../components/ui/Button'
@@ -21,13 +25,12 @@ const BUCKET = 'exercises'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Tab = 'exercicios' | 'usuarios' | 'treinos'
+type Tab = 'exercicios' | 'usuarios' | 'treinos' | 'treinadores'
 
-type Difficulty_t = Difficulty
 type FormData = {
   name: string
   muscle_group: MuscleGroup
-  difficulty: Difficulty_t
+  difficulty: Difficulty
   description: string
   muscles_worked: string
   image_url: string
@@ -75,6 +78,13 @@ export function AdminPage() {
     )
   }
 
+  const TAB_LABELS: Record<Tab, string> = {
+    exercicios: 'Exercicios',
+    usuarios: 'Usuarios',
+    treinos: 'Treinos',
+    treinadores: 'Treinadores',
+  }
+
   return (
     <div className="min-h-dvh bg-obliq-black">
       {/* Header */}
@@ -89,14 +99,12 @@ export function AdminPage() {
         </div>
         {/* Tabs */}
         <div className="mx-auto max-w-lg mt-3 flex gap-1">
-          {(['exercicios', 'usuarios', 'treinos'] as Tab[]).map((t) => (
+          {(Object.keys(TAB_LABELS) as Tab[]).map((t) => (
             <button key={t} type="button" onClick={() => setTab(t)}
-              className={`flex-1 rounded-lg py-1.5 text-xs font-bold uppercase tracking-wide transition-all ${
-                tab === t
-                  ? 'bg-obliq-red text-white'
-                  : 'text-white/40 hover:text-white/70'
+              className={`flex-1 rounded-lg py-1.5 text-[10px] font-bold uppercase tracking-wide transition-all ${
+                tab === t ? 'bg-obliq-red text-white' : 'text-white/40 hover:text-white/70'
               }`}>
-              {t === 'exercicios' ? 'Exercicios' : t === 'usuarios' ? 'Usuarios' : 'Treinos'}
+              {TAB_LABELS[t]}
             </button>
           ))}
         </div>
@@ -106,6 +114,7 @@ export function AdminPage() {
         {tab === 'exercicios' && <ExerciciosTab />}
         {tab === 'usuarios' && <UsuariosTab />}
         {tab === 'treinos' && <TreinosTab />}
+        {tab === 'treinadores' && <TreinadoresTab />}
       </div>
     </div>
   )
@@ -172,7 +181,7 @@ function ExerciciosTab() {
       const { error: e } = await supabase.from('exercises').insert(payload)
       if (e) { setError(e.message); setSaving(false); return }
     } else if (editing) {
-      const { error: e } = await supabase.from('exercises').update(payload).eq('id', editing.id)
+      const { error: e } = await supabase.from('exercises').update(payload).eq('id', (editing as CatalogExercise).id)
       if (e) { setError(e.message); setSaving(false); return }
     }
     setSaving(false); setEditing(null); load()
@@ -342,9 +351,9 @@ function UsuariosTab() {
   useEffect(() => { load() }, [])
 
   const toggle = async (user: AdminUser) => {
-    setTogglingId(user.user_id)
+    setTogglingId(user.id)
     try {
-      await setUserPro(user.user_id, user.subscription_status !== 'active')
+      await setUserPro(user.id, user.subscription_status !== 'active')
       load()
     } catch (e: any) {
       setError(e.message)
@@ -380,7 +389,7 @@ function UsuariosTab() {
             const isPro = u.subscription_status === 'active'
             const date = new Date(u.created_at).toLocaleDateString('pt-BR')
             return (
-              <Card key={u.user_id}>
+              <Card key={u.id}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     {u.full_name && (
@@ -408,14 +417,14 @@ function UsuariosTab() {
                   </div>
                   <button
                     type="button"
-                    disabled={togglingId === u.user_id}
+                    disabled={togglingId === u.id}
                     onClick={() => toggle(u)}
                     className={`shrink-0 rounded-xl border px-3 py-1.5 text-xs font-bold uppercase transition-all disabled:opacity-50 ${
                       isPro
                         ? 'border-obliq-red/50 text-obliq-red hover:bg-obliq-red/10'
                         : 'border-obliq-border text-white/50 hover:border-obliq-red/50 hover:text-white'
                     }`}>
-                    {togglingId === u.user_id ? '...' : isPro ? 'Remover Pro' : 'Dar Pro'}
+                    {togglingId === u.id ? '...' : isPro ? 'Remover Pro' : 'Dar Pro'}
                   </button>
                 </div>
               </Card>
@@ -459,7 +468,7 @@ function TreinosTab() {
     setEditingPlan(null)
     setLoadingPlans(true)
     try {
-      const plans = await fetchPlansForUser(user.user_id)
+      const plans = await fetchPlansForUser(user.id)
       setClientPlans(plans)
     } catch (e: any) {
       setError(e.message)
@@ -484,8 +493,8 @@ function TreinosTab() {
     if (!selectedUser) return
     setCopying(planId)
     try {
-      await copyPlanToUser(planId, selectedUser.user_id)
-      const plans = await fetchPlansForUser(selectedUser.user_id)
+      await copyPlanToUser(planId, selectedUser.id)
+      const plans = await fetchPlansForUser(selectedUser.id)
       setClientPlans(plans)
       setShowCopyModal(false)
     } catch (e: any) {
@@ -499,7 +508,7 @@ function TreinosTab() {
     if (!confirm('Excluir este treino?')) return
     await supabase.from('workout_plans').delete().eq('id', planId)
     if (selectedUser) {
-      const plans = await fetchPlansForUser(selectedUser.user_id)
+      const plans = await fetchPlansForUser(selectedUser.id)
       setClientPlans(plans)
     }
   }
@@ -522,11 +531,11 @@ function TreinosTab() {
         </div>
         <WorkoutBuilder
           plan={editingPlan === 'new' ? null : editingPlan}
-          targetUserId={selectedUser.user_id}
+          targetUserId={selectedUser.id}
           onClose={() => setEditingPlan(null)}
           onSaved={async () => {
             setEditingPlan(null)
-            const plans = await fetchPlansForUser(selectedUser.user_id)
+            const plans = await fetchPlansForUser(selectedUser.id)
             setClientPlans(plans)
           }}
         />
@@ -651,7 +660,7 @@ function TreinosTab() {
       ) : (
         <div className="space-y-2">
           {filtered.map((u) => (
-            <button key={u.user_id} type="button" onClick={() => selectUser(u)}
+            <button key={u.id} type="button" onClick={() => selectUser(u)}
               className="w-full rounded-2xl border border-obliq-border bg-obliq-surface px-4 py-3 text-left hover:border-obliq-red/50 transition-all active:scale-[0.98]">
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
@@ -675,6 +684,157 @@ function TreinosTab() {
           {filtered.length === 0 && (
             <Card><p className="text-center text-sm text-white/40">Nenhum cliente encontrado.</p></Card>
           )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Aba Treinadores ──────────────────────────────────────────────────────────
+
+function TreinadoresTab() {
+  const [trainers, setTrainers] = useState<Trainer[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [showForm, setShowForm] = useState(false)
+  const [form, setForm] = useState({ name: '', email: '', code: '' })
+  const [saving, setSaving] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const load = () => {
+    setLoading(true)
+    fetchAllTrainers()
+      .then(setTrainers)
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { load() }, [])
+
+  const handleCreate = async () => {
+    if (!form.name.trim() || !form.email.trim() || !form.code.trim()) {
+      setError('Preencha todos os campos.')
+      return
+    }
+    setSaving(true); setError('')
+    try {
+      await createTrainer(form.name, form.email, form.code)
+      setForm({ name: '', email: '', code: '' })
+      setShowForm(false)
+      load()
+    } catch (e: any) {
+      setError(e.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Excluir treinador ${name}? Os clientes serão desvinculados.`)) return
+    setDeletingId(id)
+    try {
+      await deleteTrainer(id)
+      load()
+    } catch (e: any) {
+      setError(e.message)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      {!showForm ? (
+        <Button onClick={() => setShowForm(true)} className="w-full py-2 text-xs">
+          + Novo treinador
+        </Button>
+      ) : (
+        <Card>
+          <p className="text-xs font-bold uppercase tracking-widest text-white/40 mb-4">
+            Novo Treinador
+          </p>
+          <div className="space-y-3">
+            <Input
+              label="Nome"
+              placeholder="Cleber Silva"
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            />
+            <Input
+              label="Email (para login)"
+              type="email"
+              placeholder="cleber@obliq.com"
+              value={form.email}
+              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+            />
+            <Input
+              label="Código único"
+              placeholder="CLEBER2024"
+              value={form.code}
+              onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
+            />
+          </div>
+          {error && <p className="mt-2 text-xs text-obliq-red">{error}</p>}
+          <div className="mt-4 flex gap-2">
+            <Button onClick={handleCreate} disabled={saving} className="flex-1 text-xs">
+              {saving ? 'Criando...' : 'Criar'}
+            </Button>
+            <button type="button" onClick={() => { setShowForm(false); setError('') }}
+              className="flex-1 rounded-xl border border-obliq-border py-2 text-xs font-bold uppercase text-white/50 hover:text-white transition-all">
+              Cancelar
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {!showForm && error && <p className="text-sm text-obliq-red">{error}</p>}
+
+      <p className="text-xs text-white/30">{trainers.length} treinador{trainers.length !== 1 ? 'es' : ''}</p>
+
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-20 animate-pulse rounded-2xl bg-obliq-border/50" />
+          ))}
+        </div>
+      ) : trainers.length === 0 ? (
+        <Card className="text-center py-6">
+          <p className="text-white/30 text-sm">Nenhum treinador cadastrado.</p>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {trainers.map((t) => (
+            <Card key={t.id}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-sm">{t.name}</p>
+                    {t.user_id && (
+                      <span className="rounded-full bg-green-500/20 px-1.5 py-0.5 text-[9px] font-bold uppercase text-green-400">
+                        Ativo
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-white/40 truncate">{t.email}</p>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <span className="rounded-md border border-obliq-border bg-obliq-surface px-2 py-0.5 font-mono text-[10px] font-black tracking-widest text-white/60">
+                      {t.code}
+                    </span>
+                    <span className="text-[10px] text-white/30">
+                      {t.client_count ?? 0} cliente{(t.client_count ?? 0) !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  disabled={deletingId === t.id}
+                  onClick={() => handleDelete(t.id, t.name)}
+                  className="shrink-0 rounded-xl border border-obliq-border px-3 py-1.5 text-xs font-bold uppercase text-white/30 hover:border-obliq-red/50 hover:text-obliq-red transition-all disabled:opacity-50">
+                  {deletingId === t.id ? '...' : 'Excluir'}
+                </button>
+              </div>
+            </Card>
+          ))}
         </div>
       )}
     </div>

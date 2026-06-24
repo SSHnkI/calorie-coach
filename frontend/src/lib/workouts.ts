@@ -250,4 +250,7 @@ export async function finishWorkout(
       reps: s.reps,
       completed: true,
     }))
-    const { error: setErr } = await supabase.from('e
+    const { error: setErr } = await supabase.from('exercise_sets').insert(rows)
+    if (setErr) throw setErr
+  }
+}

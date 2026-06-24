@@ -66,9 +66,7 @@ export function WorkoutBuilder({
       })
       .catch(() => active && setError('Falha ao carregar o treino.'))
       .finally(() => active && setLoading(false))
-    return () => {
-      active = false
-    }
+    return () => { active = false }
   }, [plan])
 
   const addExercise = (ex: CatalogExercise) => {
@@ -321,9 +319,7 @@ function ExercisePicker({
       .then((d) => active && setExercises(d))
       .catch(() => {})
       .finally(() => active && setLoading(false))
-    return () => {
-      active = false
-    }
+    return () => { active = false }
   }, [])
 
   const filtered = useMemo(
@@ -384,4 +380,9 @@ function ExercisePicker({
             {filtered.length === 0 && (
               <p className="text-center text-sm text-white/40 pt-8">Nenhum exercicio encontrado.</p>
             )}
-    
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

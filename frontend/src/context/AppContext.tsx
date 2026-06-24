@@ -20,11 +20,21 @@ import type {
 type AuthResult = { error: string | null }
 type SignupResult = { error: string | null; emailSent?: boolean }
 
+export type TrainerData = {
+  id: string
+  user_id: string
+  name: string
+  email: string
+  code: string
+}
+
 type AppContextValue = {
   user: UserProfile | null
   foodLog: FoodEntry[]
   isAuthenticated: boolean
   isPro: boolean
+  isTrainer: boolean
+  trainerData: TrainerData | null
   loading: boolean
   login: (email: string, password: string) => Promise<AuthResult>
   signup: (email: string, password: string) => Promise<SignupResult>
@@ -34,6 +44,7 @@ type AppContextValue = {
   completeOnboarding: (data: OnboardingData) => Promise<{ error: string | null }>
   addFoodEntry: (entry: Omit<FoodEntry, 'id' | 'logged_at'>) => void
   upgradeToPro: () => void
+  refreshUser: () => Promise<void>
   totals: {
     kcal: number
     protein_g: number
@@ -47,30 +58,39 @@ const AppContext = createContext<AppContextValue | null>(null)
 export function AppProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<UserProfile | null>(null)
+  const [trainerData, setTrainerData] = useState<TrainerData | null>(null)
   const [foodLog, setFoodLog] = useState<FoodEntry[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Carrega o perfil do banco a partir do ID do usuário autenticado
   const loadProfile = useCallback(async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single()
-
     if (error || !data) return null
-
     return data as UserProfile
   }, [])
+
+  const loadTrainer = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from('trainers')
+      .select('id, user_id, name, email, code')
+      .eq('user_id', userId)
+      .maybeSingle()
+    setTrainerData(data ?? null)
+  }, [])
+
+  const loadAll = useCallback(async (userId: string) => {
+    const [profile] = await Promise.all([loadProfile(userId), loadTrainer(userId)])
+    setUser(profile)
+  }, [loadProfile, loadTrainer])
 
   // Ouve mudanças de sessão do Supabase Auth
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session)
-      if (session?.user) {
-        const profile = await loadProfile(session.user.id)
-        setUser(profile)
-      }
+      if (session?.user) await loadAll(session.user.id)
       setLoading(false)
     })
 
@@ -78,17 +98,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       async (_event, session) => {
         setSession(session)
         if (session?.user) {
-          const profile = await loadProfile(session.user.id)
-          setUser(profile)
+          await loadAll(session.user.id)
         } else {
           setUser(null)
+          setTrainerData(null)
           setFoodLog([])
         }
       }
     )
 
     return () => subscription.unsubscribe()
-  }, [loadProfile])
+  }, [loadAll])
 
   const login = useCallback(async (email: string, password: string): Promise<AuthResult> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -175,6 +195,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUser({ ...user, subscription_status: 'active' as SubscriptionStatus })
   }, [user])
 
+  const refreshUser = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) return
+    const profile = await loadProfile(session.user.id)
+    setUser(profile)
+  }, [loadProfile])
+
   const totals = useMemo(
     () =>
       foodLog.reduce(
@@ -195,6 +222,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       foodLog,
       isAuthenticated: !!session,
       isPro: user?.subscription_status === 'active',
+      isTrainer: !!trainerData,
+      trainerData,
       loading,
       login,
       signup,
@@ -204,11 +233,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       completeOnboarding,
       addFoodEntry,
       upgradeToPro,
+      refreshUser,
       totals,
     }),
     [
       session,
       user,
+      trainerData,
       foodLog,
       loading,
       login,
@@ -219,6 +250,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       completeOnboarding,
       addFoodEntry,
       upgradeToPro,
+      refreshUser,
       totals,
     ],
   )
