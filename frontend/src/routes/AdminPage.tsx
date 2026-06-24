@@ -318,10 +318,10 @@ function ExerciciosTab() {
                   💪
                 </div>
               )}
-              <div className="flex-1 min-w-0">
+              <button type="button" onClick={() => openEdit(ex)} className="flex-1 min-w-0 text-left">
                 <p className="font-bold truncate text-sm">{ex.name}</p>
                 <p className="text-xs text-white/40">{muscleLabel(ex.muscle_group)}</p>
-              </div>
+              </button>
               <div className="flex gap-3 shrink-0">
                 <button type="button" onClick={() => openEdit(ex)}
                   className="text-xs font-bold text-white/40 hover:text-white">Editar</button>
