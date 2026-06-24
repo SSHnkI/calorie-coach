@@ -9,6 +9,7 @@ import { OnboardingPage } from './routes/OnboardingPage'
 import { DashboardPage } from './routes/DashboardPage'
 import { WorkoutPage } from './routes/WorkoutPage'
 import { PricingPage } from './routes/PricingPage'
+import { AdminPage } from './routes/AdminPage'
 
 function OnboardingGuard() {
   const { isAuthenticated, user, loading } = useApp()
@@ -39,10 +40,5 @@ export default function App() {
               <Route path="/workout" element={<WorkoutPage />} />
             </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </AppProvider>
-    </I18nProvider>
-  )
-}
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="*" element={<Navigate to="/" 
