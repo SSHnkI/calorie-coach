@@ -8,7 +8,7 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 
-const ADMIN_EMAIL = 'ti@plastireal.com.br'
+const ADMIN_EMAIL = 'victorguilhermevg3@gmail.com'
 const BUCKET = 'exercises'
 
 const DIFFICULTIES: { key: Difficulty; label: string }[] = [
@@ -48,10 +48,10 @@ export function AdminPage() {
   const [search, setSearch] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
-  // Verifica se é admin
+  // Verifica se é admin — checa sessão ativa + email exato
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user?.email === ADMIN_EMAIL) {
+    supabase.auth.getUser().then(({ data: { user }, error }) => {
+      if (!error && user?.email === ADMIN_EMAIL && user?.role === 'authenticated') {
         setAuthorized(true)
         load()
       } else {
@@ -98,8 +98,15 @@ export function AdminPage() {
     setUploading(false)
   }
 
+  const assertAdmin = async (): Promise<boolean> => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user?.email !== ADMIN_EMAIL) { setAuthorized(false); return false }
+    return true
+  }
+
   const save = async () => {
     if (!form.name.trim()) { setError('Nome obrigatório.'); return }
+    if (!await assertAdmin()) return
     setSaving(true)
     setError('')
 
@@ -127,6 +134,7 @@ export function AdminPage() {
 
   const remove = async (id: string) => {
     if (!confirm('Excluir este exercício?')) return
+    if (!await assertAdmin()) return
     await supabase.from('exercises').delete().eq('id', id)
     load()
   }
@@ -352,20 +360,4 @@ export function AdminPage() {
             ))}
             {filtered.length === 0 && (
               <Card>
-                <p className="text-center text-sm text-white/40">Nenhum exercício encontrado.</p>
-              </Card>
-            )}
-          </div>
-        )}
-
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="mt-6 w-full text-center text-xs text-white/30 hover:text-white/60"
-        >
-          ← Voltar ao app
-        </button>
-      </div>
-    </div>
-  )
-}
+                <p className="text-center text-sm t
