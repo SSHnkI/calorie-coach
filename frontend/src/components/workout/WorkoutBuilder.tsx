@@ -93,13 +93,14 @@ export function WorkoutBuilder({
   const removeRow = (key: string) =>
     setRows((prev) => prev.filter((r) => r.key !== key))
 
-  const moveRow = (key: string, dir: -1 | 1) =>
+  const moveToPosition = (key: string, newPos: number) =>
     setRows((prev) => {
       const idx = prev.findIndex((r) => r.key === key)
-      const next = idx + dir
-      if (next < 0 || next >= prev.length) return prev
+      const target = Math.max(0, Math.min(prev.length - 1, newPos - 1))
+      if (idx === target) return prev
       const arr = [...prev]
-      ;[arr[idx], arr[next]] = [arr[next], arr[idx]]
+      const [item] = arr.splice(idx, 1)
+      arr.splice(target, 0, item)
       return arr
     })
 
@@ -185,31 +186,20 @@ export function WorkoutBuilder({
         {rows.map((r, i) => (
           <Card key={r.key}>
             <div className="mb-3 flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2">
-                {/* Botões de reordenar */}
-                <div className="flex flex-col gap-0.5">
-                  <button
-                    type="button"
-                    onClick={() => moveRow(r.key, -1)}
-                    disabled={i === 0}
-                    className="text-white/30 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
-                    title="Mover para cima"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveRow(r.key, 1)}
-                    disabled={i === rows.length - 1}
-                    className="text-white/30 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
-                    title="Mover para baixo"
-                  >
-                    ▼
-                  </button>
-                </div>
+              <div className="flex items-center gap-3">
+                {/* Input de ordem */}
+                <input
+                  type="number"
+                  min={1}
+                  max={rows.length}
+                  value={i + 1}
+                  onChange={(e) => moveToPosition(r.key, Number(e.target.value))}
+                  className="w-10 rounded-lg border border-obliq-border bg-obliq-surface text-center text-sm font-black text-white/60 focus:border-obliq-red focus:outline-none"
+                  title="Posição do exercício"
+                />
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-white/30">
-                    {i + 1} · {muscleLabel(r.muscle_group)}
+                    {muscleLabel(r.muscle_group)}
                   </p>
                   <h3 className="font-bold">{r.name}</h3>
                 </div>
@@ -368,3 +358,4 @@ function ExercisePicker({
     </div>
   )
 }
+                                                                                                                                                                                                                                                                                                                                              
