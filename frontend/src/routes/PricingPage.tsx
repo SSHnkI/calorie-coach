@@ -205,9 +205,6 @@ export function PricingPage() {
                 ? t.pricing.redirecting
                 : t.pricing.subscribe}
           </Button>
-          <p className="mt-2 text-center text-[10px] text-white/30">
-            {t.pricing.mockNote}
-          </p>
         </Card>
       </div>
 
