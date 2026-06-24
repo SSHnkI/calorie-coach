@@ -1,3 +1,4 @@
+import { supabase } from './supabase'
 import { fetchExercises } from './exercises'
 import { savePlan } from './workouts'
 import type { CatalogExercise, MuscleGroup } from '../types'
@@ -100,6 +101,45 @@ export async function createPreset(preset: Preset): Promise<number> {
     )
     if (exercises.length === 0) continue
     await savePlan({ name: plan.name, goal: null, exercises })
+    created++
+  }
+  return created
+}
+
+// Igual ao createPreset, mas cria os treinos para outro usuário (admin → cliente).
+export async function createPresetForUser(preset: Preset, userId: string): Promise<number> {
+  const catalog = await fetchExercises()
+  const byGroup = new Map<string, CatalogExercise[]>()
+  for (const e of catalog) {
+    const arr = byGroup.get(e.muscle_group) ?? []
+    arr.push(e)
+    byGroup.set(e.muscle_group, arr)
+  }
+
+  let created = 0
+  for (const plan of preset.plans) {
+    const exs = plan.groups.flatMap((g) => (byGroup.get(g) ?? []).slice(0, preset.perGroup))
+    if (exs.length === 0) continue
+
+    const { data: np, error } = await supabase
+      .from('workout_plans')
+      .insert({ user_id: userId, name: plan.name, goal: null })
+      .select('id')
+      .single()
+    if (error) throw error
+
+    const rows = exs.map((ex, i) => ({
+      plan_id: np.id,
+      exercise_id: ex.id,
+      sets: 3,
+      reps: '10',
+      rest_seconds: 60,
+      target_weight_kg: null,
+      notes: null,
+      order_index: i,
+    }))
+    const { error: e2 } = await supabase.from('workout_exercises').insert(rows)
+    if (e2) throw e2
     created++
   }
   return created

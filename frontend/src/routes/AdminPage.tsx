@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { fetchExercises } from '../lib/exercises'
 import { MUSCLE_GROUPS, muscleLabel } from '../components/workout/ExerciseCatalog'
 import { WorkoutBuilder } from '../components/workout/WorkoutBuilder'
+import { PRESETS, createPresetForUser, type Preset } from '../lib/presets'
 import { Sidebar } from '../components/layout/Sidebar'
 import { BottomNav } from '../components/layout/BottomNav'
 import {
@@ -493,6 +494,21 @@ function TreinosTab() {
     setShowCopyModal(true)
   }
 
+  const doCopyPreset = async (p: Preset) => {
+    if (!selectedUser) return
+    setCopying(p.id)
+    try {
+      await createPresetForUser(p, selectedUser.id)
+      const plans = await fetchPlansForUser(selectedUser.id)
+      setClientPlans(plans)
+      setShowCopyModal(false)
+    } catch (e: any) {
+      setError(e.message)
+    } finally {
+      setCopying(null)
+    }
+  }
+
   const doCopy = async (planId: string) => {
     if (!selectedUser) return
     setCopying(planId)
@@ -623,8 +639,19 @@ function TreinosTab() {
                 className="text-sm font-bold text-white/50 hover:text-white">Fechar</button>
             </div>
             <div className="flex-1 overflow-y-auto px-4 py-3">
+              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-white/40">Modelos prontos</p>
+              <div className="mb-5 grid grid-cols-2 gap-2">
+                {PRESETS.map((p) => (
+                  <button key={p.id} type="button" disabled={copying === p.id}
+                    onClick={() => doCopyPreset(p)}
+                    className="rounded-xl border border-obliq-border bg-obliq-surface px-3 py-2 text-left text-xs font-bold hover:border-obliq-red/50 transition-all disabled:opacity-50">
+                    {copying === p.id ? 'Copiando...' : p.label}
+                  </button>
+                ))}
+              </div>
+              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-white/40">Meus treinos</p>
               {adminPlans.length === 0 ? (
-                <p className="text-center text-sm text-white/40 pt-8">Voce nao tem treinos modelo.</p>
+                <p className="text-center text-sm text-white/40 pt-2">Voce nao tem treinos modelo.</p>
               ) : (
                 <div className="space-y-2">
                   {adminPlans.map((plan) => (
