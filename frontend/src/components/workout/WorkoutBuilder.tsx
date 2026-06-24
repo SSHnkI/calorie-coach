@@ -29,10 +29,12 @@ export function WorkoutBuilder({
   plan,
   onClose,
   onSaved,
+  targetUserId,
 }: {
   plan: WorkoutPlan | null
   onClose: () => void
   onSaved: () => void
+  targetUserId?: string
 }) {
   const [name, setName] = useState(plan?.name ?? '')
   const [goal, setGoal] = useState<WorkoutGoal | null>(plan?.goal ?? null)
@@ -132,7 +134,7 @@ export function WorkoutBuilder({
           target_weight_kg: r.target_weight_kg,
           notes: r.notes.trim() || null,
         })),
-      })
+      }, targetUserId)
       onSaved()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Falha ao salvar o treino.')
@@ -382,9 +384,4 @@ function ExercisePicker({
             {filtered.length === 0 && (
               <p className="text-center text-sm text-white/40 pt-8">Nenhum exercicio encontrado.</p>
             )}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
+    

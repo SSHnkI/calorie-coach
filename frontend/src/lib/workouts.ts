@@ -61,12 +61,13 @@ export async function fetchPlanExercises(planId: string): Promise<PlanExerciseRo
 }
 
 // Cria ou edita um plano. Na edição, substitui todos os exercícios.
-export async function savePlan(input: SavePlanInput): Promise<string> {
+export async function savePlan(input: SavePlanInput, targetUserId?: string): Promise<string> {
   const {
     data: { session },
   } = await supabase.auth.getSession()
   if (!session) throw new Error('Sessão expirada. Faça login novamente.')
 
+  const userId = targetUserId ?? session.user.id
   let planId = input.id
 
   if (planId) {
@@ -84,7 +85,7 @@ export async function savePlan(input: SavePlanInput): Promise<string> {
   } else {
     const { data, error } = await supabase
       .from('workout_plans')
-      .insert({ user_id: session.user.id, name: input.name, goal: input.goal })
+      .insert({ user_id: userId, name: input.name, goal: input.goal })
       .select('id')
       .single()
     if (error) throw error
@@ -249,7 +250,4 @@ export async function finishWorkout(
       reps: s.reps,
       completed: true,
     }))
-    const { error: setErr } = await supabase.from('exercise_sets').insert(rows)
-    if (setErr) throw setErr
-  }
-}
+    const { error: setErr } = await supabase.from('e
