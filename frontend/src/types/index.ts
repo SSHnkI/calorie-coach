@@ -52,3 +52,50 @@ export type OnboardingData = Pick<
   UserProfile,
   'age' | 'weight_kg' | 'height_cm' | 'sex' | 'activity' | 'goal'
 >
+
+export type MuscleGroup =
+  | 'peito'
+  | 'costas'
+  | 'ombro'
+  | 'biceps'
+  | 'triceps'
+  | 'pernas'
+  | 'abdomen'
+
+export type Difficulty = 'iniciante' | 'intermediario' | 'avancado'
+
+// Exercício do catálogo (tabela `exercises` no Supabase)
+export type CatalogExercise = {
+  id: string
+  name: string
+  muscle_group: MuscleGroup
+  difficulty: Difficulty | null
+  description: string | null
+  muscles_worked: string | null
+  image_url: string | null
+  video_url: string | null
+}
+
+export type WorkoutGoal = 'hipertrofia' | 'emagrecimento' | 'condicionamento'
+
+// Modelo de treino (tabela `workout_plans`)
+export type WorkoutPlan = {
+  id: string
+  user_id: string
+  name: string
+  goal: WorkoutGoal | null
+  created_at: string
+}
+
+// Exercício dentro de um modelo (tabela `workout_exercises`)
+export type WorkoutExercise = {
+  id: string
+  plan_id: string
+  exercise_id: string
+  sets: number
+  reps: string
+  rest_seconds: number
+  target_weight_kg: number | null
+  notes: string | null
+  order_index: number
+}
