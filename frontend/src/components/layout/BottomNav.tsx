@@ -1,13 +1,18 @@
 import { NavLink } from 'react-router-dom'
 import { useI18n } from '../../i18n/I18nContext'
+import { useApp } from '../../context/AppContext'
 
 export function BottomNav() {
   const { t } = useI18n()
+  const { user, isTrainer } = useApp()
+  const isAdmin = user?.email === 'victorguilhermevg3@gmail.com'
 
   const links = [
     { to: '/dashboard', label: t.nav.dashboard, icon: '📊' },
     { to: '/workout', label: t.nav.workout, icon: '💪' },
     { to: '/pricing', label: t.nav.pro, icon: '⚡' },
+    ...(isTrainer || isAdmin ? [{ to: '/trainer', label: 'Treinador', icon: '🧑‍🏫' }] : []),
+    ...(isAdmin ? [{ to: '/admin', label: 'Admin', icon: '🛠️' }] : []),
   ]
 
   return (
