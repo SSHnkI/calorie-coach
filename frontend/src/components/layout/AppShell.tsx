@@ -25,7 +25,7 @@ export function AppShell({ children, showNav = true, titleKey }: AppShellProps) 
       {showNav && <Sidebar />}
       {title && (
         <header className="sticky top-0 z-40 border-b border-obliq-border bg-obliq-black/95 backdrop-blur-md md:hidden">
-          <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-4 pr-16">
+          <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-4 pr-24">
             <Logo size="sm" />
             <span className="text-sm font-bold uppercase tracking-wider text-white/60">
               {title}
