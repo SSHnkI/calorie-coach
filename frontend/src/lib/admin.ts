@@ -33,10 +33,7 @@ export async function fetchAllUsers(): Promise<AdminUser[]> {
 }
 
 export async function setUserPro(userId: string, isPro: boolean): Promise<void> {
-  const { error } = await supabase
-    .from('profiles')
-    .update({ subscription_status: isPro ? 'active' : 'free' })
-    .eq('id', userId)
+  const { error } = await supabase.rpc('admin_set_pro', { target_id: userId, pro: isPro })
   if (error) throw error
 }
 

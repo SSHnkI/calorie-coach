@@ -161,7 +161,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
           email: session.user.email,
           ...data,
           daily_kcal,
-          subscription_status: 'free',
           onboarding_complete: true,
         })
         .select()

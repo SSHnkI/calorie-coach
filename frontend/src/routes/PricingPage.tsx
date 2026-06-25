@@ -46,27 +46,18 @@ function TrainerCodeSection() {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { navigate('/auth'); return }
 
-    // Buscar trainer pelo código
-    const { data: trainer, error: tErr } = await supabase
-      .from('trainers')
-      .select('id')
-      .eq('code', code.trim().toUpperCase())
-      .maybeSingle()
+    // Validação + ativação no servidor (SECURITY DEFINER)
+    const { data: ok, error: rpcErr } = await supabase.rpc('redeem_trainer_code', {
+      p_code: code.trim(),
+    })
 
-    if (tErr || !trainer) {
-      setError('Código inválido. Verifique com seu treinador.')
+    if (rpcErr) {
+      setError('Erro ao ativar. Tente novamente.')
       setLoading(false)
       return
     }
-
-    // Vincular trainer + ativar Pro
-    const { error: upErr } = await supabase
-      .from('profiles')
-      .update({ trainer_id: trainer.id, subscription_status: 'active' })
-      .eq('id', session.user.id)
-
-    if (upErr) {
-      setError('Erro ao ativar. Tente novamente.')
+    if (!ok) {
+      setError('Código inválido. Verifique com seu treinador.')
       setLoading(false)
       return
     }
