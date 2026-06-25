@@ -730,6 +730,9 @@ function TreinadoresTab() {
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
+  const genCode = () =>
+    Array.from({ length: 10 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join('')
+
   const load = () => {
     setLoading(true)
     fetchAllTrainers()
@@ -774,8 +777,8 @@ function TreinadoresTab() {
   return (
     <div className="space-y-4">
       {!showForm ? (
-        <Button onClick={() => setShowForm(true)} className="w-full py-2 text-xs">
-          + Novo treinador
+        <Button onClick={() => { setForm((f) => ({ ...f, code: genCode() })); setShowForm(true) }} className="w-full py-2 text-xs">
+          + Novo profissional
         </Button>
       ) : (
         <Card>
@@ -796,12 +799,18 @@ function TreinadoresTab() {
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
             />
-            <Input
-              label="Código único"
-              placeholder="CLEBER2024"
-              value={form.code}
-              onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
-            />
+            <div>
+              <Input
+                label="Código único"
+                placeholder="CLEBER2024"
+                value={form.code}
+                onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
+              />
+              <button type="button" onClick={() => setForm((f) => ({ ...f, code: genCode() }))}
+                className="mt-1 text-[10px] font-bold uppercase text-obliq-red hover:underline">
+                gerar aleatório
+              </button>
+            </div>
             <div className="flex gap-2">
               {([['isTrainer', 'Personal'], ['isNutri', 'Nutri']] as const).map(([k, label]) => (
                 <button key={k} type="button"

@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('subscription_status, analyses_today, analyses_date, daily_kcal, goal')
+      .select('subscription_status, analyses_today, analyses_date, ai_calls_today, ai_calls_date, daily_kcal, goal')
       .eq('id', user.id)
       .single()
 
@@ -42,6 +42,13 @@ Deno.serve(async (req) => {
       await supabase.from('profiles')
         .update({ analyses_today: 0, analyses_date: today })
         .eq('id', user.id)
+    }
+
+    // Teto diário de chamadas à IA (todas, log ou não) — anti-sobrecarga/custo
+    const AI_CAP = 100
+    let aiToday = profile.ai_calls_date === today ? (profile.ai_calls_today ?? 0) : 0
+    if (aiToday >= AI_CAP) {
+      return new Response(JSON.stringify({ error: 'ai_daily_cap' }), { status: 429, headers: corsHeaders })
     }
 
     const isPaid = profile.subscription_status === 'active'
@@ -119,10 +126,12 @@ Deno.serve(async (req) => {
         fat_g: nutrition.fat_g,
         confidence: nutrition.confidence
       })
-      await supabase.from('profiles')
-        .update({ analyses_today: analysesToday + 1 })
-        .eq('id', user.id)
     }
+
+    // contabiliza a chamada de IA (sempre) + análise registrada (quando log)
+    const upd: Record<string, unknown> = { ai_calls_today: aiToday + 1, ai_calls_date: today }
+    if (log) upd.analyses_today = analysesToday + 1
+    await supabase.from('profiles').update(upd).eq('id', user.id)
 
     return new Response(
       JSON.stringify({ ...nutrition, analyses_remaining: isPaid ? null : 4 - analysesToday }),
