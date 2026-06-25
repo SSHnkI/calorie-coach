@@ -45,6 +45,10 @@ Deno.serve(async (req) => {
     }
 
     const isPaid = profile.subscription_status === 'active'
+    // Cálculo sem registrar (edição de dieta) é exclusivo Pro — evita abuso da IA por contas free
+    if (!log && !isPaid) {
+      return new Response(JSON.stringify({ error: 'pro_required' }), { status: 402, headers: corsHeaders })
+    }
     if (log && !isPaid && analysesToday >= 5) {
       return new Response(
         JSON.stringify({ error: 'limit_reached', analyses_used: analysesToday, limit: 5 }),
