@@ -76,6 +76,36 @@ export type CatalogExercise = {
   video_url: string | null
 }
 
+export type MealType = 'cafe' | 'almoco' | 'lanche' | 'jantar' | 'ceia'
+
+export type MealPlan = {
+  id: string
+  user_id: string
+  name: string
+  goal: Goal | null
+  created_at: string
+}
+
+export type Meal = {
+  id: string
+  meal_plan_id: string
+  day_of_week: number
+  meal_type: MealType
+  order_index: number
+}
+
+export type MealItem = {
+  id: string
+  meal_id: string
+  food_name: string
+  quantity: number | null
+  unit: string | null
+  kcal: number | null
+  protein_g: number | null
+  carbs_g: number | null
+  fat_g: number | null
+}
+
 export type WorkoutGoal = 'hipertrofia' | 'emagrecimento' | 'condicionamento'
 
 // Modelo de treino (tabela `workout_plans`)

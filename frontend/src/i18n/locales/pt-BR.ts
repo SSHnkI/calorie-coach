@@ -166,11 +166,11 @@ const ptBR: TranslationKeys = {
       'Anéis de progresso de macros',
     ],
     proFeatures: [
+      'Dieta semanal personalizável',
+      'Treinos prontos ou montados por personal',
+      'Acompanhamento por nutri e personal',
       'Análises IA de alimentos ilimitadas',
-      'Catálogo completo de treinos',
-      'Planos para todos os grupos musculares',
-      'Suporte prioritário',
-      'Acompanhamento avançado de progresso',
+      'Histórico, conquistas e progressão',
     ],
     compareRows: [
       { feature: 'Análise IA de alimentos', free: '5/dia', pro: 'Ilimitado' },

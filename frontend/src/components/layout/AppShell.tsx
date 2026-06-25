@@ -7,7 +7,7 @@ import { useI18n } from '../../i18n/I18nContext'
 type AppShellProps = {
   children: ReactNode
   showNav?: boolean
-  titleKey?: 'dashboard' | 'workout' | 'pricing'
+  titleKey?: 'dashboard' | 'workout' | 'pricing' | 'diet'
 }
 
 export function AppShell({ children, showNav = true, titleKey }: AppShellProps) {
@@ -17,7 +17,9 @@ export function AppShell({ children, showNav = true, titleKey }: AppShellProps) 
       ? t.dashboard.title
       : titleKey === 'workout'
         ? t.workout.title
-        : t.pricing.title
+        : titleKey === 'diet'
+          ? 'Dieta'
+          : t.pricing.title
     : undefined
 
   return (

@@ -8,6 +8,7 @@ import { AuthPage } from './routes/AuthPage'
 import { OnboardingPage } from './routes/OnboardingPage'
 import { DashboardPage } from './routes/DashboardPage'
 import { WorkoutPage } from './routes/WorkoutPage'
+import { DietPage } from './routes/DietPage'
 import { PricingPage } from './routes/PricingPage'
 import { AdminPage } from './routes/AdminPage'
 import { TrainerPage } from './routes/TrainerPage'
@@ -39,6 +40,7 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/workout" element={<WorkoutPage />} />
+              <Route path="/diet" element={<DietPage />} />
             </Route>
 
             <Route path="/admin" element={<AdminPage />} />

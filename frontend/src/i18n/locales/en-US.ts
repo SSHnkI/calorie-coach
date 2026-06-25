@@ -166,11 +166,11 @@ const enUS: TranslationKeys = {
       'Macro progress rings',
     ],
     proFeatures: [
+      'Customizable weekly diet',
+      'Ready workouts or built by a coach',
+      'Guidance from nutritionist & coach',
       'Unlimited AI food analyses',
-      'Full workout catalog',
-      'All muscle group plans',
-      'Priority support',
-      'Advanced progress tracking',
+      'History, achievements & progression',
     ],
     compareRows: [
       { feature: 'AI food analysis', free: '5/day', pro: 'Unlimited' },

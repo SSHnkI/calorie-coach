@@ -10,6 +10,7 @@ export function BottomNav() {
   const links = [
     { to: '/dashboard', label: t.nav.dashboard, icon: '📊' },
     { to: '/workout', label: t.nav.workout, icon: '💪' },
+    { to: '/diet', label: 'Dieta', icon: '🥗' },
     { to: '/pricing', label: t.nav.pro, icon: '⚡' },
     ...(isTrainer || isAdmin ? [{ to: '/trainer', label: 'Treinador', icon: '🧑‍🏫' }] : []),
     ...(isAdmin ? [{ to: '/admin', label: 'Admin', icon: '🛠️' }] : []),

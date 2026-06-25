@@ -179,7 +179,7 @@ export function PricingPage() {
             )}
           </div>
           <p className="mt-2 text-4xl font-black tabular-nums">
-            R$14,99
+            R$19,90
             <span className="text-base font-medium text-white/40">
               {t.common.month}
             </span>
