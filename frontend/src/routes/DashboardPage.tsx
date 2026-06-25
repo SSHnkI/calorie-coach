@@ -172,20 +172,35 @@ export function DashboardPage() {
           <h2 className="text-sm font-bold uppercase tracking-widest text-white/50">
             {t.dashboard.macros}
           </h2>
-          <div className="flex items-center gap-3">
-            {!macrosOpen && (
-              <span className="text-xs tabular-nums text-white/40">
-                P {Math.round(totals.protein_g)} · C {Math.round(totals.carbs_g)} · G{' '}
-                {Math.round(totals.fat_g)}
-              </span>
-            )}
-            <span
-              className={`text-white/30 transition-transform ${macrosOpen ? 'rotate-180' : ''}`}
-            >
-              ▾
-            </span>
-          </div>
+          <span className={`text-white/30 transition-transform ${macrosOpen ? 'rotate-180' : ''}`}>
+            ▾
+          </span>
         </button>
+
+        {!macrosOpen && (
+          <div className="mt-3 grid grid-cols-3 gap-3">
+            {[
+              { l: 'Proteína', cur: totals.protein_g, tgt: macros.protein_g, c: 'bg-obliq-red' },
+              { l: 'Carbo', cur: totals.carbs_g, tgt: macros.carbs_g, c: 'bg-white' },
+              { l: 'Gordura', cur: totals.fat_g, tgt: macros.fat_g, c: 'bg-white/50' },
+            ].map((m) => (
+              <div key={m.l}>
+                <span className="text-[10px] uppercase tracking-wide text-white/40">{m.l}</span>
+                <p className="text-sm font-black tabular-nums">
+                  {Math.round(m.cur)}
+                  <span className="text-[10px] font-medium text-white/30">/{m.tgt}g</span>
+                </p>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-obliq-border">
+                  <div
+                    className={`h-full ${m.c}`}
+                    style={{ width: `${Math.min(100, (m.cur / (m.tgt || 1)) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {macrosOpen && (
           <div className="mt-4 flex justify-around">
             <MacroRing label={t.dashboard.protein} current={totals.protein_g} target={macros.protein_g} />
