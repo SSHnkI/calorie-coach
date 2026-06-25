@@ -67,8 +67,6 @@ export function TrainerPage() {
             <span className="rounded-md bg-obliq-surface border border-obliq-border px-2 py-1 text-[10px] font-black font-mono tracking-widest text-white/50">
               {trainerData.code}
             </span>
-            <button type="button" onClick={() => navigate('/')}
-              className="text-xs text-white/30 hover:text-white">Sair</button>
           </div>
         </div>
       </div>

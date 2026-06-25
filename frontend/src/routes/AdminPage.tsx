@@ -99,8 +99,6 @@ export function AdminPage() {
             <p className="text-xs font-bold uppercase tracking-widest text-obliq-red">Admin</p>
             <p className="text-xs text-white/30">{ADMIN_EMAIL}</p>
           </div>
-          <button type="button" onClick={() => navigate('/')}
-            className="text-xs text-white/30 hover:text-white">Sair</button>
         </div>
         {/* Tabs */}
         <div className="mx-auto max-w-lg mt-3 flex gap-1">
