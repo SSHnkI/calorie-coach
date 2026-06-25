@@ -94,7 +94,7 @@ export function AdminPage() {
       <BottomNav />
       {/* Header */}
       <div className="sticky top-0 z-40 border-b border-obliq-border bg-obliq-black/95 backdrop-blur-md px-4 py-3">
-        <div className="mx-auto max-w-lg flex items-center justify-between">
+        <div className="mx-auto max-w-lg flex items-center justify-between pr-16 md:pr-0">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-obliq-red">Admin</p>
             <p className="text-xs text-white/30">{ADMIN_EMAIL}</p>
