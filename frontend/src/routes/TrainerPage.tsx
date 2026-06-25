@@ -90,7 +90,7 @@ function TrainerDashboard({ trainerId }: { trainerId: string }) {
     supabase
       .from('profiles')
       .select('id, email, subscription_status, daily_kcal, onboarding_complete')
-      .eq('trainer_id', trainerId)
+      .eq('professional_id', trainerId)
       .order('email', { ascending: true })
       .then(({ data }) => {
         setClients((data ?? []) as Client[])

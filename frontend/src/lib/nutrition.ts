@@ -43,6 +43,16 @@ export async function fetchMealPlans(): Promise<MealPlanSummary[]> {
   return (data ?? []) as MealPlanSummary[]
 }
 
+export async function fetchMealPlansForUser(userId: string): Promise<MealPlanSummary[]> {
+  const { data, error } = await supabase
+    .from('meal_plans')
+    .select('id, name, goal, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return (data ?? []) as MealPlanSummary[]
+}
+
 export async function fetchMealPlanFull(id: string): Promise<FullDiet> {
   const { data, error } = await supabase
     .from('meal_plans')

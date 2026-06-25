@@ -89,44 +89,54 @@ export type Trainer = {
   name: string
   email: string
   code: string
+  is_trainer?: boolean
+  is_nutri?: boolean
   created_at: string
   client_count?: number
 }
 
 export async function fetchAllTrainers(): Promise<Trainer[]> {
   const { data, error } = await supabase
-    .from('trainers')
-    .select('id, user_id, name, email, code, created_at')
+    .from('professionals')
+    .select('id, user_id, name, email, code, is_trainer, is_nutri, created_at')
     .order('created_at', { ascending: false })
   if (error) throw error
 
-  // count clients per trainer
-  const trainers = data ?? []
-  const ids = trainers.map((t: any) => t.id)
+  const pros = data ?? []
+  const ids = pros.map((t: any) => t.id)
   let counts: Record<string, number> = {}
   if (ids.length > 0) {
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('trainer_id')
-      .in('trainer_id', ids)
+      .select('professional_id')
+      .in('professional_id', ids)
     for (const p of (profiles ?? []) as any[]) {
-      counts[p.trainer_id] = (counts[p.trainer_id] ?? 0) + 1
+      counts[p.professional_id] = (counts[p.professional_id] ?? 0) + 1
     }
   }
 
-  return trainers.map((t: any) => ({ ...t, client_count: counts[t.id] ?? 0 }))
+  return pros.map((t: any) => ({ ...t, client_count: counts[t.id] ?? 0 }))
 }
 
-export async function createTrainer(name: string, email: string, code: string): Promise<void> {
-  const { error } = await supabase
-    .from('trainers')
-    .insert({ name: name.trim(), email: email.trim().toLowerCase(), code: code.trim().toUpperCase() })
+export async function createTrainer(
+  name: string,
+  email: string,
+  code: string,
+  isTrainer = true,
+  isNutri = false,
+): Promise<void> {
+  const { error } = await supabase.from('professionals').insert({
+    name: name.trim(),
+    email: email.trim().toLowerCase(),
+    code: code.trim().toUpperCase(),
+    is_trainer: isTrainer,
+    is_nutri: isNutri,
+  })
   if (error) throw error
 }
 
 export async function deleteTrainer(id: string): Promise<void> {
-  // Unlink clients first
-  await supabase.from('profiles').update({ trainer_id: null }).eq('trainer_id', id)
-  const { error } = await supabase.from('trainers').delete().eq('id', id)
+  await supabase.from('profiles').update({ professional_id: null }).eq('professional_id', id)
+  const { error } = await supabase.from('professionals').delete().eq('id', id)
   if (error) throw error
 }

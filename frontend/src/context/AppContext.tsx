@@ -26,6 +26,8 @@ export type TrainerData = {
   name: string
   email: string
   code: string
+  is_trainer: boolean
+  is_nutri: boolean
 }
 
 type AppContextValue = {
@@ -34,6 +36,7 @@ type AppContextValue = {
   isAuthenticated: boolean
   isPro: boolean
   isTrainer: boolean
+  isNutri: boolean
   trainerData: TrainerData | null
   loading: boolean
   login: (email: string, password: string) => Promise<AuthResult>
@@ -74,8 +77,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const loadTrainer = useCallback(async (userId: string) => {
     const { data } = await supabase
-      .from('trainers')
-      .select('id, user_id, name, email, code')
+      .from('professionals')
+      .select('id, user_id, name, email, code, is_trainer, is_nutri')
       .eq('user_id', userId)
       .maybeSingle()
     setTrainerData(data ?? null)
@@ -221,7 +224,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       foodLog,
       isAuthenticated: !!session,
       isPro: user?.subscription_status === 'active',
-      isTrainer: !!trainerData,
+      isTrainer: !!trainerData?.is_trainer,
+      isNutri: !!trainerData?.is_nutri,
       trainerData,
       loading,
       login,

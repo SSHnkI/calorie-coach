@@ -726,7 +726,7 @@ function TreinadoresTab() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', code: '' })
+  const [form, setForm] = useState({ name: '', email: '', code: '', isTrainer: true, isNutri: false })
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
@@ -747,8 +747,8 @@ function TreinadoresTab() {
     }
     setSaving(true); setError('')
     try {
-      await createTrainer(form.name, form.email, form.code)
-      setForm({ name: '', email: '', code: '' })
+      await createTrainer(form.name, form.email, form.code, form.isTrainer, form.isNutri)
+      setForm({ name: '', email: '', code: '', isTrainer: true, isNutri: false })
       setShowForm(false)
       load()
     } catch (e: any) {
@@ -802,6 +802,17 @@ function TreinadoresTab() {
               value={form.code}
               onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
             />
+            <div className="flex gap-2">
+              {([['isTrainer', 'Personal'], ['isNutri', 'Nutri']] as const).map(([k, label]) => (
+                <button key={k} type="button"
+                  onClick={() => setForm((f) => ({ ...f, [k]: !f[k] }))}
+                  className={`flex-1 rounded-xl border px-3 py-2 text-xs font-bold uppercase transition-all ${
+                    form[k] ? 'border-obliq-red bg-obliq-red/10 text-white' : 'border-obliq-border text-white/40'
+                  }`}>
+                  {form[k] ? '✓ ' : ''}{label}
+                </button>
+              ))}
+            </div>
           </div>
           {error && <p className="mt-2 text-xs text-obliq-red">{error}</p>}
           <div className="mt-4 flex gap-2">

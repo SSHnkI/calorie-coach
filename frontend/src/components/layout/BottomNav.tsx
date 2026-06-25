@@ -4,7 +4,7 @@ import { useApp } from '../../context/AppContext'
 
 export function BottomNav() {
   const { t } = useI18n()
-  const { user, isTrainer } = useApp()
+  const { user, isTrainer, isNutri } = useApp()
   const isAdmin = user?.email === 'victorguilhermevg3@gmail.com'
 
   const links = [
@@ -13,6 +13,7 @@ export function BottomNav() {
     { to: '/diet', label: 'Dieta', icon: '🥗' },
     { to: '/pricing', label: t.nav.pro, icon: '⚡' },
     ...(isTrainer || isAdmin ? [{ to: '/trainer', label: 'Treinador', icon: '🧑‍🏫' }] : []),
+    ...(isNutri || isAdmin ? [{ to: '/nutritionist', label: 'Nutri', icon: '🍎' }] : []),
     ...(isAdmin ? [{ to: '/admin', label: 'Admin', icon: '🛠️' }] : []),
   ]
 

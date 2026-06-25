@@ -8,7 +8,7 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 
-const PRICE_ID = 'price_1TlUaE7FbBrEWaC4hU5oppwd'
+const PRICE_ID = 'price_1TmMRo7FbBrEWaC4NISZw96t'
 const APP_URL = 'https://obliq-psi.vercel.app'
 
 function FeatureList({ items, highlight }: { items: string[]; highlight?: boolean }) {
@@ -47,7 +47,7 @@ function TrainerCodeSection() {
     if (!session) { navigate('/auth'); return }
 
     // Validação + ativação no servidor (SECURITY DEFINER)
-    const { data: ok, error: rpcErr } = await supabase.rpc('redeem_trainer_code', {
+    const { data: ok, error: rpcErr } = await supabase.rpc('redeem_pro_code', {
       p_code: code.trim(),
     })
 

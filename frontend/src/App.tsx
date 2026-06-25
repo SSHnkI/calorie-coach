@@ -9,6 +9,7 @@ import { OnboardingPage } from './routes/OnboardingPage'
 import { DashboardPage } from './routes/DashboardPage'
 import { WorkoutPage } from './routes/WorkoutPage'
 import { DietPage } from './routes/DietPage'
+import { NutritionistPage } from './routes/NutritionistPage'
 import { PricingPage } from './routes/PricingPage'
 import { AdminPage } from './routes/AdminPage'
 import { TrainerPage } from './routes/TrainerPage'
@@ -45,6 +46,7 @@ export default function App() {
 
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/trainer" element={<TrainerPage />} />
+            <Route path="/nutritionist" element={<NutritionistPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
