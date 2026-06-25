@@ -2,8 +2,8 @@ import { useI18n } from '../../i18n/I18nContext'
 import type { Locale } from '../../i18n/types'
 
 const options: { locale: Locale; label: string }[] = [
-  { locale: 'pt-BR', label: 'PT-BR' },
-  { locale: 'en-US', label: 'EN-US' },
+  { locale: 'pt-BR', label: 'PT' },
+  { locale: 'en-US', label: 'EN' },
 ]
 
 export function LanguageSwitcher() {
@@ -20,7 +20,7 @@ export function LanguageSwitcher() {
           key={loc}
           type="button"
           onClick={() => setLocale(loc)}
-          className={`rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-wider transition-all sm:px-3 sm:py-1.5 sm:text-xs ${
+          className={`rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider transition-all ${
             locale === loc
               ? 'bg-red-gradient text-white shadow-red-glow'
               : 'text-white/40 hover:text-white/70'
