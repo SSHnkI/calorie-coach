@@ -30,6 +30,11 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'profile_not_found' }), { status: 404, headers: corsHeaders })
     }
 
+    const { food_input, log = true } = await req.json()
+    if (!food_input?.trim()) {
+      return new Response(JSON.stringify({ error: 'food_input required' }), { status: 400, headers: corsHeaders })
+    }
+
     const today = new Date().toISOString().split('T')[0]
     let analysesToday = profile.analyses_today
     if (profile.analyses_date !== today) {
@@ -40,16 +45,11 @@ Deno.serve(async (req) => {
     }
 
     const isPaid = profile.subscription_status === 'active'
-    if (!isPaid && analysesToday >= 5) {
+    if (log && !isPaid && analysesToday >= 5) {
       return new Response(
         JSON.stringify({ error: 'limit_reached', analyses_used: analysesToday, limit: 5 }),
         { status: 402, headers: corsHeaders }
       )
-    }
-
-    const { food_input } = await req.json()
-    if (!food_input?.trim()) {
-      return new Response(JSON.stringify({ error: 'food_input required' }), { status: 400, headers: corsHeaders })
     }
 
     // Chama o Gemini — responseSchema força JSON puro (sem cercas ```json)
@@ -103,21 +103,22 @@ Deno.serve(async (req) => {
     }
     const nutrition = JSON.parse(rawText.trim())
 
-    await supabase.from('food_log').insert({
-      user_id: user.id,
-      name: nutrition.name,
-      quantity: nutrition.quantity,
-      unit: nutrition.unit,
-      kcal: nutrition.kcal,
-      protein_g: nutrition.protein_g,
-      carbs_g: nutrition.carbs_g,
-      fat_g: nutrition.fat_g,
-      confidence: nutrition.confidence
-    })
-
-    await supabase.from('profiles')
-      .update({ analyses_today: analysesToday + 1 })
-      .eq('id', user.id)
+    if (log) {
+      await supabase.from('food_log').insert({
+        user_id: user.id,
+        name: nutrition.name,
+        quantity: nutrition.quantity,
+        unit: nutrition.unit,
+        kcal: nutrition.kcal,
+        protein_g: nutrition.protein_g,
+        carbs_g: nutrition.carbs_g,
+        fat_g: nutrition.fat_g,
+        confidence: nutrition.confidence
+      })
+      await supabase.from('profiles')
+        .update({ analyses_today: analysesToday + 1 })
+        .eq('id', user.id)
+    }
 
     return new Response(
       JSON.stringify({ ...nutrition, analyses_remaining: isPaid ? null : 4 - analysesToday }),

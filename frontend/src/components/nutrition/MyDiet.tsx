@@ -6,6 +6,7 @@ import type { Goal } from '../../types'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { DietBuilder } from './DietBuilder'
+import { DietViewer } from './DietViewer'
 
 const GOAL_LABEL: Record<string, string> = {
   lose: 'Emagrecer',
@@ -26,6 +27,7 @@ export function MyDiet() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [editing, setEditing] = useState<Editing>(null)
+  const [viewing, setViewing] = useState<MealPlanSummary | null>(null)
   const [busy, setBusy] = useState(false)
 
   const load = useCallback(() => {
@@ -74,6 +76,19 @@ export function MyDiet() {
     )
   }
 
+  if (viewing) {
+    return (
+      <DietViewer
+        plan={viewing}
+        onBack={() => setViewing(null)}
+        onEdit={() => {
+          setEditing(viewing)
+          setViewing(null)
+        }}
+      />
+    )
+  }
+
   return (
     <div>
       <Button onClick={() => setEditing('new')} className="mb-4 w-full">
@@ -113,7 +128,7 @@ export function MyDiet() {
           {plans.map((p) => (
             <Card key={p.id}>
               <div className="flex items-center justify-between gap-3">
-                <button type="button" onClick={() => setEditing(p)} className="flex-1 text-left">
+                <button type="button" onClick={() => setViewing(p)} className="flex-1 text-left">
                   <h3 className="font-bold">{p.name}</h3>
                   {p.goal && <p className="text-xs text-white/40">{GOAL_LABEL[p.goal] ?? p.goal}</p>}
                 </button>

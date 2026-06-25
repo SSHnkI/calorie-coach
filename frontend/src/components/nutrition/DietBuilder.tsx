@@ -6,12 +6,19 @@ import {
   type DietItemInput,
   type MealPlanSummary,
 } from '../../lib/nutrition'
+import { estimateFood } from '../../lib/analyzeFood'
 import type { Goal, MealType } from '../../types'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { Input } from '../ui/Input'
 
 const DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+const COMMON_FOODS = [
+  'Arroz', 'Feijão', 'Frango grelhado', 'Ovo', 'Pão integral', 'Batata-doce',
+  'Aveia', 'Whey', 'Leite', 'Iogurte natural', 'Banana', 'Maçã', 'Salada',
+  'Brócolis', 'Tilápia', 'Salmão', 'Patinho moído', 'Macarrão integral',
+  'Tapioca', 'Queijo', 'Castanhas', 'Pasta de amendoim', 'Abacate',
+]
 const MEAL_LABEL: Record<MealType, string> = {
   cafe: 'Café',
   almoco: 'Almoço',
@@ -95,6 +102,25 @@ export function DietBuilder({
 
   const num = (v: string) => (v === '' ? 0 : Number(v))
 
+  const [calcKey, setCalcKey] = useState<string | null>(null)
+  const calcItem = async (mi: number, ii: number) => {
+    const it = meals[mi].items[ii]
+    if (!it.food_name.trim()) return
+    const key = `${mi}-${ii}`
+    setCalcKey(key)
+    const r = await estimateFood(`${it.quantity ?? ''} ${it.unit ?? ''} ${it.food_name}`.trim())
+    if (r)
+      patchItem(mi, ii, {
+        kcal: Math.round(r.kcal),
+        protein_g: Math.round(r.protein_g),
+        carbs_g: Math.round(r.carbs_g),
+        fat_g: Math.round(r.fat_g),
+        quantity: it.quantity ?? r.quantity,
+        unit: it.unit || r.unit,
+      })
+    setCalcKey(null)
+  }
+
   const save = async () => {
     if (!name.trim()) return setError('Dê um nome à dieta.')
     setSaving(true)
@@ -137,6 +163,11 @@ export function DietBuilder({
 
   return (
     <div>
+      <datalist id="foods">
+        {COMMON_FOODS.map((f) => (
+          <option key={f} value={f} />
+        ))}
+      </datalist>
       <div className="mb-4 flex items-center justify-between">
         <button type="button" onClick={onClose} className="text-sm font-bold uppercase text-white/50 hover:text-white">
           ← Voltar
@@ -187,10 +218,15 @@ export function DietBuilder({
             <div className="space-y-2">
               {m.items.map((it, ii) => (
                 <div key={ii} className="rounded-lg border border-obliq-border p-2">
-                  <div className="flex gap-2">
-                    <input value={it.food_name} placeholder="Alimento"
+                  <div className="flex items-center gap-2">
+                    <input value={it.food_name} placeholder="Alimento" list="foods"
                       onChange={(e) => patchItem(mi, ii, { food_name: e.target.value })}
                       className="flex-1 rounded bg-obliq-black px-2 py-1 text-sm text-white outline-none" />
+                    <button type="button" onClick={() => calcItem(mi, ii)} disabled={calcKey === `${mi}-${ii}`}
+                      title="Calcular kcal com IA"
+                      className="shrink-0 rounded-md border border-obliq-border px-2 py-1 text-sm hover:border-obliq-red/50 disabled:opacity-50">
+                      {calcKey === `${mi}-${ii}` ? '⏳' : '✨'}
+                    </button>
                     <button type="button" onClick={() => removeItem(mi, ii)} className="text-xs text-white/40 hover:text-obliq-red">✕</button>
                   </div>
                   <div className="mt-2 grid grid-cols-6 gap-1 text-center text-[10px] text-white/40">
