@@ -18,7 +18,7 @@ export function AppShell({ children, showNav = true, titleKey }: AppShellProps) 
       : titleKey === 'workout'
         ? t.workout.title
         : titleKey === 'diet'
-          ? 'Dieta'
+          ? t.ui.diet
           : t.pricing.title
     : undefined
 

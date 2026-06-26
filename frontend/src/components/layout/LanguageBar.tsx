@@ -5,7 +5,7 @@ export function LanguageBar() {
   const { isAuthenticated, logout } = useApp()
 
   return (
-    <div className="fixed right-4 top-4 z-[100] flex flex-col items-end gap-1.5">
+    <div className="fixed right-3 top-3 z-[100] flex flex-col items-end gap-1.5 rounded-xl bg-obliq-black/85 p-1.5 backdrop-blur-sm">
       <LanguageSwitcher />
       {isAuthenticated && (
         <button

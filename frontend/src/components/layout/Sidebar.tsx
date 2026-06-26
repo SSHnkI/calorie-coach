@@ -10,11 +10,11 @@ export function Sidebar() {
   const links = [
     { to: '/dashboard', label: t.nav.dashboard, icon: '📊' },
     { to: '/workout', label: t.nav.workout, icon: '💪' },
-    { to: '/diet', label: 'Dieta', icon: '🥗' },
+    { to: '/diet', label: t.ui.diet, icon: '🥗' },
     { to: '/pricing', label: t.nav.pro, icon: '⚡' },
-    ...(isTrainer || isAdmin ? [{ to: '/trainer', label: 'Treinador', icon: '🧑‍🏫' }] : []),
-    ...(isNutri || isAdmin ? [{ to: '/nutritionist', label: 'Nutri', icon: '🍎' }] : []),
-    ...(isAdmin ? [{ to: '/admin', label: 'Admin', icon: '🛠️' }] : []),
+    ...(isTrainer || isAdmin ? [{ to: '/trainer', label: t.ui.trainer, icon: '🧑‍🏫' }] : []),
+    ...(isNutri || isAdmin ? [{ to: '/nutritionist', label: t.ui.nutri, icon: '🍎' }] : []),
+    ...(isAdmin ? [{ to: '/admin', label: t.ui.admin, icon: '🛠️' }] : []),
   ]
 
   return (

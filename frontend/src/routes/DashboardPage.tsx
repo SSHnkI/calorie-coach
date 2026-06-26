@@ -18,15 +18,14 @@ import { NutritionHistory } from '../components/nutrition/NutritionHistory'
 import { NutritionStats } from '../components/nutrition/NutritionStats'
 
 function ProGate() {
+  const { t } = useI18n()
   return (
     <Card glow className="text-center">
       <div className="text-4xl">🔒</div>
-      <h2 className="mt-2 text-lg font-black uppercase">Recurso Pro</h2>
-      <p className="mt-1 text-sm text-white/50">
-        Histórico, edição e projeção de peso fazem parte do plano Pro.
-      </p>
+      <h2 className="mt-2 text-lg font-black uppercase">{t.ui.proFeature}</h2>
+      <p className="mt-1 text-sm text-white/50">{t.ui.proGateDash}</p>
       <Button to="/pricing" className="mt-4">
-        Virar Pro
+        {t.ui.goPro}
       </Button>
     </Card>
   )

@@ -20,6 +20,21 @@ export type TranslationKeys = {
     workout: string
     pro: string
   }
+  ui: {
+    diet: string
+    trainer: string
+    nutri: string
+    admin: string
+    tabWorkouts: string
+    tabHistory: string
+    tabAchievements: string
+    tabExercises: string
+    proFeature: string
+    goPro: string
+    proGateWorkout: string
+    proGateDiet: string
+    proGateDash: string
+  }
   landing: {
     tagline1: string
     tagline2: string
