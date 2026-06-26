@@ -19,15 +19,15 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-obliq-border bg-obliq-black/95 backdrop-blur-md md:hidden">
-      <div className="mx-auto flex max-w-lg items-center justify-around px-4 py-2">
+      <div className="mx-auto flex max-w-lg items-center justify-around gap-0.5 overflow-x-auto px-2 py-2 scrollbar-none">
         {links.map((link) => (
           <NavLink
             key={link.to}
             to={link.to}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 rounded-xl px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${
+              `flex shrink-0 flex-col items-center gap-0.5 rounded-xl px-2.5 py-2 text-[9px] font-bold uppercase tracking-wide transition-all active:scale-95 ${
                 isActive
-                  ? 'text-obliq-red shadow-red-glow'
+                  ? 'text-obliq-red'
                   : 'text-white/40 hover:text-white/70'
               }`
             }

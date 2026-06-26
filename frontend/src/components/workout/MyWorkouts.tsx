@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { deletePlan, fetchPlans, type PlanSummary } from '../../lib/workouts'
 import { PRESETS, createPreset, type Preset } from '../../lib/presets'
+import { toast } from '../../lib/toast'
 import type { WorkoutPlan } from '../../types'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
@@ -42,9 +43,9 @@ export function MyWorkouts() {
     try {
       const n = await createPreset(p)
       load()
-      alert(`${n} treino${n === 1 ? '' : 's'} criado${n === 1 ? '' : 's'}! 💪`)
+      toast(`${n} treino${n === 1 ? '' : 's'} criado${n === 1 ? '' : 's'}! 💪`)
     } catch {
-      alert('Falha ao criar os treinos do modelo.')
+      toast('Falha ao criar os treinos do modelo.')
     } finally {
       setPresetBusy(false)
     }
@@ -56,7 +57,7 @@ export function MyWorkouts() {
       await deletePlan(id)
       load()
     } catch {
-      alert('Falha ao excluir o treino.')
+      toast('Falha ao excluir o treino.')
     }
   }
 
@@ -125,9 +126,10 @@ export function MyWorkouts() {
       )}
 
       {!loading && !error && plans.length === 0 && (
-        <Card>
-          <p className="text-center text-sm text-white/40">
-            Você ainda não criou nenhum treino. Toque em “Novo treino”.
+        <Card className="text-center">
+          <div className="text-4xl">💪</div>
+          <p className="mt-2 text-sm text-white/40">
+            Nenhum treino ainda. Crie o seu ou use um modelo rápido acima.
           </p>
         </Card>
       )}

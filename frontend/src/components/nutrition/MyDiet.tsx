@@ -7,6 +7,7 @@ import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { DietBuilder } from './DietBuilder'
 import { DietViewer } from './DietViewer'
+import { toast } from '../../lib/toast'
 
 const GOAL_LABEL: Record<string, string> = {
   lose: 'Emagrecer',
@@ -45,9 +46,9 @@ export function MyDiet() {
     try {
       await createDietPreset(goal, user?.daily_kcal ?? 2000)
       load()
-      alert('Dieta criada! Edite como quiser. 🥗')
+      toast('Dieta criada! Edite como quiser. 🥗')
     } catch {
-      alert('Falha ao criar a dieta.')
+      toast('Falha ao criar a dieta.')
     } finally {
       setBusy(false)
     }
@@ -59,7 +60,7 @@ export function MyDiet() {
       await deleteMealPlan(id)
       load()
     } catch {
-      alert('Falha ao excluir.')
+      toast('Falha ao excluir.')
     }
   }
 
@@ -120,7 +121,10 @@ export function MyDiet() {
       )}
 
       {!loading && !error && plans.length === 0 && (
-        <Card><p className="text-center text-sm text-white/40">Nenhuma dieta ainda. Use um modelo ou crie a sua.</p></Card>
+        <Card className="text-center">
+          <div className="text-4xl">🥗</div>
+          <p className="mt-2 text-sm text-white/40">Nenhuma dieta ainda. Use um modelo ou crie a sua.</p>
+        </Card>
       )}
 
       {!loading && !error && plans.length > 0 && (

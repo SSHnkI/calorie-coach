@@ -10,6 +10,7 @@ import type { WorkoutPlan } from '../../types'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { evaluateAchievements } from '../../lib/achievements'
+import { toast } from '../../lib/toast'
 import { muscleLabel } from './ExerciseCatalog'
 
 type SetRow = { weight: string; reps: string; done: boolean }
@@ -113,7 +114,7 @@ export function WorkoutSession({
     try {
       await finishWorkout(plan.id, logged, null)
       const unlocked = await evaluateAchievements().catch(() => [])
-      alert(
+      toast(
         unlocked.length > 0
           ? `Treino concluído! 💪\nNova conquista: ${unlocked.map((u) => u.name).join(', ')}`
           : 'Treino concluído! 💪',

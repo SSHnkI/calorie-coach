@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useI18n } from '../i18n/I18nContext'
 import { supabase } from '../lib/supabase'
+import { toast } from '../lib/toast'
 import { AppShell } from '../components/layout/AppShell'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -134,7 +135,7 @@ export function PricingPage() {
 
       if (error || !data?.url) {
         console.error('Erro ao criar sessão de checkout:', error)
-        alert('Erro ao redirecionar para o Stripe. Tente novamente.')
+        toast('Erro ao redirecionar para o Stripe. Tente novamente.')
         return
       }
 
