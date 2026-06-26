@@ -116,7 +116,7 @@ export function ExerciseCatalog() {
                         {diff.label}
                       </span>
                     )}
-                    <span className={`text-white/30 transition-transform ${open ? 'rotate-180' : ''}`}>
+                    <span className={`text-white/50 transition-transform ${open ? 'rotate-180' : ''}`}>
                       ▾
                     </span>
                   </div>
@@ -129,7 +129,7 @@ export function ExerciseCatalog() {
                     )}
                     {exercise.muscles_worked && (
                       <p className="mt-2 text-xs text-white/40">
-                        <span className="font-bold uppercase tracking-widest text-white/30">
+                        <span className="font-bold uppercase tracking-widest text-white/50">
                           Músculos:{' '}
                         </span>
                         {exercise.muscles_worked}

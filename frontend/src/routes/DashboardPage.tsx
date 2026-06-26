@@ -172,7 +172,7 @@ export function DashboardPage() {
           <h2 className="text-sm font-bold uppercase tracking-widest text-white/50">
             {t.dashboard.macros}
           </h2>
-          <span className={`text-white/30 transition-transform ${macrosOpen ? 'rotate-180' : ''}`}>
+          <span className={`text-white/50 transition-transform ${macrosOpen ? 'rotate-180' : ''}`}>
             ▾
           </span>
         </button>
@@ -188,7 +188,7 @@ export function DashboardPage() {
                 <span className="text-[10px] uppercase tracking-wide text-white/40">{m.l}</span>
                 <p className="text-sm font-black tabular-nums">
                   {Math.round(m.cur)}
-                  <span className="text-[10px] font-medium text-white/30">/{m.tgt}g</span>
+                  <span className="text-[10px] font-medium text-white/50">/{m.tgt}g</span>
                 </p>
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-obliq-border">
                   <div
@@ -234,7 +234,7 @@ export function DashboardPage() {
             {analyzing ? t.dashboard.analyzing : t.dashboard.analyze}
           </Button>
         </form>
-        {!isPro && <p className="mt-2 text-xs text-white/30">{t.dashboard.freePlanNote}</p>}
+        {!isPro && <p className="mt-2 text-xs text-white/50">{t.dashboard.freePlanNote}</p>}
         {error && <p className="mt-2 text-sm text-obliq-red">{error}</p>}
       </Card>
 

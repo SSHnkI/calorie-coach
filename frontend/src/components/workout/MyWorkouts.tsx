@@ -155,7 +155,7 @@ export function MyWorkouts() {
                       {plan.goal ? ` · ${GOAL_LABEL[plan.goal] ?? plan.goal}` : ''}
                     </p>
                   </div>
-                  <span className="text-white/30 group-hover:text-obliq-red transition-colors text-lg">›</span>
+                  <span className="text-white/50 group-hover:text-obliq-red transition-colors text-lg">›</span>
                 </div>
                 <p className="mt-1 text-[10px] text-white/25 font-medium uppercase tracking-widest">
                   Toque para ver e editar exercícios
@@ -173,7 +173,7 @@ export function MyWorkouts() {
                 <button
                   type="button"
                   onClick={() => handleDelete(plan.id)}
-                  className="px-2 text-xs font-bold uppercase text-white/30 hover:text-obliq-red"
+                  className="px-2 text-xs font-bold uppercase text-white/50 hover:text-obliq-red"
                 >
                   ✕
                 </button>

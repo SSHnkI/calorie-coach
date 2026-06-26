@@ -202,7 +202,7 @@ export function WorkoutBuilder({
                     type="button"
                     onClick={() => moveRow(r.key, -1)}
                     disabled={i === 0}
-                    className="text-white/30 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
+                    className="text-white/50 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
                   >&#9650;</button>
                   <input
                     type="number"
@@ -217,11 +217,11 @@ export function WorkoutBuilder({
                     type="button"
                     onClick={() => moveRow(r.key, 1)}
                     disabled={i === rows.length - 1}
-                    className="text-white/30 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
+                    className="text-white/50 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
                   >&#9660;</button>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/30">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/50">
                     {muscleLabel(r.muscle_group)}
                   </p>
                   <h3 className="font-bold">{r.name}</h3>

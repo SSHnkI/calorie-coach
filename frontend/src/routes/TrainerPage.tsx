@@ -131,7 +131,7 @@ function TrainerDashboard({ trainerId }: { trainerId: string }) {
             </div>
           ) : clients.length === 0 ? (
             <Card className="text-center py-8">
-              <p className="text-white/30 text-sm">Nenhum cliente vinculado ainda.</p>
+              <p className="text-white/50 text-sm">Nenhum cliente vinculado ainda.</p>
               <p className="text-white/20 text-xs mt-1">Compartilhe seu código para que se cadastrem.</p>
             </Card>
           ) : (
@@ -148,7 +148,7 @@ function TrainerDashboard({ trainerId }: { trainerId: string }) {
                       {c.daily_kcal && (
                         <span className="text-white/40">{c.daily_kcal} kcal</span>
                       )}
-                      <span className="text-white/30">›</span>
+                      <span className="text-white/50">›</span>
                     </div>
                   </div>
                 </button>
@@ -284,7 +284,7 @@ function ClientDetail({ client, onBack }: { client: Client; onBack: () => void }
             </div>
           ) : plans.length === 0 ? (
             <Card className="text-center py-6">
-              <p className="text-white/30 text-sm">Nenhum treino criado.</p>
+              <p className="text-white/50 text-sm">Nenhum treino criado.</p>
             </Card>
           ) : (
             plans.map(p => (
@@ -360,7 +360,7 @@ function ClientHistory({ clientId }: { clientId: string }) {
   if (logs.length === 0) {
     return (
       <Card className="text-center py-6">
-        <p className="text-white/30 text-sm">Sem histórico de treinos.</p>
+        <p className="text-white/50 text-sm">Sem histórico de treinos.</p>
       </Card>
     )
   }
@@ -378,7 +378,7 @@ function ClientHistory({ clientId }: { clientId: string }) {
             </div>
             <div className="text-right">
               <p className="text-sm font-black">{l.volume.toLocaleString('pt-BR')}</p>
-              <p className="text-[10px] text-white/30">kg volume</p>
+              <p className="text-[10px] text-white/50">kg volume</p>
             </div>
           </div>
         </Card>
@@ -421,7 +421,7 @@ function GeneralReport({ clients }: { trainerId: string; clients: Client[] }) {
   if (clients.length === 0) {
     return (
       <Card className="text-center py-8">
-        <p className="text-white/30 text-sm">Sem clientes ainda.</p>
+        <p className="text-white/50 text-sm">Sem clientes ainda.</p>
       </Card>
     )
   }
@@ -443,7 +443,7 @@ function GeneralReport({ clients }: { trainerId: string; clients: Client[] }) {
               </div>
               <div className="text-right">
                 <p className="text-lg font-black">{s?.totalSessions ?? 0}</p>
-                <p className="text-[10px] text-white/30">sessões</p>
+                <p className="text-[10px] text-white/50">sessões</p>
               </div>
             </div>
           </Card>

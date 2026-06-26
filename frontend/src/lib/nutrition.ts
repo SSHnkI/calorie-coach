@@ -6,6 +6,7 @@ export type MealPlanSummary = {
   name: string
   goal: Goal | null
   created_at: string
+  kcalDay?: number
 }
 
 export type DietItemInput = {
@@ -37,10 +38,32 @@ export type FullDiet = {
 export async function fetchMealPlans(): Promise<MealPlanSummary[]> {
   const { data, error } = await supabase
     .from('meal_plans')
-    .select('id, name, goal, created_at')
+    .select('id, name, goal, created_at, meals(day_of_week, meal_items(kcal))')
     .order('created_at', { ascending: true })
   if (error) throw error
-  return (data ?? []) as MealPlanSummary[]
+
+  return (data ?? []).map((p) => {
+    const row = p as unknown as {
+      id: string
+      name: string
+      goal: Goal | null
+      created_at: string
+      meals: { day_of_week: number; meal_items: { kcal: number | null }[] }[]
+    }
+    const days = new Set<number>()
+    let kcal = 0
+    for (const m of row.meals ?? []) {
+      days.add(m.day_of_week)
+      for (const it of m.meal_items ?? []) kcal += it.kcal || 0
+    }
+    return {
+      id: row.id,
+      name: row.name,
+      goal: row.goal,
+      created_at: row.created_at,
+      kcalDay: days.size ? Math.round(kcal / days.size) : 0,
+    }
+  })
 }
 
 export async function fetchMealPlansForUser(userId: string): Promise<MealPlanSummary[]> {

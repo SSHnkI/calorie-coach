@@ -134,7 +134,10 @@ export function MyDiet() {
               <div className="flex items-center justify-between gap-3">
                 <button type="button" onClick={() => setViewing(p)} className="flex-1 text-left">
                   <h3 className="font-bold">{p.name}</h3>
-                  {p.goal && <p className="text-xs text-white/40">{GOAL_LABEL[p.goal] ?? p.goal}</p>}
+                  <p className="text-xs text-white/40">
+                    {p.kcalDay ? `~${p.kcalDay} kcal/dia` : ''}
+                    {p.goal ? `${p.kcalDay ? ' · ' : ''}${GOAL_LABEL[p.goal] ?? p.goal}` : ''}
+                  </p>
                 </button>
                 <button type="button" onClick={() => handleDelete(p.id)} className="text-xs font-bold uppercase text-white/40 hover:text-obliq-red">
                   Excluir

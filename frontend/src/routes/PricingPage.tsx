@@ -95,7 +95,7 @@ function TrainerCodeSection() {
         </Button>
       </div>
       {error && <p className="mt-2 text-xs text-obliq-red">{error}</p>}
-      <p className="mt-2 text-[10px] text-white/30">
+      <p className="mt-2 text-[10px] text-white/50">
         Ativa o plano Pro e vincula você ao seu treinador automaticamente.
       </p>
     </Card>
@@ -162,7 +162,7 @@ export function PricingPage() {
           <p className="mt-2 text-3xl font-black">R$0</p>
           <FeatureList items={t.pricing.freeFeatures} />
           {!isPro && (
-            <p className="mt-4 text-xs font-medium text-white/30">
+            <p className="mt-4 text-xs font-medium text-white/50">
               {t.pricing.currentPlan}
             </p>
           )}

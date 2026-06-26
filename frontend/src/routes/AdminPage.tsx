@@ -97,7 +97,7 @@ export function AdminPage() {
         <div className="mx-auto max-w-lg flex items-center justify-between pr-24 md:pr-0">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-obliq-red">Admin</p>
-            <p className="text-xs text-white/30">{ADMIN_EMAIL}</p>
+            <p className="text-xs text-white/50">{ADMIN_EMAIL}</p>
           </div>
         </div>
         {/* Tabs */}
@@ -228,7 +228,7 @@ function ExerciciosTab() {
           </button>
           {form.image_url && (
             <button type="button" onClick={() => setForm((f) => ({ ...f, image_url: '' }))}
-              className="mt-2 w-full text-xs text-white/30 hover:text-obliq-red">
+              className="mt-2 w-full text-xs text-white/50 hover:text-obliq-red">
               Remover foto
             </button>
           )}
@@ -293,7 +293,7 @@ function ExerciciosTab() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-xs text-white/30">{filtered.length} exercicios</p>
+        <p className="text-xs text-white/50">{filtered.length} exercicios</p>
         <Button onClick={openNew} className="px-4 py-2 text-xs">+ Novo</Button>
       </div>
       <input type="text" placeholder="Buscar..." value={search}
@@ -376,7 +376,7 @@ function UsuariosTab() {
         onChange={(e) => setSearch(e.target.value)}
         className="mb-4 w-full rounded-xl border border-obliq-border bg-obliq-surface px-4 py-2.5 text-sm text-white placeholder-white/20 focus:border-obliq-red focus:outline-none" />
 
-      <p className="mb-3 text-xs text-white/30">{filtered.length} usuario{filtered.length !== 1 ? 's' : ''}</p>
+      <p className="mb-3 text-xs text-white/50">{filtered.length} usuario{filtered.length !== 1 ? 's' : ''}</p>
 
       {error && <p className="mb-3 text-sm text-obliq-red">{error}</p>}
 
@@ -695,7 +695,7 @@ function TreinosTab() {
                 <div className="min-w-0">
                   {u.full_name && <p className="font-bold text-sm truncate">{u.full_name}</p>}
                   <p className="text-sm text-white/60 truncate">{u.email}</p>
-                  <p className="text-xs text-white/30 mt-0.5">
+                  <p className="text-xs text-white/50 mt-0.5">
                     {u.plan_count} treino{u.plan_count !== 1 ? 's' : ''}
                   </p>
                 </div>
@@ -705,7 +705,7 @@ function TreinosTab() {
                       PRO
                     </span>
                   )}
-                  <span className="text-white/30">›</span>
+                  <span className="text-white/50">›</span>
                 </div>
               </div>
             </button>
@@ -838,7 +838,7 @@ function TreinadoresTab() {
 
       {!showForm && error && <p className="text-sm text-obliq-red">{error}</p>}
 
-      <p className="text-xs text-white/30">{trainers.length} treinador{trainers.length !== 1 ? 'es' : ''}</p>
+      <p className="text-xs text-white/50">{trainers.length} treinador{trainers.length !== 1 ? 'es' : ''}</p>
 
       {loading ? (
         <div className="space-y-3">
@@ -848,7 +848,7 @@ function TreinadoresTab() {
         </div>
       ) : trainers.length === 0 ? (
         <Card className="text-center py-6">
-          <p className="text-white/30 text-sm">Nenhum treinador cadastrado.</p>
+          <p className="text-white/50 text-sm">Nenhum treinador cadastrado.</p>
         </Card>
       ) : (
         <div className="space-y-2">
@@ -869,7 +869,7 @@ function TreinadoresTab() {
                     <span className="rounded-md border border-obliq-border bg-obliq-surface px-2 py-0.5 font-mono text-[10px] font-black tracking-widest text-white/60">
                       {t.code}
                     </span>
-                    <span className="text-[10px] text-white/30">
+                    <span className="text-[10px] text-white/50">
                       {t.client_count ?? 0} cliente{(t.client_count ?? 0) !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -878,7 +878,7 @@ function TreinadoresTab() {
                   type="button"
                   disabled={deletingId === t.id}
                   onClick={() => handleDelete(t.id, t.name)}
-                  className="shrink-0 rounded-xl border border-obliq-border px-3 py-1.5 text-xs font-bold uppercase text-white/30 hover:border-obliq-red/50 hover:text-obliq-red transition-all disabled:opacity-50">
+                  className="shrink-0 rounded-xl border border-obliq-border px-3 py-1.5 text-xs font-bold uppercase text-white/50 hover:border-obliq-red/50 hover:text-obliq-red transition-all disabled:opacity-50">
                   {deletingId === t.id ? '...' : 'Excluir'}
                 </button>
               </div>

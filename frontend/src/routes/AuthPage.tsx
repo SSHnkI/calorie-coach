@@ -107,7 +107,7 @@ export function AuthPage() {
               </p>
             </div>
           </Card>
-          <p className="mt-4 text-center text-xs text-white/30">
+          <p className="mt-4 text-center text-xs text-white/50">
             Não recebeu?{' '}
             <button
               type="button"
@@ -162,7 +162,7 @@ export function AuthPage() {
 
           <div className="my-5 flex items-center gap-3">
             <div className="h-px flex-1 bg-obliq-border" />
-            <span className="text-xs text-white/30 font-medium">ou</span>
+            <span className="text-xs text-white/50 font-medium">ou</span>
             <div className="h-px flex-1 bg-obliq-border" />
           </div>
 

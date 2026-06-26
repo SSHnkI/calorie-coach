@@ -68,7 +68,7 @@ export function WorkoutHistory() {
     <div>
       <div className="mb-4 grid grid-cols-2 gap-3">
         <Card>
-          <p className="text-[10px] font-black uppercase tracking-widest text-white/30">
+          <p className="text-[10px] font-black uppercase tracking-widest text-white/50">
             Esta semana
           </p>
           <p className="mt-1 text-2xl font-black tabular-nums">{week.length}</p>
@@ -77,7 +77,7 @@ export function WorkoutHistory() {
           </p>
         </Card>
         <Card>
-          <p className="text-[10px] font-black uppercase tracking-widest text-white/30">
+          <p className="text-[10px] font-black uppercase tracking-widest text-white/50">
             Este mês
           </p>
           <p className="mt-1 text-2xl font-black tabular-nums">{month.length}</p>
@@ -127,7 +127,7 @@ export function WorkoutHistory() {
                   <p className="font-black tabular-nums text-obliq-red">
                     {s.volume.toLocaleString('pt-BR')} kg
                   </p>
-                  <p className="text-[10px] uppercase tracking-widest text-white/30">
+                  <p className="text-[10px] uppercase tracking-widest text-white/50">
                     {s.sets} série{s.sets === 1 ? '' : 's'}
                   </p>
                 </div>

@@ -80,7 +80,7 @@ export function NutritionStats({
               {weeklyKg.toFixed(2)} kg/sem
             </span>
           )}
-          <span className={`text-white/30 transition-transform ${open ? 'rotate-180' : ''}`}>
+          <span className={`text-white/50 transition-transform ${open ? 'rotate-180' : ''}`}>
             ▾
           </span>
         </div>
@@ -107,7 +107,7 @@ export function NutritionStats({
       {open && (logged.length > 0 ? (
         <div className="mt-4 grid grid-cols-2 gap-3 border-t border-obliq-border pt-3">
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-white/30">
+            <p className="text-[10px] uppercase tracking-widest text-white/50">
               Saldo médio/dia
             </p>
             <p
@@ -116,10 +116,10 @@ export function NutritionStats({
               {avgBalance > 0 ? '+' : ''}
               {Math.round(avgBalance)} kcal
             </p>
-            <p className="text-[10px] text-white/30">vs manutenção ({maintenance} kcal)</p>
+            <p className="text-[10px] text-white/50">vs manutenção ({maintenance} kcal)</p>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-white/30">Projeção</p>
+            <p className="text-[10px] uppercase tracking-widest text-white/50">Projeção</p>
             <p
               className={`text-lg font-black tabular-nums ${weeklyKg > 0 ? 'text-amber-400' : 'text-emerald-400'}`}
             >
@@ -127,7 +127,7 @@ export function NutritionStats({
               {weeklyKg.toFixed(2)} kg/sem
             </p>
             {projected != null && (
-              <p className="text-[10px] text-white/30">~{projected.toFixed(1)} kg em 4 sem</p>
+              <p className="text-[10px] text-white/50">~{projected.toFixed(1)} kg em 4 sem</p>
             )}
           </div>
         </div>

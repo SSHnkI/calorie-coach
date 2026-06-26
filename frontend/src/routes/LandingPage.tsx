@@ -90,7 +90,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-obliq-border px-4 py-8 text-center text-sm text-white/30">
+      <footer className="border-t border-obliq-border px-4 py-8 text-center text-sm text-white/50">
         <Logo size="sm" />
         <p className="mt-2">{t.landing.footer}</p>
       </footer>

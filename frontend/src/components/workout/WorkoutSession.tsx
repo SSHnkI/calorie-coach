@@ -154,7 +154,7 @@ export function WorkoutSession({
         {blocks.map((b, bi) => (
           <Card key={bi}>
             <div className="mb-3">
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/30">
+              <p className="text-[10px] font-black uppercase tracking-widest text-white/50">
                 {muscleLabel(b.muscle_group)}
               </p>
               <h3 className="font-bold">{b.name}</h3>
