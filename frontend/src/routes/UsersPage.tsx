@@ -10,13 +10,23 @@ import {
   type AppUser,
 } from '../lib/users'
 import { AppShell } from '../components/layout/AppShell'
-import { Badge } from '../components/ui/Badge'
+import { Icon } from '../components/ui/Icon'
 
 const OBJETIVO: Record<string, string> = {
-  lose: 'perder',
-  maintain: 'manter',
-  gain: 'ganhar',
+  lose: 'perder peso',
+  maintain: 'manter peso',
+  gain: 'ganhar peso',
 }
+
+const ATIVIDADE: Record<string, string> = {
+  sedentary: 'sedentário',
+  light: 'leve',
+  moderate: 'moderado',
+  active: 'ativo',
+  very_active: 'muito ativo',
+}
+
+const SEXO: Record<string, string> = { male: 'masculino', female: 'feminino' }
 
 function dataCurta(iso: string) {
   return new Date(iso).toLocaleDateString('pt-BR', {
@@ -26,7 +36,36 @@ function dataCurta(iso: string) {
   })
 }
 
+function diasDesde(iso: string) {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
+}
+
 type EstadoEnvio = 'idle' | 'confirmar' | 'enviando' | 'enviado' | 'erro'
+type Filtro = 'todos' | 'ativos' | 'incompletos'
+type Ordem = 'recentes' | 'ativos' | 'email'
+
+// Medidor fino: mostra proporcao sem virar mais um cartao na tela.
+function Medidor({
+  valor,
+  teto,
+  alerta = false,
+}: {
+  valor: number
+  teto: number
+  alerta?: boolean
+}) {
+  const pct = teto > 0 ? Math.min(100, (valor / teto) * 100) : 0
+  return (
+    <div className="h-1 w-full overflow-hidden rounded-full bg-obliq-border">
+      <div
+        className={`h-full rounded-full transition-[width] duration-500 ${
+          alerta ? 'bg-obliq-red' : 'bg-obliq-dim'
+        }`}
+        style={{ width: `${pct}%` }}
+      />
+    </div>
+  )
+}
 
 export function UsersPage() {
   const { user, loading } = useApp()
@@ -35,6 +74,9 @@ export function UsersPage() {
   const [semDiario, setSemDiario] = useState(false)
   const [erro, setErro] = useState('')
   const [busca, setBusca] = useState('')
+  const [filtro, setFiltro] = useState<Filtro>('todos')
+  const [ordem, setOrdem] = useState<Ordem>('recentes')
+  const [aberto, setAberto] = useState<string | null>(null)
   const [envio, setEnvio] = useState<Record<string, EstadoEnvio>>({})
 
   const ehAdmin = user?.email === ADMIN_EMAIL
@@ -49,16 +91,26 @@ export function UsersPage() {
       .catch(() => setSemDiario(true))
   }, [ehAdmin])
 
-  const filtrados = useMemo(() => {
-    if (!users) return null
-    const q = busca.trim().toLowerCase()
-    return q ? users.filter((u) => u.email?.toLowerCase().includes(q)) : users
-  }, [users, busca])
-
   const hoje = new Date().toISOString().split('T')[0]
-
   const analisesDe = (u: AppUser) =>
     u.analyses_date === hoje ? (u.analyses_today ?? 0) : 0
+
+  const lista = useMemo(() => {
+    if (!users) return null
+    const q = busca.trim().toLowerCase()
+
+    let r = users.filter((u) => (q ? u.email?.toLowerCase().includes(q) : true))
+    if (filtro === 'ativos') r = r.filter((u) => analisesDe(u) > 0 || intake[u.id] > 0)
+    if (filtro === 'incompletos') r = r.filter((u) => !u.onboarding_complete)
+
+    const ordenado = [...r]
+    if (ordem === 'recentes')
+      ordenado.sort((a, b) => b.created_at.localeCompare(a.created_at))
+    if (ordem === 'email') ordenado.sort((a, b) => a.email.localeCompare(b.email))
+    if (ordem === 'ativos') ordenado.sort((a, b) => analisesDe(b) - analisesDe(a))
+    return ordenado
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [users, busca, filtro, ordem, intake])
 
   const enviarReset = async (u: AppUser) => {
     if (envio[u.id] !== 'confirmar') {
@@ -79,37 +131,22 @@ export function UsersPage() {
   if (!ehAdmin) return <Navigate to="/dashboard" replace />
 
   const total = users?.length ?? 0
-  const completos = users?.filter((u) => u.onboarding_complete).length ?? 0
   const analisesHoje = users?.reduce((s, u) => s + analisesDe(u), 0) ?? 0
+  const comendoHoje = users?.filter((u) => (intake[u.id] ?? 0) > 0).length ?? 0
   const tetoTotal = total * AI_CAP
   const usoPct = tetoTotal > 0 ? Math.min(100, (analisesHoje / tetoTotal) * 100) : 0
 
   return (
     <AppShell showNav={false}>
-      <div className="flex items-baseline justify-between">
+      <header className="flex items-baseline justify-between border-b border-obliq-border pb-5">
         <h1 className="font-display text-2xl font-bold">Usuários</h1>
-        <Badge>admin</Badge>
-      </div>
+        <span className="num text-sm text-obliq-faint">{total}</span>
+      </header>
 
-      <dl className="mt-6 grid grid-cols-3 gap-px overflow-hidden rounded-xl bg-obliq-border ring-1 ring-obliq-border">
-        {[
-          ['contas', total],
-          ['cadastro completo', completos],
-          ['análises hoje', analisesHoje],
-        ].map(([rotulo, valor]) => (
-          <div key={rotulo as string} className="bg-obliq-surface p-4">
-            <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-obliq-faint">
-              {rotulo}
-            </dt>
-            <dd className="num mt-1 text-2xl font-medium">{valor}</dd>
-          </div>
-        ))}
-      </dl>
-
-      {/* Consumo de IA contra o teto do dia. */}
-      <section className="mt-4 rounded-xl bg-obliq-surface p-4 ring-1 ring-obliq-border">
-        <div className="flex items-baseline justify-between">
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-obliq-faint">
+      {/* Leitura do dia em uma linha, sem virar tres cartoes iguais. */}
+      <section className="mt-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
             consumo de IA hoje
           </span>
           <span className="num text-sm">
@@ -117,19 +154,48 @@ export function UsersPage() {
             <span className="text-obliq-faint"> / {tetoTotal}</span>
           </span>
         </div>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-obliq-border">
-          <div
-            className={`h-full rounded-full transition-[width] duration-500 ${
-              usoPct > 80 ? 'bg-obliq-red' : 'bg-obliq-chalk'
-            }`}
-            style={{ width: `${usoPct}%` }}
-          />
+        <div className="mt-3">
+          <Medidor valor={analisesHoje} teto={tetoTotal} alerta={usoPct > 80} />
         </div>
         <p className="mt-3 font-mono text-[11px] leading-relaxed text-obliq-faint">
-          teto de {AI_CAP} análises por conta ao dia, definido na função analyze-food.
-          o teto total sobe junto com o número de contas.
+          {AI_CAP} análises por conta ao dia · {comendoHoje} de {total} registraram
+          refeição hoje
         </p>
       </section>
+
+      {/* Filtros: recortes de verdade, nao decoracao. */}
+      <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+        <div className="flex gap-4" role="group" aria-label="Filtrar">
+          {(['todos', 'ativos', 'incompletos'] as Filtro[]).map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setFiltro(f)}
+              aria-pressed={filtro === f}
+              className={`border-b pb-0.5 text-sm transition-colors duration-200 ${
+                filtro === f
+                  ? 'border-obliq-red text-obliq-chalk'
+                  : 'border-transparent text-obliq-faint hover:text-obliq-dim'
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+
+        <label className="ml-auto flex items-center gap-2 font-mono text-[11px] text-obliq-faint">
+          ordenar
+          <select
+            value={ordem}
+            onChange={(e) => setOrdem(e.target.value as Ordem)}
+            className="rounded bg-obliq-surface px-2 py-1 font-mono text-[11px] text-obliq-chalk ring-1 ring-obliq-border outline-none focus:ring-obliq-dim"
+          >
+            <option value="recentes">mais recentes</option>
+            <option value="ativos">mais ativos</option>
+            <option value="email">e-mail</option>
+          </select>
+        </label>
+      </div>
 
       <label htmlFor="busca" className="sr-only">
         Buscar por e-mail
@@ -140,7 +206,7 @@ export function UsersPage() {
         value={busca}
         onChange={(e) => setBusca(e.target.value)}
         placeholder="filtrar por e-mail"
-        className="mt-6 min-h-11 w-full rounded-lg bg-obliq-surface px-3.5 py-3 text-obliq-chalk ring-1 ring-obliq-border outline-none transition-colors duration-200 placeholder:text-obliq-faint focus:ring-obliq-dim"
+        className="mt-4 min-h-11 w-full rounded-lg bg-obliq-surface px-3.5 py-3 text-obliq-chalk ring-1 ring-obliq-border outline-none transition-colors duration-200 placeholder:text-obliq-faint focus:ring-obliq-dim"
       />
 
       {erro && (
@@ -148,100 +214,159 @@ export function UsersPage() {
           {erro}
         </p>
       )}
-
       {semDiario && (
-        <p className="mt-4 font-mono text-[11px] leading-relaxed text-obliq-faint">
-          diário alimentar indisponível: falta a política de leitura de food_log para o
-          admin.
+        <p className="mt-4 font-mono text-[11px] text-obliq-faint">
+          diário indisponível: falta a política de leitura de food_log para o admin.
         </p>
       )}
 
       {!users && !erro && (
-        <div className="mt-6 space-y-px">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-20 animate-pulse rounded bg-obliq-surface" />
+        <div className="mt-6 flex flex-col gap-px">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-14 animate-pulse bg-obliq-surface" />
           ))}
         </div>
       )}
 
-      {filtrados && (
-        <>
-          <ul className="mt-6 divide-y divide-obliq-border border-y border-obliq-border">
-            {filtrados.map((u, i) => {
-              const usadas = analisesDe(u)
-              const kcal = intake[u.id]
-              const estado = envio[u.id] ?? 'idle'
+      {lista && (
+        <ul className="mt-6 divide-y divide-obliq-border border-y border-obliq-border">
+          {lista.map((u) => {
+            const usadas = analisesDe(u)
+            const kcal = intake[u.id] ?? 0
+            const meta = u.daily_kcal ?? 0
+            const estado = envio[u.id] ?? 'idle'
+            const on = aberto === u.id
+            const ativoHoje = usadas > 0 || kcal > 0
 
-              return (
-                <li
-                  key={u.id}
-                  className="rise py-4"
-                  style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}
+            return (
+              <li key={u.id}>
+                {/* A linha inteira abre o detalhe. Sem modal, sem botao extra. */}
+                <button
+                  type="button"
+                  onClick={() => setAberto(on ? null : u.id)}
+                  aria-expanded={on}
+                  className="grid w-full grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 py-3.5 text-left transition-colors duration-200 hover:bg-white/[0.02] md:grid-cols-[auto_1fr_9rem_7rem_auto] md:gap-x-5"
                 >
-                  <div className="flex items-baseline gap-3">
-                    <span className="truncate text-obliq-chalk">{u.email}</span>
-                    <span className="leader" aria-hidden="true" />
-                    <span className="num shrink-0 text-sm text-obliq-chalk">
-                      {u.daily_kcal ?? '—'}
-                      <span className="text-obliq-faint"> meta</span>
-                    </span>
-                  </div>
+                  <span
+                    aria-hidden="true"
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      ativoHoje ? 'bg-obliq-red' : 'bg-obliq-line'
+                    }`}
+                  />
 
-                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-obliq-faint">
-                    <span>entrou {dataCurta(u.created_at)}</span>
-                    {u.onboarding_complete ? (
-                      <span>
-                        {u.age ?? '?'}a · {u.weight_kg ?? '?'}kg · {u.height_cm ?? '?'}cm
-                        {u.goal ? ` · ${OBJETIVO[u.goal] ?? u.goal}` : ''}
+                  <span className="truncate text-obliq-chalk">
+                    {u.email}
+                    {!u.onboarding_complete && (
+                      <span className="ml-2 font-mono text-[10px] text-obliq-faint">
+                        incompleto
                       </span>
-                    ) : (
-                      <span className="text-obliq-red">cadastro incompleto</span>
                     )}
-                    {kcal != null && <span>comeu {kcal} kcal hoje</span>}
-                    <span className={usadas >= AI_CAP ? 'text-obliq-red' : undefined}>
-                      IA {usadas}/{AI_CAP}
+                  </span>
+
+                  <span className="col-start-2 md:col-start-auto">
+                    <span className="num flex items-baseline justify-between text-[11px] text-obliq-faint">
+                      <span>dieta</span>
+                      <span className={kcal > meta && meta > 0 ? 'text-obliq-red' : ''}>
+                        {kcal}
+                        {meta > 0 ? `/${meta}` : ''}
+                      </span>
                     </span>
-                  </div>
+                    <span className="mt-1 block">
+                      <Medidor valor={kcal} teto={meta || 1} alerta={meta > 0 && kcal > meta} />
+                    </span>
+                  </span>
 
-                  <div className="mt-2.5">
-                    {estado === 'enviado' ? (
-                      <span className="font-mono text-[11px] text-obliq-dim">
-                        link de senha enviado para {u.email}
+                  <span className="col-start-2 md:col-start-auto">
+                    <span className="num flex items-baseline justify-between text-[11px] text-obliq-faint">
+                      <span>IA</span>
+                      <span className={usadas >= AI_CAP ? 'text-obliq-red' : ''}>
+                        {usadas}/{AI_CAP}
                       </span>
-                    ) : estado === 'erro' ? (
-                      <span className="font-mono text-[11px] text-obliq-red">
-                        falhou, o Supabase limita e-mails por hora
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => enviarReset(u)}
-                        disabled={estado === 'enviando'}
-                        className={`rounded px-2 py-1 font-mono text-[11px] ring-1 transition-colors duration-200 disabled:opacity-40 ${
-                          estado === 'confirmar'
-                            ? 'text-obliq-chalk ring-obliq-red'
-                            : 'text-obliq-faint ring-obliq-border hover:text-obliq-chalk hover:ring-obliq-dim'
-                        }`}
-                      >
-                        {estado === 'enviando'
-                          ? 'enviando…'
-                          : estado === 'confirmar'
-                            ? 'confirmar envio'
-                            : 'enviar link de senha'}
-                      </button>
-                    )}
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
+                    </span>
+                    <span className="mt-1 block">
+                      <Medidor valor={usadas} teto={AI_CAP} alerta={usadas >= AI_CAP} />
+                    </span>
+                  </span>
 
-          {filtrados.length === 0 && (
-            <p className="mt-6 text-center text-sm text-obliq-dim">
-              Nenhum e-mail corresponde a “{busca}”.
-            </p>
-          )}
-        </>
+                  <span
+                    className={`hidden text-obliq-faint transition-transform duration-200 md:block ${
+                      on ? 'rotate-180' : ''
+                    }`}
+                  >
+                    <Icon name="chevron" className="h-4 w-4" />
+                  </span>
+                </button>
+
+                {on && (
+                  <div className="rise grid gap-6 pb-6 md:grid-cols-[1fr_auto]">
+                    <dl className="grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-[11px] sm:grid-cols-3">
+                      {[
+                        ['entrou', `${dataCurta(u.created_at)} · ${diasDesde(u.created_at)}d`],
+                        ['meta', meta ? `${meta} kcal` : '—'],
+                        ['idade', u.age ? `${u.age} anos` : '—'],
+                        ['peso', u.weight_kg ? `${u.weight_kg} kg` : '—'],
+                        ['altura', u.height_cm ? `${u.height_cm} cm` : '—'],
+                        ['sexo', u.sex ? (SEXO[u.sex] ?? u.sex) : '—'],
+                        ['rotina', u.activity ? (ATIVIDADE[u.activity] ?? u.activity) : '—'],
+                        ['objetivo', u.goal ? (OBJETIVO[u.goal] ?? u.goal) : '—'],
+                      ].map(([k, v]) => (
+                        <div key={k}>
+                          <dt className="text-obliq-faint">{k}</dt>
+                          <dd className="mt-0.5 text-obliq-chalk">{v}</dd>
+                        </div>
+                      ))}
+                    </dl>
+
+                    <div className="md:text-right">
+                      {estado === 'enviado' ? (
+                        <p className="font-mono text-[11px] text-obliq-dim">
+                          link enviado
+                        </p>
+                      ) : estado === 'erro' ? (
+                        <p className="font-mono text-[11px] text-obliq-red">
+                          falhou, o Supabase limita e-mails por hora
+                        </p>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => enviarReset(u)}
+                          disabled={estado === 'enviando'}
+                          className={`min-h-9 rounded px-2.5 py-1.5 font-mono text-[11px] ring-1 transition-colors duration-200 disabled:opacity-40 ${
+                            estado === 'confirmar'
+                              ? 'text-obliq-chalk ring-obliq-red'
+                              : 'text-obliq-faint ring-obliq-border hover:text-obliq-chalk hover:ring-obliq-dim'
+                          }`}
+                        >
+                          {estado === 'enviando'
+                            ? 'enviando…'
+                            : estado === 'confirmar'
+                              ? 'confirmar envio'
+                              : 'enviar link de senha'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
+      {lista?.length === 0 && (
+        <div className="border-y border-obliq-border py-12 text-center">
+          <p className="text-obliq-dim">Nenhuma conta neste recorte.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setBusca('')
+              setFiltro('todos')
+            }}
+            className="mt-2 text-sm text-obliq-faint underline decoration-obliq-line underline-offset-4 hover:text-obliq-chalk"
+          >
+            limpar filtros
+          </button>
+        </div>
       )}
     </AppShell>
   )
