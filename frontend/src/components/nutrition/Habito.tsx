@@ -2,21 +2,30 @@ import { useEffect, useMemo, useState } from 'react'
 import { fetchFoodHistory } from '../../lib/foodLog'
 import type { FoodEntry } from '../../types'
 
-const LETRA = ['d', 's', 't', 'q', 'q', 's', 's']
+const ROTULOS = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom']
 
 function chave(d: Date) {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
 }
 
+// Segunda desta semana. getDay() devolve 0 para domingo, que aqui e o ultimo dia.
+function segundaDaSemana(hoje: Date) {
+  const d = new Date(hoje)
+  const desloca = (d.getDay() + 6) % 7
+  d.setDate(d.getDate() - desloca)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
 /**
- * Corrente de habito: sete blocos, um por dia, preenchidos conforme a meta.
- * E o unico lugar do app que mostra constancia, que e o que faz alguem voltar.
+ * Semana corrente, de segunda a domingo, com a altura de cada dia
+ * proporcional a meta. E o unico lugar do app que mostra constancia.
  */
 export function Habito({ meta, versao }: { meta: number; versao: number }) {
   const [itens, setItens] = useState<FoodEntry[] | null>(null)
 
   useEffect(() => {
-    fetchFoodHistory(8)
+    fetchFoodHistory(30)
       .then(setItens)
       .catch(() => setItens([]))
   }, [versao])
@@ -32,24 +41,29 @@ export function Habito({ meta, versao }: { meta: number; versao: number }) {
       soma[chave(d)] = (soma[chave(d)] ?? 0) + i.kcal
     }
 
-    const dias = Array.from({ length: 7 }, (_, n) => {
-      const d = new Date(hoje)
-      d.setDate(d.getDate() - (6 - n))
+    const segunda = segundaDaSemana(hoje)
+    const dias = ROTULOS.map((rotulo, n) => {
+      const d = new Date(segunda)
+      d.setDate(d.getDate() + n)
       const kcal = soma[chave(d)] ?? 0
       return {
-        letra: LETRA[d.getDay()],
+        rotulo,
         kcal,
         pct: meta > 0 ? Math.min(100, (kcal / meta) * 100) : 0,
         registrou: kcal > 0,
         hoje: chave(d) === chave(hoje),
+        futuro: d > hoje,
       }
     })
 
-    // Conta pra tras. O dia de hoje ainda vazio nao quebra a sequencia.
+    // A sequencia olha o historico inteiro, nao so a semana na tela.
+    // O dia de hoje ainda vazio nao quebra nada: o dia nao acabou.
     let sequencia = 0
-    for (let n = 6; n >= 0; n--) {
-      if (dias[n].registrou) sequencia++
-      else if (!dias[n].hoje) break
+    const cursor = new Date(hoje)
+    if (!soma[chave(cursor)]) cursor.setDate(cursor.getDate() - 1)
+    while (soma[chave(cursor)]) {
+      sequencia++
+      cursor.setDate(cursor.getDate() - 1)
     }
 
     return { dias, sequencia }
@@ -79,13 +93,19 @@ export function Habito({ meta, versao }: { meta: number; versao: number }) {
       </div>
 
       <ol className="mt-3 flex gap-1.5">
-        {dias.map((d, n) => (
-          <li key={n} className="flex-1">
+        {dias.map((d) => (
+          <li key={d.rotulo} className="flex-1">
             <div
-              title={d.kcal ? `${d.kcal} kcal` : 'sem registro'}
+              title={d.kcal ? `${d.kcal} kcal` : d.futuro ? 'ainda vem' : 'sem registro'}
               className={`flex h-10 items-end overflow-hidden rounded ${
-                d.hoje ? 'ring-1 ring-obliq-red/40' : ''
-              } ${d.registrou ? 'bg-obliq-raised' : 'bg-obliq-surface'}`}
+                d.hoje ? 'ring-1 ring-obliq-red/50' : ''
+              } ${
+                d.registrou
+                  ? 'bg-obliq-raised'
+                  : d.futuro
+                    ? 'bg-obliq-surface/50'
+                    : 'bg-obliq-surface'
+              }`}
             >
               <div
                 className={`w-full rounded transition-[height] duration-700 ease-out ${
@@ -99,7 +119,7 @@ export function Habito({ meta, versao }: { meta: number; versao: number }) {
                 d.hoje ? 'text-obliq-chalk' : 'text-obliq-faint'
               }`}
             >
-              {d.letra}
+              {d.rotulo}
             </span>
           </li>
         ))}
