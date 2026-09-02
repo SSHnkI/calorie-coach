@@ -168,7 +168,7 @@ const ptBR: TranslationKeys = {
     active: 'Ativo',
     subscribed: 'Assinado',
     redirecting: 'Redirecionando ao Stripe…',
-    subscribe: 'Assinar com Stripe — R$14,99/mês',
+    subscribe: 'Assinar com Stripe — R$19,90/mês',
     mockNote: 'Checkout simulado — nenhum pagamento real processado',
     comparison: 'Comparação',
     featureCol: 'Recurso',

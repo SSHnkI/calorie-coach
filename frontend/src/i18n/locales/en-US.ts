@@ -168,7 +168,7 @@ const enUS: TranslationKeys = {
     active: 'Active',
     subscribed: 'Subscribed',
     redirecting: 'Redirecting to Stripe…',
-    subscribe: 'Subscribe with Stripe — R$14.99/mo',
+    subscribe: 'Subscribe with Stripe — R$19.90/mo',
     mockNote: 'Mock checkout — no real payment processed',
     comparison: 'Comparison',
     featureCol: 'Feature',

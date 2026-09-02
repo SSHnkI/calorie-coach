@@ -79,7 +79,7 @@ export function LandingPage() {
               {t.landing.proLabel}
             </p>
             <p className="mt-2 text-5xl font-black tabular-nums">
-              R$14,99
+              R$19,90
               <span className="text-lg font-medium text-white/40">{t.common.month}</span>
             </p>
             <p className="mt-2 text-white/60">{t.landing.proDesc}</p>
