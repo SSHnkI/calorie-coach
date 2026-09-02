@@ -18,6 +18,17 @@ import type {
 } from '../types'
 
 type AuthResult = { error: string | null }
+
+// O supabase-js as vezes entrega a falha como JSON cru ("{}" quando o servidor
+// responde 500). Isso aparecia na tela literalmente. Aqui vira frase.
+function mensagemDeErro(bruto: unknown, padrao: string) {
+  const texto = typeof bruto === 'string' ? bruto.trim() : ''
+  if (!texto || texto.startsWith('{') || texto.startsWith('[')) return padrao
+  if (/failed to fetch|load failed|networkerror/i.test(texto)) {
+    return 'Sem conexão agora. Confira a internet e tente de novo.'
+  }
+  return texto
+}
 type SignupResult = { error: string | null; emailSent?: boolean }
 
 export type TrainerData = {
@@ -146,7 +157,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string): Promise<AuthResult> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) return { error: error.message }
+    if (error) {
+      return {
+        error: mensagemDeErro(error.message, 'Não foi possível entrar agora. Tente de novo em instantes.'),
+      }
+    }
     return { error: null }
   }, [])
 
@@ -156,7 +171,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       password,
       options: { emailRedirectTo: window.location.origin },
     })
-    if (error) return { error: error.message }
+    if (error) {
+      return {
+        error: mensagemDeErro(
+          error.message,
+          'Não foi possível criar a conta agora. Tente de novo em instantes.',
+        ),
+      }
+    }
     return { error: null, emailSent: true }
   }, [])
 
