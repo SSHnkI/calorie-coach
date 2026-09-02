@@ -9,6 +9,7 @@ import { AppShell } from '../components/layout/AppShell'
 import { Icon } from '../components/ui/Icon'
 import { Tabs } from '../components/ui/Tabs'
 import { Habito } from '../components/nutrition/Habito'
+import { Avisos } from '../components/layout/Avisos'
 import { Refeicoes } from '../components/nutrition/Refeicoes'
 import { Composer } from '../components/nutrition/Composer'
 import { useCountUp } from '../lib/useCountUp'
@@ -241,6 +242,10 @@ export function DashboardPage() {
 
           <div className="mt-6">
             <Habito meta={target} versao={versao} />
+          </div>
+
+          <div className="mt-6">
+            <Avisos />
           </div>
 
           {/* Macros em tres colunas: mesma informacao, um terco da altura. */}

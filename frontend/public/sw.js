@@ -1,6 +1,6 @@
 // Casca do app em cache: abrir o PWA sem rede mostra a interface,
 // nao a tela de dinossauro. Dados continuam vindo da rede.
-const CACHE = 'obliq-v4'
+const CACHE = 'obliq-v5'
 const CASCA = '/index.html'
 
 self.addEventListener('install', (e) => {
@@ -81,4 +81,37 @@ self.addEventListener('fetch', (e) => {
       ),
     )
   }
+})
+
+// Push chega mesmo com o app fechado. O payload vem encriptado da Edge
+// Function; aqui so vira notificacao.
+self.addEventListener('push', (e) => {
+  let d = {}
+  try {
+    d = e.data ? e.data.json() : {}
+  } catch {
+    d = { body: e.data ? e.data.text() : '' }
+  }
+
+  e.waitUntil(
+    self.registration.showNotification(d.title || 'Obliq', {
+      body: d.body || '',
+      tag: d.tag || 'obliq',
+      icon: '/web-app-manifest-192x192.png',
+      badge: '/web-app-manifest-192x192.png',
+      data: { url: '/dashboard' },
+    }),
+  )
+})
+
+// Tocar no aviso traz a janela que ja existe em vez de abrir outra.
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close()
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((abertas) => {
+      const janela = abertas.find((c) => c.url.startsWith(self.location.origin))
+      if (janela) return janela.focus()
+      return self.clients.openWindow('/dashboard')
+    }),
+  )
 })
