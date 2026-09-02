@@ -17,7 +17,7 @@ export async function estimateFood(input: string): Promise<NutritionResult | nul
   return n as NutritionResult
 }
 
-// Chama a Edge Function `analyze-food` (Gemini) para estimar os macros do alimento.
+// Chama a Edge Function `analyze-food` (Groq + Open Food Facts).
 export async function analyzeFood(input: string): Promise<AnalyzeResult> {
   const { data, error } = await supabase.functions.invoke('analyze-food', {
     body: { food_input: input },
@@ -35,7 +35,7 @@ export async function analyzeFood(input: string): Promise<AnalyzeResult> {
         return { ok: false, error: 'unauthorized' }
       }
     } catch {
-      // corpo não-JSON — cai no erro genérico abaixo
+      // corpo nao-JSON, cai no erro generico abaixo
     }
     return { ok: false, error: 'failed' }
   }

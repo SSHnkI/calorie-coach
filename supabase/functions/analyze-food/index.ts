@@ -5,140 +5,193 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+
+// Teto diario de chamadas a IA por conta. Nao e paywall, e anti abuso/custo.
+const AI_CAP = 100
+
+type Nutrition = {
+  name: string
+  quantity: number
+  unit: string
+  grams_total: number
+  search_term: string
+  kcal: number
+  protein_g: number
+  carbs_g: number
+  fat_g: number
+  confidence: 'high' | 'medium' | 'low'
+}
+
+const SYSTEM = `Voce e um interpretador de alimentos. Recebe um alimento em linguagem natural (portugues do Brasil) e devolve JSON.
+
+Regras:
+- Se a quantidade nao for dita, assuma uma porcao caseira tipica.
+- grams_total: peso total em gramas (ou ml para liquidos) da porcao inteira.
+- search_term: nome curto e generico do alimento em ingles, para buscar em base de dados nutricional. Sem marca, sem quantidade. Ex: "white rice", "chicken breast", "coca cola".
+- name: nome do alimento em portugues, como o usuario reconheceria.
+- Estime kcal e macros da porcao inteira. Nunca recuse, sempre estime.
+
+Responda SOMENTE com JSON neste formato:
+{"name":string,"quantity":number,"unit":string,"grams_total":number,"search_term":string,"kcal":number,"protein_g":number,"carbs_g":number,"fat_g":number,"confidence":"high"|"medium"|"low"}`
+
+// ponytail: a disponibilidade de modelo varia por conta/chave na Groq.
+// Tenta em ordem e fica no primeiro que a chave puder usar.
+const MODELS = [
+  'llama-3.3-70b-versatile',
+  'meta-llama/llama-4-scout-17b-16e-instruct',
+  'openai/gpt-oss-20b',
+  'llama-3.1-8b-instant',
+]
+
+async function askGroq(foodInput: string, key: string): Promise<Nutrition> {
+  let lastErr = 'sem modelo disponivel'
+
+  for (const model of MODELS) {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model,
+        temperature: 0.2,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: SYSTEM },
+          { role: 'user', content: foodInput },
+        ],
+      }),
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const raw = data?.choices?.[0]?.message?.content
+      if (!raw) throw new Error('groq_empty')
+      console.log('modelo usado:', model)
+      return JSON.parse(raw)
+    }
+
+    lastErr = `${model} -> ${res.status}: ${await res.text()}`
+    // 404/400 costuma ser modelo indisponivel; qualquer outro erro tambem vale tentar o proximo
+    console.warn('groq falhou:', lastErr)
+  }
+
+  throw new Error(`groq_indisponivel: ${lastErr}`)
+}
+
+// Busca valores reais no Open Food Facts. Gratuito, sem chave.
+// Retorna nutrientes por 100g do primeiro produto que tenha dados completos.
+async function lookupOFF(term: string): Promise<null | {
+  kcal100: number
+  protein100: number
+  carbs100: number
+  fat100: number
+}> {
+  const url =
+    'https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&action=process&json=1&page_size=10' +
+    `&fields=product_name,nutriments&search_terms=${encodeURIComponent(term)}`
+
+  const res = await fetch(url, {
+    headers: { 'User-Agent': 'Obliq/1.0 (calorie tracker)' },
+    signal: AbortSignal.timeout(4000),
+  })
+  if (!res.ok) return null
+
+  const data = await res.json()
+  for (const p of data?.products ?? []) {
+    const n = p?.nutriments ?? {}
+    const kcal = Number(n['energy-kcal_100g'])
+    if (!Number.isFinite(kcal) || kcal <= 0) continue
+    return {
+      kcal100: kcal,
+      protein100: Number(n.proteins_100g) || 0,
+      carbs100: Number(n.carbohydrates_100g) || 0,
+      fat100: Number(n.fat_100g) || 0,
+    }
+  }
+  return null
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
     const token = req.headers.get('Authorization')?.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token!)
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: corsHeaders })
-    }
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token!)
+    if (authError || !user) return json({ error: 'unauthorized' }, 401)
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('subscription_status, analyses_today, analyses_date, ai_calls_today, ai_calls_date, daily_kcal, goal')
+      .select('analyses_today, analyses_date')
       .eq('id', user.id)
       .single()
-
-    if (!profile) {
-      return new Response(JSON.stringify({ error: 'profile_not_found' }), { status: 404, headers: corsHeaders })
-    }
+    if (!profile) return json({ error: 'profile_not_found' }, 404)
 
     const { food_input, log = true } = await req.json()
-    if (!food_input?.trim()) {
-      return new Response(JSON.stringify({ error: 'food_input required' }), { status: 400, headers: corsHeaders })
-    }
+    if (!food_input?.trim()) return json({ error: 'food_input required' }, 400)
 
     const today = new Date().toISOString().split('T')[0]
-    let analysesToday = profile.analyses_today
-    if (profile.analyses_date !== today) {
-      analysesToday = 0
-      await supabase.from('profiles')
-        .update({ analyses_today: 0, analyses_date: today })
-        .eq('id', user.id)
-    }
+    const aiToday = profile.analyses_date === today ? (profile.analyses_today ?? 0) : 0
+    if (aiToday >= AI_CAP) return json({ error: 'ai_daily_cap' }, 429)
 
-    // Teto diário de chamadas à IA (todas, log ou não) — anti-sobrecarga/custo
-    const AI_CAP = 100
-    let aiToday = profile.ai_calls_date === today ? (profile.ai_calls_today ?? 0) : 0
-    if (aiToday >= AI_CAP) {
-      return new Response(JSON.stringify({ error: 'ai_daily_cap' }), { status: 429, headers: corsHeaders })
-    }
+    const groqKey = Deno.env.get('GROQ_API_KEY')
+    if (!groqKey) return json({ error: 'GROQ_API_KEY nao configurada' }, 500)
 
-    const isPaid = profile.subscription_status === 'active'
-    // Cálculo sem registrar (edição de dieta) é exclusivo Pro — evita abuso da IA por contas free
-    if (!log && !isPaid) {
-      return new Response(JSON.stringify({ error: 'pro_required' }), { status: 402, headers: corsHeaders })
-    }
-    if (log && !isPaid && analysesToday >= 5) {
-      return new Response(
-        JSON.stringify({ error: 'limit_reached', analyses_used: analysesToday, limit: 5 }),
-        { status: 402, headers: corsHeaders }
-      )
-    }
+    const n = await askGroq(food_input, groqKey)
 
-    // Chama o Gemini — responseSchema força JSON puro (sem cercas ```json)
-    const geminiKey = Deno.env.get('GEMINI_API_KEY')
-    if (!geminiKey) {
-      return new Response(JSON.stringify({ error: 'GEMINI_API_KEY não configurada' }), { status: 500, headers: corsHeaders })
-    }
-
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: `Você é um banco de dados nutricional. Receba um alimento em linguagem natural e estime os valores nutricionais. Se a quantidade não for mencionada, assuma uma porção padrão. Nunca recuse, sempre estime.` }]
-          },
-          contents: [{ parts: [{ text: food_input }] }],
-          generationConfig: {
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: 'OBJECT',
-              properties: {
-                name: { type: 'STRING' },
-                quantity: { type: 'NUMBER' },
-                unit: { type: 'STRING' },
-                kcal: { type: 'NUMBER' },
-                protein_g: { type: 'NUMBER' },
-                carbs_g: { type: 'NUMBER' },
-                fat_g: { type: 'NUMBER' },
-                confidence: { type: 'STRING', enum: ['high', 'medium', 'low'] },
-              },
-              required: ['name', 'quantity', 'unit', 'kcal', 'protein_g', 'carbs_g', 'fat_g', 'confidence'],
-            },
-          },
-        })
+    // Open Food Facts manda no numero quando encontra. A IA so serve de rede de seguranca.
+    let source = 'ai'
+    const grams = Number(n.grams_total)
+    if (n.search_term && Number.isFinite(grams) && grams > 0) {
+      try {
+        const off = await lookupOFF(n.search_term)
+        if (off) {
+          const f = grams / 100
+          n.kcal = Math.round(off.kcal100 * f)
+          n.protein_g = Math.round(off.protein100 * f)
+          n.carbs_g = Math.round(off.carbs100 * f)
+          n.fat_g = Math.round(off.fat100 * f)
+          n.confidence = 'high'
+          source = 'openfoodfacts'
+        }
+      } catch {
+        // OFF fora do ar ou lento: fica a estimativa da IA
       }
-    )
-
-    if (!geminiRes.ok) {
-      const errBody = await geminiRes.text()
-      console.error('Erro Gemini:', geminiRes.status, errBody)
-      return new Response(JSON.stringify({ error: 'gemini_error' }), { status: 502, headers: corsHeaders })
     }
-
-    const geminiData = await geminiRes.json()
-    const rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!rawText) {
-      console.error('Resposta Gemini sem texto:', JSON.stringify(geminiData))
-      return new Response(JSON.stringify({ error: 'gemini_empty' }), { status: 502, headers: corsHeaders })
-    }
-    const nutrition = JSON.parse(rawText.trim())
 
     if (log) {
       await supabase.from('food_log').insert({
         user_id: user.id,
-        name: nutrition.name,
-        quantity: nutrition.quantity,
-        unit: nutrition.unit,
-        kcal: nutrition.kcal,
-        protein_g: nutrition.protein_g,
-        carbs_g: nutrition.carbs_g,
-        fat_g: nutrition.fat_g,
-        confidence: nutrition.confidence
+        name: n.name,
+        quantity: n.quantity,
+        unit: n.unit,
+        kcal: n.kcal,
+        protein_g: n.protein_g,
+        carbs_g: n.carbs_g,
+        fat_g: n.fat_g,
+        confidence: n.confidence,
       })
     }
 
-    // contabiliza a chamada de IA (sempre) + análise registrada (quando log)
-    const upd: Record<string, unknown> = { ai_calls_today: aiToday + 1, ai_calls_date: today }
-    if (log) upd.analyses_today = analysesToday + 1
-    await supabase.from('profiles').update(upd).eq('id', user.id)
+    await supabase
+      .from('profiles')
+      .update({ analyses_today: aiToday + 1, analyses_date: today })
+      .eq('id', user.id)
 
-    return new Response(
-      JSON.stringify({ ...nutrition, analyses_remaining: isPaid ? null : 4 - analysesToday }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-
+    return json({ ...n, source })
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders })
+    console.error('analyze-food:', err)
+    return json({ error: 'analyze_failed' }, 502)
   }
 })

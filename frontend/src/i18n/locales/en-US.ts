@@ -1,7 +1,7 @@
 import type { TranslationKeys } from '../types'
 
 const enUS: TranslationKeys = {
-  meta: { title: 'Obliq — Track. Train. Transform.' },
+  meta: { title: 'Obliq: your daily calories and macros' },
   common: {
     back: 'Back',
     continue: 'Continue',
@@ -36,26 +36,26 @@ const enUS: TranslationKeys = {
     proGateDash: 'History, editing and weight projection are part of Pro.',
   },
   landing: {
-    tagline1: 'Track.',
-    tagline2: 'Train.',
-    tagline3: 'Transform.',
+    tagline1: 'Log it.',
+    tagline2: 'Count it.',
+    tagline3: 'Improve.',
     subtitle:
-      'The powerful fitness and nutrition app that helps you crush your goals — powered by AI.',
+      'Write down what you ate. We work out your calories and macros for the day.',
     startFree: 'Start for free',
     viewPricing: 'View pricing',
-    featuresTitle: 'Everything you need',
-    feature1Title: 'AI Nutrition Analysis',
+    featuresTitle: 'How it works',
+    feature1Title: 'Write it in plain words',
     feature1Desc:
-      'Type any food in plain language — our AI instantly calculates calories and macros.',
-    feature2Title: 'Workout Plans',
+      '"two slices of pizza", "bowl of rice and beans". No lists to scroll, no scale needed.',
+    feature2Title: 'Numbers from a real database',
     feature2Desc:
-      'Structured exercise catalog with sets, reps, and muscle group targeting.',
-    feature3Title: 'Progress Tracking',
+      'Calories come from Open Food Facts, a public food database, not from guesswork.',
+    feature3Title: 'Your target, calculated',
     feature3Desc:
-      'Daily calorie and macro progress with bold visual feedback to keep you on track.',
+      'Tell us your age, weight, height and routine. The app sets how much you need each day.',
     proLabel: 'Obliq Pro',
     proDesc: 'Unlimited AI analyses & full workout catalog',
-    footer: '© 2026 Obliq. Track. Train. Transform.',
+    footer: '© 2026 Obliq. Log it. Count it. Improve.',
   },
   auth: {
     createAccount: 'Create your account',
@@ -96,11 +96,11 @@ const enUS: TranslationKeys = {
     targetDesc: 'Based on your age, weight, height, activity, and goal.',
     startTracking: 'Start tracking',
     activity: {
-      sedentary: 'Sedentary — little or no exercise',
-      light: 'Light — 1–3 days/week',
-      moderate: 'Moderate — 3–5 days/week',
-      active: 'Active — 6–7 days/week',
-      very_active: 'Very active — intense daily',
+      sedentary: 'Sedentary: little or no exercise',
+      light: 'Light: 1 to 3 days a week',
+      moderate: 'Moderate: 3 to 5 days a week',
+      active: 'Active: 6 to 7 days a week',
+      very_active: 'Very active: intense every day',
     },
     goal: {
       lose: 'Lose weight',
