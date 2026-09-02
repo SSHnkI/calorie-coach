@@ -131,7 +131,7 @@ export function UsersPage() {
       {/* Leitura do dia em uma linha, sem virar tres cartoes iguais. */}
       <section className="mt-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+          <span className="font-mono text-[12px] uppercase tracking-[0.14em] text-obliq-faint">
             consumo de IA hoje
           </span>
           <span className="num text-sm">
@@ -142,7 +142,7 @@ export function UsersPage() {
         <div className="mt-3">
           <Medidor valor={analisesHoje} teto={tetoTotal} alerta={usoPct > 80} />
         </div>
-        <p className="mt-3 font-mono text-[11px] leading-relaxed text-obliq-faint">
+        <p className="mt-3 font-mono text-[12px] leading-relaxed text-obliq-faint">
           {AI_CAP} análises por conta ao dia · {comendoHoje} de {total} registraram
           refeição hoje
         </p>
@@ -168,12 +168,12 @@ export function UsersPage() {
           ))}
         </div>
 
-        <label className="ml-auto flex items-center gap-2 font-mono text-[11px] text-obliq-faint">
+        <label className="ml-auto flex items-center gap-2 font-mono text-[12px] text-obliq-faint">
           ordenar
           <select
             value={ordem}
             onChange={(e) => setOrdem(e.target.value as Ordem)}
-            className="rounded bg-obliq-surface px-2 py-1 font-mono text-[11px] text-obliq-chalk ring-1 ring-obliq-border outline-none focus:ring-obliq-dim"
+            className="rounded bg-obliq-surface px-2 py-1 font-mono text-[12px] text-obliq-chalk ring-1 ring-obliq-border outline-none focus:ring-obliq-dim"
           >
             <option value="recentes">mais recentes</option>
             <option value="ativos">mais ativos</option>
@@ -200,7 +200,7 @@ export function UsersPage() {
         </p>
       )}
       {semDiario && (
-        <p className="mt-4 font-mono text-[11px] text-obliq-faint">
+        <p className="mt-4 font-mono text-[12px] text-obliq-faint">
           diário indisponível: falta a política de leitura de food_log para o admin.
         </p>
       )}
@@ -241,14 +241,14 @@ export function UsersPage() {
                   <span className="truncate text-obliq-chalk">
                     {u.email}
                     {!u.onboarding_complete && (
-                      <span className="ml-2 font-mono text-[10px] text-obliq-faint">
+                      <span className="ml-2 font-mono text-[11px] text-obliq-faint">
                         incompleto
                       </span>
                     )}
                   </span>
 
                   <span className="col-start-2 md:col-start-auto">
-                    <span className="num flex items-baseline justify-between text-[11px] text-obliq-faint">
+                    <span className="num flex items-baseline justify-between text-[12px] text-obliq-faint">
                       <span>dieta</span>
                       <span className={kcal > meta && meta > 0 ? 'text-obliq-red' : ''}>
                         {kcal}
@@ -261,7 +261,7 @@ export function UsersPage() {
                   </span>
 
                   <span className="col-start-2 md:col-start-auto">
-                    <span className="num flex items-baseline justify-between text-[11px] text-obliq-faint">
+                    <span className="num flex items-baseline justify-between text-[12px] text-obliq-faint">
                       <span>IA</span>
                       <span className={usadas >= AI_CAP ? 'text-obliq-red' : ''}>
                         {usadas}/{AI_CAP}
@@ -283,7 +283,7 @@ export function UsersPage() {
 
                 {on && (
                   <div className="rise grid gap-6 pb-6 md:grid-cols-[1fr_auto]">
-                    <dl className="grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-[11px] sm:grid-cols-3">
+                    <dl className="grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-[12px] sm:grid-cols-3">
                       {[
                         ['entrou', `${dataCurta(u.created_at)} · ${diasDesde(u.created_at)}d`],
                         ['meta', meta ? `${meta} kcal` : '—'],
@@ -304,8 +304,16 @@ export function UsersPage() {
                     <div className="flex flex-col gap-4 md:items-end">
                       <SenhaAdmin usuario={u} />
                       {/* Acao destrutiva separada do resto, com sua propria linha. */}
-                      <div className="border-t border-obliq-border pt-4 md:text-right">
+                      <div className="flex flex-col gap-2 border-t border-obliq-border pt-4 md:items-end">
                         <ApagarHistorico usuario={u} />
+                        <ApagarHistorico
+                          usuario={u}
+                          alvo="conta"
+                          ehVoce={u.email === user?.email}
+                          aoApagarConta={() =>
+                            setUsers((lista) => lista?.filter((x) => x.id !== u.id) ?? null)
+                          }
+                        />
                       </div>
                     </div>
                   </div>
@@ -371,12 +379,12 @@ function SenhaAdmin({ usuario }: { usuario: AppUser }) {
         <button
           type="button"
           onClick={() => setAberto(true)}
-          className="min-h-9 rounded px-2.5 py-1.5 font-mono text-[11px] text-obliq-faint ring-1 ring-obliq-border transition-colors duration-200 hover:text-obliq-chalk hover:ring-obliq-dim"
+          className="min-h-9 rounded px-2.5 py-1.5 font-mono text-[12px] text-obliq-faint ring-1 ring-obliq-border transition-colors duration-200 hover:text-obliq-chalk hover:ring-obliq-dim"
         >
           definir senha
         </button>
         {estado === 'ok' && (
-          <p className="mt-2 font-mono text-[11px] text-obliq-dim">{msg}</p>
+          <p className="mt-2 font-mono text-[12px] text-obliq-dim">{msg}</p>
         )}
       </div>
     )
@@ -386,7 +394,7 @@ function SenhaAdmin({ usuario }: { usuario: AppUser }) {
     <form onSubmit={salvar} className="w-full md:max-w-xs">
       <label
         htmlFor={`senha-${usuario.id}`}
-        className="font-mono text-[11px] text-obliq-faint"
+        className="font-mono text-[12px] text-obliq-faint"
       >
         nova senha de {usuario.email}
       </label>
@@ -408,7 +416,7 @@ function SenhaAdmin({ usuario }: { usuario: AppUser }) {
         <button
           type="submit"
           disabled={estado === 'salvando' || senha.length < 8}
-          className="shrink-0 rounded bg-obliq-red px-2.5 py-1.5 font-mono text-[11px] text-white transition-colors duration-200 hover:bg-[#ff1420] disabled:opacity-40"
+          className="shrink-0 rounded bg-obliq-red px-2.5 py-1.5 font-mono text-[12px] text-white transition-colors duration-200 hover:bg-[#ff1420] disabled:opacity-40"
         >
           {estado === 'salvando' ? 'salvando…' : 'salvar'}
         </button>
@@ -417,7 +425,7 @@ function SenhaAdmin({ usuario }: { usuario: AppUser }) {
       {msg && (
         <p
           role={estado === 'erro' ? 'alert' : undefined}
-          className={`mt-2 font-mono text-[11px] ${
+          className={`mt-2 font-mono text-[12px] ${
             estado === 'erro' ? 'text-obliq-red' : 'text-obliq-dim'
           }`}
         >
@@ -433,7 +441,7 @@ function SenhaAdmin({ usuario }: { usuario: AppUser }) {
           setEstado('idle')
           setMsg('')
         }}
-        className="mt-2 font-mono text-[11px] text-obliq-faint underline decoration-obliq-line underline-offset-4 hover:text-obliq-chalk"
+        className="mt-2 font-mono text-[12px] text-obliq-faint underline decoration-obliq-line underline-offset-4 hover:text-obliq-chalk"
       >
         cancelar
       </button>

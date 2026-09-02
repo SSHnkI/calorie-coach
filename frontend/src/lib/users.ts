@@ -108,3 +108,11 @@ export async function deleteUserHistory(userId: string): Promise<number> {
   if (error) throw error
   return data?.length ?? 0
 }
+
+// Apaga a conta inteira: diario, perfil e login. Sem volta.
+export async function deleteUser(userId: string): Promise<void> {
+  const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+    body: { user_id: userId },
+  })
+  if (error || !data?.ok) throw new Error('falhou')
+}

@@ -74,7 +74,7 @@ export function Habito({ meta, versao }: { meta: number; versao: number }) {
   return (
     <section>
       <div className="flex items-baseline justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
+        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
           semana
         </span>
         <span className="num text-xs">
@@ -115,7 +115,7 @@ export function Habito({ meta, versao }: { meta: number; versao: number }) {
               />
             </div>
             <span
-              className={`mt-0.5 block text-center font-mono text-[9px] ${
+              className={`mt-0.5 block text-center font-mono text-[10px] ${
                 d.hoje ? 'text-obliq-chalk' : 'text-obliq-faint'
               }`}
             >

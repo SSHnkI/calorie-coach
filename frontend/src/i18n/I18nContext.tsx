@@ -18,15 +18,10 @@ const locales: Record<Locale, TranslationKeys> = {
   'en-US': enUS,
 }
 
+// O app e so em portugues por enquanto. A estrutura de traducao fica de pe
+// para quando fizer sentido voltar, mas nao ha escolha exposta ao usuario.
 function loadLocale(): Locale {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored === 'pt-BR' || stored === 'en-US') return stored
-  } catch {
-    /* ignore */
-  }
-  const browser = navigator.language
-  return browser.startsWith('pt') ? 'pt-BR' : 'en-US'
+  return 'pt-BR'
 }
 
 function saveLocale(locale: Locale) {
@@ -42,7 +37,7 @@ type I18nContextValue = {
 const I18nContext = createContext<I18nContextValue | null>(null)
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => loadLocale())
+  const [locale, setLocaleState] = useState<Locale>(loadLocale)
 
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next)

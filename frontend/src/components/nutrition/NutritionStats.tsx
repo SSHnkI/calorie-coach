@@ -57,7 +57,7 @@ export function NutritionStats({
   if (diasComRegistro === 0) {
     return (
       <section className="flex flex-wrap items-baseline justify-between gap-x-4">
-        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
+        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
           projeção
         </span>
         <span className="text-xs text-obliq-faint">
@@ -71,7 +71,7 @@ export function NutritionStats({
 
   return (
     <section className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
+      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
         projeção
       </span>
       <span className="num text-xs">

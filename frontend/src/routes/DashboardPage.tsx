@@ -87,13 +87,13 @@ export function DashboardPage() {
 
   // Otimista: a linha entra na hora e o calculo corre atras.
   // Varios registros podem estar em analise ao mesmo tempo.
-  const handleAnalyze = (texto: string, foto?: string) => {
+  const handleAnalyze = (texto: string, foto?: string, fala?: string) => {
     const id = `pend-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
-    const rotulo = texto.trim() || 'foto da refeição'
+    const rotulo = texto.trim() || (fala ? 'ouvindo o que você disse' : 'foto da refeição')
     setPendentes((p) => [{ id, texto: rotulo, foto }, ...p])
     setError('')
 
-    analyzeFood(texto, foto)
+    analyzeFood(texto, foto, fala)
       .then((result) => {
         if (!result.ok) {
           setError(
@@ -162,10 +162,10 @@ export function DashboardPage() {
           {/* Numero do dia: o unico lugar onde o vermelho aparece grande. */}
           <section className="mt-6">
             <div className="flex items-baseline justify-between">
-              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
+              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
                 {hoje}
               </span>
-              <span className="num text-[10px] text-obliq-faint">
+              <span className="num text-[11px] text-obliq-faint">
                 {Math.round(pct)}%
               </span>
             </div>
@@ -224,7 +224,7 @@ export function DashboardPage() {
 
           {/* Macros em tres colunas: mesma informacao, um terco da altura. */}
           <section className="mt-6">
-            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
+            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
               {t.dashboard.macros}
             </span>
             <dl className="mt-2 grid grid-cols-3 gap-3">
@@ -234,7 +234,7 @@ export function DashboardPage() {
                 { l: t.dashboard.fat, cur: totals.fat_g, tgt: macros.fat_g },
               ].map((m) => (
                 <div key={m.l}>
-                  <dt className="text-[11px] text-obliq-dim">{m.l}</dt>
+                  <dt className="text-[12px] text-obliq-dim">{m.l}</dt>
                   <dd className="num mt-0.5 text-sm font-medium">
                     {Math.round(m.cur)}
                     <span className="text-obliq-faint">/{m.tgt}g</span>
@@ -260,7 +260,7 @@ export function DashboardPage() {
 
           {/* Registro do dia em forma de livro-caixa. */}
           <section className="mt-6 pb-28">
-            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
+            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
               {t.dashboard.foodLog}
             </span>
 
@@ -284,7 +284,7 @@ export function DashboardPage() {
                     )}
                     <span className="truncate text-obliq-dim">{p.texto}</span>
                     <span className="leader" aria-hidden="true" />
-                    <span className="num shrink-0 animate-pulse text-[11px] text-obliq-faint">
+                    <span className="num shrink-0 animate-pulse text-[12px] text-obliq-faint">
                       calculando
                     </span>
                   </li>
@@ -335,7 +335,7 @@ export function DashboardPage() {
                       </button>
                     </div>
 
-                    <div className="mt-1 flex gap-3 font-mono text-[11px] text-obliq-faint">
+                    <div className="mt-1 flex gap-3 font-mono text-[12px] text-obliq-faint">
                       <span>
                         {item.quantity} {item.unit}
                       </span>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { countUserEntries, deleteUserHistory } from '../../lib/users'
+import { countUserEntries, deleteUser, deleteUserHistory } from '../../lib/users'
 import type { AppUser } from '../../lib/users'
 
 type Fase = 'fechado' | 'contando' | 'confirmar' | 'apagando' | 'feito' | 'erro'
@@ -9,7 +9,19 @@ type Fase = 'fechado' | 'contando' | 'confirmar' | 'apagando' | 'feito' | 'erro'
  * Por isso a acao fica separada, exige duas etapas e mostra quantos
  * registros vao sumir antes de aceitar o clique final.
  */
-export function ApagarHistorico({ usuario }: { usuario: AppUser }) {
+type Alvo = 'historico' | 'conta'
+
+export function ApagarHistorico({
+  usuario,
+  alvo = 'historico',
+  ehVoce = false,
+  aoApagarConta,
+}: {
+  usuario: AppUser
+  alvo?: Alvo
+  ehVoce?: boolean
+  aoApagarConta?: () => void
+}) {
   const [fase, setFase] = useState<Fase>('fechado')
   const [total, setTotal] = useState(0)
   const [msg, setMsg] = useState('')
@@ -22,6 +34,19 @@ export function ApagarHistorico({ usuario }: { usuario: AppUser }) {
       setFase('confirmar')
     } catch {
       setMsg('Não foi possível contar os registros.')
+      setFase('erro')
+    }
+  }
+
+  const apagarConta = async () => {
+    setFase('apagando')
+    try {
+      await deleteUser(usuario.id)
+      setMsg(`Conta de ${usuario.email} apagada.`)
+      setFase('feito')
+      aoApagarConta?.()
+    } catch {
+      setMsg('Não foi possível apagar a conta.')
       setFase('erro')
     }
   }
@@ -47,7 +72,7 @@ export function ApagarHistorico({ usuario }: { usuario: AppUser }) {
     return (
       <p
         role={fase === 'erro' ? 'alert' : undefined}
-        className={`font-mono text-[11px] ${
+        className={`font-mono text-[12px] ${
           fase === 'erro' ? 'text-obliq-red' : 'text-obliq-dim'
         }`}
       >
@@ -59,32 +84,42 @@ export function ApagarHistorico({ usuario }: { usuario: AppUser }) {
   if (fase === 'confirmar') {
     return (
       <div className="md:text-right">
-        <p className="font-mono text-[11px] text-obliq-chalk">
-          {total === 0
-            ? 'esta conta não tem registros'
-            : `apagar ${total} ${total === 1 ? 'registro' : 'registros'} de ${usuario.email}?`}
+        <p className="font-mono text-[12px] text-obliq-chalk">
+          {alvo === 'conta'
+            ? `apagar a conta de ${usuario.email} e ${total} ${total === 1 ? 'registro' : 'registros'}?`
+            : total === 0
+              ? 'esta conta não tem registros'
+              : `apagar ${total} ${total === 1 ? 'registro' : 'registros'} de ${usuario.email}?`}
         </p>
-        <p className="mt-0.5 font-mono text-[11px] text-obliq-faint">
+        <p className="mt-0.5 font-mono text-[12px] text-obliq-faint">
           não dá para desfazer
         </p>
         <div className="mt-2 flex gap-2 md:justify-end">
           <button
             type="button"
             onClick={() => setFase('fechado')}
-            className="min-h-9 rounded px-2.5 py-1.5 font-mono text-[11px] text-obliq-faint ring-1 ring-obliq-border transition-colors duration-200 hover:text-obliq-chalk"
+            className="min-h-9 rounded px-2.5 py-1.5 font-mono text-[12px] text-obliq-faint ring-1 ring-obliq-border transition-colors duration-200 hover:text-obliq-chalk"
           >
             cancelar
           </button>
           <button
             type="button"
-            onClick={apagar}
-            disabled={total === 0}
-            className="min-h-9 rounded bg-obliq-red px-2.5 py-1.5 font-mono text-[11px] text-white transition-colors duration-200 hover:bg-[#ff1420] disabled:opacity-30"
+            onClick={alvo === 'conta' ? apagarConta : apagar}
+            disabled={alvo === 'historico' && total === 0}
+            className="min-h-9 rounded bg-obliq-red px-2.5 py-1.5 font-mono text-[12px] text-white transition-colors duration-200 hover:bg-[#ff1420] disabled:opacity-30"
           >
-            apagar tudo
+            {alvo === 'conta' ? 'apagar conta' : 'apagar tudo'}
           </button>
         </div>
       </div>
+    )
+  }
+
+  if (alvo === 'conta' && ehVoce) {
+    return (
+      <p className="font-mono text-[12px] text-obliq-faint">
+        você não apaga a própria conta por aqui
+      </p>
     )
   }
 
@@ -93,9 +128,13 @@ export function ApagarHistorico({ usuario }: { usuario: AppUser }) {
       type="button"
       onClick={abrir}
       disabled={fase === 'contando'}
-      className="min-h-9 rounded px-2.5 py-1.5 font-mono text-[11px] text-obliq-faint ring-1 ring-obliq-border transition-colors duration-200 hover:text-obliq-red hover:ring-obliq-red/50 disabled:opacity-40"
+      className="min-h-9 rounded px-2.5 py-1.5 font-mono text-[12px] text-obliq-faint ring-1 ring-obliq-border transition-colors duration-200 hover:text-obliq-red hover:ring-obliq-red/50 disabled:opacity-40"
     >
-      {fase === 'contando' ? 'contando…' : 'apagar histórico'}
+      {fase === 'contando'
+        ? 'contando…'
+        : alvo === 'conta'
+          ? 'apagar conta'
+          : 'apagar histórico'}
     </button>
   )
 }

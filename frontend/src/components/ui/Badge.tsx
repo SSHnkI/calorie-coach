@@ -12,7 +12,7 @@ export function Badge({ children, variant = 'default' }: BadgeProps) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-[3px] px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] ${styles}`}
+      className={`inline-flex items-center rounded-[3px] px-1.5 py-0.5 font-mono text-[11px] font-medium uppercase tracking-[0.08em] ${styles}`}
     >
       {children}
     </span>

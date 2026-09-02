@@ -12,6 +12,8 @@ type IconName =
   | 'target'
   | 'camera'
   | 'menu'
+  | 'mic'
+  | 'stop'
 
 type IconProps = {
   name: IconName
@@ -35,6 +37,8 @@ const paths: Record<IconName, string> = {
   camera:
     'M4 8h3l1.5-2h7L17 8h3v11H4V8Zm8 9a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z',
   menu: 'M5 8h14M5 16h14',
+  mic: 'M12 4a2.5 2.5 0 0 1 2.5 2.5v5a2.5 2.5 0 0 1-5 0v-5A2.5 2.5 0 0 1 12 4Zm-6 7a6 6 0 0 0 12 0M12 17v3',
+  stop: 'M7 7h10v10H7z',
 }
 
 export function Icon({ name, className = 'h-4 w-4', title }: IconProps) {

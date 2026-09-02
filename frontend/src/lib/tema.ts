@@ -9,7 +9,8 @@ export function temaSalvo(): Tema {
   } catch {
     // navegador sem storage: segue no padrao
   }
-  return 'escuro'
+  // Claro e o padrao do produto. O escuro continua disponivel no botao.
+  return 'claro'
 }
 
 // Escreve no <html> e na barra do sistema, pra cor do PWA acompanhar.

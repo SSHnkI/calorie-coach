@@ -13,8 +13,10 @@ const json = (body: unknown, status = 200) =>
 
 // Teto diario de chamadas a IA por conta. Nao e paywall, e anti abuso/custo.
 const AI_CAP = 100
+// Uma fala solta pode citar muita coisa. Corta pra nao virar insercao em massa.
+const MAX_ITENS = 12
 
-type Nutrition = {
+type Item = {
   name: string
   quantity: number
   unit: string
@@ -27,20 +29,28 @@ type Nutrition = {
   confidence: 'high' | 'medium' | 'low'
 }
 
-const SYSTEM = `Voce e um interpretador de alimentos. Recebe um alimento em linguagem natural (portugues do Brasil) e devolve JSON.
+const SYSTEM = `Voce e um interpretador de alimentos. Recebe o que uma pessoa comeu, em portugues do Brasil, e devolve JSON.
 
-Regras:
+Separe em um item por alimento. "arroz com feijao e bife" sao tres itens.
+So junte no mesmo item o que e inseparavel, como "pao de queijo" ou "vitamina de banana".
+
+Para cada item:
 - Se a quantidade nao for dita, assuma uma porcao caseira tipica.
-- grams_total: peso total em gramas (ou ml para liquidos) da porcao inteira.
-- search_term: nome curto e generico do alimento em ingles, para buscar em base de dados nutricional. Sem marca, sem quantidade. Ex: "white rice", "chicken breast", "coca cola".
-- name: nome do alimento em portugues, como o usuario reconheceria.
+- grams_total: peso total em gramas (ou ml para liquidos) daquela porcao.
+- search_term: nome curto e generico em ingles, para buscar em base nutricional. Sem marca, sem quantidade. Ex: "white rice", "chicken breast", "coca cola".
+- name: nome em portugues, como o usuario reconheceria.
 - Estime kcal e macros da porcao inteira. Nunca recuse, sempre estime.
 
 Responda SOMENTE com JSON neste formato:
-{"name":string,"quantity":number,"unit":string,"grams_total":number,"search_term":string,"kcal":number,"protein_g":number,"carbs_g":number,"fat_g":number,"confidence":"high"|"medium"|"low"}`
+{"items":[{"name":string,"quantity":number,"unit":string,"grams_total":number,"search_term":string,"kcal":number,"protein_g":number,"carbs_g":number,"fat_g":number,"confidence":"high"|"medium"|"low"}]}`
+
+const EXTRA_FOTO = `
+A entrada inclui uma foto. Identifique cada alimento visivel e estime a porcao pelo
+tamanho aparente, usando talheres, prato ou embalagem como referencia de escala.
+Porcao vinda de foto e estimativa: use confidence "low", ou "medium" quando houver
+embalagem legivel.`
 
 // ponytail: a disponibilidade de modelo varia por conta/chave na Groq.
-// Tenta em ordem e fica no primeiro que a chave puder usar.
 const MODELS = [
   'llama-3.3-70b-versatile',
   'meta-llama/llama-4-scout-17b-16e-instruct',
@@ -54,19 +64,54 @@ const MODELS_VISAO = [
   'meta-llama/llama-4-maverick-17b-128e-instruct',
 ]
 
-const EXTRA_FOTO = `
-A entrada e uma foto de comida. Identifique o que esta no prato e estime a porcao
-pelo tamanho aparente, usando talheres, prato ou embalagem como referencia de escala.
-Se houver varios alimentos, some tudo em um unico registro e descreva no name.
-Porcao vinda de foto e sempre estimativa: use confidence "low", ou "medium" so quando
-houver embalagem legivel.`
+const MODELS_AUDIO = ['whisper-large-v3-turbo', 'whisper-large-v3']
 
-async function askGroq(
-  foodInput: string,
-  key: string,
-  image?: string,
-): Promise<Nutrition> {
-  let lastErr = 'sem modelo disponivel'
+function dataUrlParaBlob(dataUrl: string): { blob: Blob; ext: string } {
+  const [cabecalho, base64] = dataUrl.split(',')
+  const mime = cabecalho.match(/data:([^;]+)/)?.[1] ?? 'audio/webm'
+  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
+  const ext = mime.includes('mp4') ? 'mp4' : mime.includes('mpeg') ? 'mp3' : 'webm'
+  return { blob: new Blob([bytes], { type: mime }), ext }
+}
+
+// Transcreve o audio com Whisper. O texto resultante segue o mesmo caminho da digitacao.
+async function transcrever(audio: string, key: string): Promise<string> {
+  const { blob, ext } = dataUrlParaBlob(audio)
+  let ultimoErro = 'sem modelo de audio'
+
+  for (const model of MODELS_AUDIO) {
+    const form = new FormData()
+    form.append('file', blob, `fala.${ext}`)
+    form.append('model', model)
+    form.append('language', 'pt')
+    form.append('response_format', 'json')
+
+    const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}` },
+      body: form,
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const texto = (data?.text ?? '').trim()
+      if (texto) {
+        console.log('transcrito com', model)
+        return texto
+      }
+      ultimoErro = `${model} devolveu vazio`
+      continue
+    }
+
+    ultimoErro = `${model} -> ${res.status}: ${await res.text()}`
+    console.warn('whisper falhou:', ultimoErro)
+  }
+
+  throw new Error(`transcricao_falhou: ${ultimoErro}`)
+}
+
+async function askGroq(foodInput: string, key: string, image?: string): Promise<Item[]> {
+  let ultimoErro = 'sem modelo disponivel'
   const modelos = image ? MODELS_VISAO : MODELS
 
   const conteudoUsuario = image
@@ -95,20 +140,26 @@ async function askGroq(
       const data = await res.json()
       const raw = data?.choices?.[0]?.message?.content
       if (!raw) throw new Error('groq_empty')
-      console.log('modelo usado:', model)
-      return JSON.parse(raw)
+      const parsed = JSON.parse(raw)
+      // Modelo as vezes devolve um objeto solto em vez da lista.
+      const itens: Item[] = Array.isArray(parsed?.items)
+        ? parsed.items
+        : parsed?.name
+          ? [parsed]
+          : []
+      if (!itens.length) throw new Error('sem_itens')
+      console.log('modelo usado:', model, 'itens:', itens.length)
+      return itens.slice(0, MAX_ITENS)
     }
 
-    lastErr = `${model} -> ${res.status}: ${await res.text()}`
-    // 404/400 costuma ser modelo indisponivel; qualquer outro erro tambem vale tentar o proximo
-    console.warn('groq falhou:', lastErr)
+    ultimoErro = `${model} -> ${res.status}: ${await res.text()}`
+    console.warn('groq falhou:', ultimoErro)
   }
 
-  throw new Error(`groq_indisponivel: ${lastErr}`)
+  throw new Error(`groq_indisponivel: ${ultimoErro}`)
 }
 
 // Busca valores reais no Open Food Facts. Gratuito, sem chave.
-// Retorna nutrientes por 100g do primeiro produto que tenha dados completos.
 async function lookupOFF(term: string): Promise<null | {
   kcal100: number
   protein100: number
@@ -121,7 +172,7 @@ async function lookupOFF(term: string): Promise<null | {
 
   const res = await fetch(url, {
     headers: { 'User-Agent': 'Obliq/1.0 (calorie tracker)' },
-    signal: AbortSignal.timeout(4000),
+    signal: AbortSignal.timeout(3500),
   })
   if (!res.ok) return null
 
@@ -140,6 +191,30 @@ async function lookupOFF(term: string): Promise<null | {
   return null
 }
 
+// Troca a estimativa da IA pelo valor de base sempre que houver correspondencia.
+async function refinar(item: Item, veioDeFoto: boolean): Promise<Item & { source: string }> {
+  const gramas = Number(item.grams_total)
+  if (!item.search_term || !Number.isFinite(gramas) || gramas <= 0) {
+    return { ...item, source: 'ai' }
+  }
+  try {
+    const off = await lookupOFF(item.search_term)
+    if (!off) return { ...item, source: 'ai' }
+    const f = gramas / 100
+    return {
+      ...item,
+      kcal: Math.round(off.kcal100 * f),
+      protein_g: Math.round(off.protein100 * f),
+      carbs_g: Math.round(off.carbs100 * f),
+      fat_g: Math.round(off.fat100 * f),
+      confidence: veioDeFoto ? 'medium' : 'high',
+      source: 'openfoodfacts',
+    }
+  } catch {
+    return { ...item, source: 'ai' }
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -156,23 +231,32 @@ Deno.serve(async (req) => {
     } = await supabase.auth.getUser(token!)
     if (authError || !user) return json({ error: 'unauthorized' }, 401)
 
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('analyses_today, analyses_date')
       .eq('id', user.id)
       .single()
-    if (!profile) return json({ error: 'profile_not_found' }, 404)
+    if (profileError || !profile) {
+      console.error('perfil:', profileError)
+      return json({ error: 'profile_not_found' }, 404)
+    }
 
-    const { food_input, image, log = true } = await req.json()
-    if (!food_input?.trim() && !image) {
+    const { food_input, image, audio, log = true } = await req.json()
+    if (!food_input?.trim() && !image && !audio) {
       return json({ error: 'food_input required' }, 400)
     }
-    // A foto e usada e descartada: nao gravamos imagem em lugar nenhum.
+    // Foto e audio sao usados e descartados: nada de midia e gravado.
     if (image && (typeof image !== 'string' || !image.startsWith('data:image/'))) {
       return json({ error: 'imagem invalida' }, 400)
     }
     if (image && image.length > 6_000_000) {
       return json({ error: 'imagem grande demais' }, 413)
+    }
+    if (audio && (typeof audio !== 'string' || !audio.startsWith('data:audio/'))) {
+      return json({ error: 'audio invalido' }, 400)
+    }
+    if (audio && audio.length > 8_000_000) {
+      return json({ error: 'audio grande demais' }, 413)
     }
 
     const today = new Date().toISOString().split('T')[0]
@@ -182,40 +266,30 @@ Deno.serve(async (req) => {
     const groqKey = Deno.env.get('GROQ_API_KEY')
     if (!groqKey) return json({ error: 'GROQ_API_KEY nao configurada' }, 500)
 
-    const n = await askGroq(food_input ?? '', groqKey, image)
-
-    // Open Food Facts manda no numero quando encontra. A IA so serve de rede de seguranca.
-    let source = 'ai'
-    const grams = Number(n.grams_total)
-    if (n.search_term && Number.isFinite(grams) && grams > 0) {
-      try {
-        const off = await lookupOFF(n.search_term)
-        if (off) {
-          const f = grams / 100
-          n.kcal = Math.round(off.kcal100 * f)
-          n.protein_g = Math.round(off.protein100 * f)
-          n.carbs_g = Math.round(off.carbs100 * f)
-          n.fat_g = Math.round(off.fat100 * f)
-          n.confidence = 'high'
-          source = 'openfoodfacts'
-        }
-      } catch {
-        // OFF fora do ar ou lento: fica a estimativa da IA
-      }
+    let texto = (food_input ?? '').trim()
+    let transcricao: string | null = null
+    if (audio) {
+      transcricao = await transcrever(audio, groqKey)
+      texto = [texto, transcricao].filter(Boolean).join('. ')
     }
 
+    const brutos = await askGroq(texto, groqKey, image)
+    const itens = await Promise.all(brutos.map((i) => refinar(i, !!image)))
+
     if (log) {
-      await supabase.from('food_log').insert({
-        user_id: user.id,
-        name: n.name,
-        quantity: n.quantity,
-        unit: n.unit,
-        kcal: n.kcal,
-        protein_g: n.protein_g,
-        carbs_g: n.carbs_g,
-        fat_g: n.fat_g,
-        confidence: n.confidence,
-      })
+      await supabase.from('food_log').insert(
+        itens.map((n) => ({
+          user_id: user.id,
+          name: n.name,
+          quantity: n.quantity,
+          unit: n.unit,
+          kcal: n.kcal,
+          protein_g: n.protein_g,
+          carbs_g: n.carbs_g,
+          fat_g: n.fat_g,
+          confidence: n.confidence,
+        })),
+      )
     }
 
     await supabase
@@ -223,7 +297,8 @@ Deno.serve(async (req) => {
       .update({ analyses_today: aiToday + 1, analyses_date: today })
       .eq('id', user.id)
 
-    return json({ ...n, source })
+    // Compatibilidade: quem le um item so continua funcionando.
+    return json({ ...itens[0], items: itens, transcricao })
   } catch (err) {
     console.error('analyze-food:', err)
     return json({ error: 'analyze_failed' }, 502)

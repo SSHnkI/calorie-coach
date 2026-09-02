@@ -35,7 +35,7 @@ export function Refeicoes({ entries }: { entries: FoodEntry[] }) {
   return (
     <section>
       <div className="flex items-baseline justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
+        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
           refeições
         </span>
         <span className="num text-xs">
@@ -71,7 +71,7 @@ export function Refeicoes({ entries }: { entries: FoodEntry[] }) {
               >
                 {j.itens > 0 ? j.kcal : '·'}
               </span>
-              <span className="mt-0.5 block font-mono text-[10px] text-obliq-faint">
+              <span className="mt-0.5 block font-mono text-[11px] text-obliq-faint">
                 {j.rotulo}
               </span>
             </div>

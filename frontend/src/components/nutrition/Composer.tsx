@@ -1,9 +1,10 @@
-import { type FormEvent, useRef, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { prepararFoto } from '../../lib/imagem'
+import { gravar, type Gravador } from '../../lib/audio'
 import { Icon } from '../ui/Icon'
 
 type ComposerProps = {
-  onEnviar: (texto: string, foto?: string) => void
+  onEnviar: (texto: string, foto?: string, fala?: string) => void
   erro?: string
 }
 
@@ -16,6 +17,47 @@ export function Composer({ onEnviar, erro }: ComposerProps) {
   const [foto, setFoto] = useState<string | null>(null)
   const [preparando, setPreparando] = useState(false)
   const arquivoRef = useRef<HTMLInputElement>(null)
+  const gravadorRef = useRef<Gravador | null>(null)
+  const [gravando, setGravando] = useState(false)
+  const [segundos, setSegundos] = useState(0)
+
+  // Contador de tempo da fala. So roda enquanto o microfone esta aberto.
+  useEffect(() => {
+    if (!gravando) return
+    const t = setInterval(() => setSegundos((s) => s + 1), 1000)
+    return () => clearInterval(t)
+  }, [gravando])
+
+  const comecarFala = async () => {
+    try {
+      gravadorRef.current = await gravar()
+      setSegundos(0)
+      setGravando(true)
+      navigator.vibrate?.(8)
+    } catch {
+      setGravando(false)
+    }
+  }
+
+  const enviarFala = async () => {
+    const g = gravadorRef.current
+    if (!g) return
+    setGravando(false)
+    gravadorRef.current = null
+    try {
+      const fala = await g.parar()
+      onEnviar('', undefined, fala)
+    } catch {
+      // microfone morreu no meio: nao ha o que enviar
+    }
+  }
+
+  const descartarFala = () => {
+    gravadorRef.current?.cancelar()
+    gravadorRef.current = null
+    setGravando(false)
+  }
+
 
   const escolherFoto = async (file?: File) => {
     if (!file) return
@@ -42,6 +84,44 @@ export function Composer({ onEnviar, erro }: ComposerProps) {
 
   const podeEnviar = (texto.trim().length > 0 || !!foto) && !preparando
 
+  // Enquanto grava, a barra inteira vira o controle da fala.
+  if (gravando) {
+    return (
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-obliq-border bg-obliq-black/95 backdrop-blur-md"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
+          <button
+            type="button"
+            onClick={descartarFala}
+            className="h-12 shrink-0 rounded-xl px-3 text-sm text-obliq-dim ring-1 ring-obliq-border transition-colors hover:text-obliq-chalk"
+          >
+            cancelar
+          </button>
+
+          <div className="flex flex-1 items-center gap-2">
+            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-obliq-red" />
+            <span className="num text-sm text-obliq-chalk">
+              {String(Math.floor(segundos / 60)).padStart(2, '0')}:
+              {String(segundos % 60).padStart(2, '0')}
+            </span>
+            <span className="text-sm text-obliq-faint">diga o que comeu</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={enviarFala}
+            aria-label="Concluir gravação"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-obliq-red text-white transition-all active:scale-95"
+          >
+            <Icon name="stop" className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       className="fixed inset-x-0 bottom-0 z-40 border-t border-obliq-border bg-obliq-black/95 backdrop-blur-md"
@@ -55,7 +135,7 @@ export function Composer({ onEnviar, erro }: ComposerProps) {
               alt="Foto da refeição escolhida"
               className="h-12 w-12 rounded object-cover ring-1 ring-obliq-border"
             />
-            <span className="font-mono text-[11px] text-obliq-dim">
+            <span className="font-mono text-[12px] text-obliq-dim">
               foto pronta, descreva se quiser ajudar
             </span>
             <button
@@ -104,14 +184,24 @@ export function Composer({ onEnviar, erro }: ComposerProps) {
             className="h-12 min-w-0 flex-1 rounded-xl bg-obliq-surface px-4 text-base text-obliq-chalk ring-1 ring-obliq-border outline-none transition-colors duration-200 placeholder:text-obliq-faint focus:ring-obliq-dim"
           />
 
-          <button
-            type="submit"
-            disabled={!podeEnviar}
-            aria-label="Registrar"
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-obliq-red text-white transition-all duration-200 active:scale-95 disabled:opacity-30"
-          >
-            <Icon name="arrowRight" className="h-5 w-5" />
-          </button>
+          {podeEnviar ? (
+            <button
+              type="submit"
+              aria-label="Registrar"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-obliq-red text-white transition-all duration-200 active:scale-95"
+            >
+              <Icon name="arrowRight" className="h-5 w-5" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={comecarFala}
+              aria-label="Falar o que comeu"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-obliq-red text-white transition-all duration-200 active:scale-95"
+            >
+              <Icon name="mic" className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
         {erro && (
