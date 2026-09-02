@@ -22,13 +22,13 @@ export function DashboardPage() {
   const { user } = useApp()
   const [entries, setEntries] = useState<FoodEntry[]>([])
   const [tab, setTab] = useState('today')
-  const [analyzing, setAnalyzing] = useState(false)
   const [error, setError] = useState('')
   const [editing, setEditing] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
   const [novoId, setNovoId] = useState<string | null>(null)
   const [versao, setVersao] = useState(0)
   const [ganho, setGanho] = useState<string | null>(null)
+  const [pendentes, setPendentes] = useState<{ id: string; texto: string; foto?: string }[]>([])
 
   const loadToday = useCallback((marcarNovo = false) => {
     fetchTodayFood()
@@ -85,25 +85,28 @@ export function DashboardPage() {
       })
     : target
 
-  const handleAnalyze = async (texto: string, foto?: string) => {
-    setAnalyzing(true)
+  // Otimista: a linha entra na hora e o calculo corre atras.
+  // Varios registros podem estar em analise ao mesmo tempo.
+  const handleAnalyze = (texto: string, foto?: string) => {
+    const id = `pend-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const rotulo = texto.trim() || 'foto da refeição'
+    setPendentes((p) => [{ id, texto: rotulo, foto }, ...p])
     setError('')
-    try {
-      const result = await analyzeFood(texto, foto)
-      if (!result.ok) {
-        setError(
-          result.error === 'limit_reached'
-            ? t.dashboard.limitReached
-            : t.dashboard.analyzeError,
-        )
-        return
-      }
-      loadToday(true)
-    } catch {
-      setError(t.dashboard.analyzeError)
-    } finally {
-      setAnalyzing(false)
-    }
+
+    analyzeFood(texto, foto)
+      .then((result) => {
+        if (!result.ok) {
+          setError(
+            result.error === 'limit_reached'
+              ? t.dashboard.limitReached
+              : t.dashboard.analyzeError,
+          )
+          return
+        }
+        loadToday(true)
+      })
+      .catch(() => setError(t.dashboard.analyzeError))
+      .finally(() => setPendentes((p) => p.filter((x) => x.id !== id)))
   }
 
   const handleDelete = async (id: string) => {
@@ -265,7 +268,7 @@ export function DashboardPage() {
               {t.dashboard.foodLog}
             </h2>
 
-            {entries.length === 0 ? (
+            {entries.length === 0 && pendentes.length === 0 ? (
               <div className="mt-3 border-y border-obliq-border py-12 text-center">
                 <p className="text-obliq-dim">{t.dashboard.foodLogEmpty}</p>
                 <p className="mt-1 text-sm text-obliq-faint">
@@ -274,6 +277,22 @@ export function DashboardPage() {
               </div>
             ) : (
               <ul className="mt-3 divide-y divide-obliq-border border-y border-obliq-border">
+                {pendentes.map((p) => (
+                  <li key={p.id} className="rise flex items-center gap-3 py-3.5">
+                    {p.foto && (
+                      <img
+                        src={p.foto}
+                        alt=""
+                        className="h-8 w-8 shrink-0 rounded object-cover opacity-60 ring-1 ring-obliq-border"
+                      />
+                    )}
+                    <span className="truncate text-obliq-dim">{p.texto}</span>
+                    <span className="leader" aria-hidden="true" />
+                    <span className="num shrink-0 animate-pulse text-[11px] text-obliq-faint">
+                      calculando
+                    </span>
+                  </li>
+                ))}
                 {entries.map((item, i) => (
                   <li
                     key={item.id}
@@ -337,7 +356,7 @@ export function DashboardPage() {
         </>
       )}
 
-      <Composer onEnviar={handleAnalyze} ocupado={analyzing} erro={error} />
+      <Composer onEnviar={handleAnalyze} erro={error} />
     </AppShell>
   )
 }

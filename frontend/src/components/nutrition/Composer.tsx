@@ -3,8 +3,7 @@ import { prepararFoto } from '../../lib/imagem'
 import { Icon } from '../ui/Icon'
 
 type ComposerProps = {
-  onEnviar: (texto: string, foto?: string) => Promise<void>
-  ocupado: boolean
+  onEnviar: (texto: string, foto?: string) => void
   erro?: string
 }
 
@@ -12,7 +11,7 @@ type ComposerProps = {
  * Barra de registro fixa no rodape. No celular, registrar comida e a acao
  * que se repete o dia todo: ela mora onde o polegar alcanca, nao no meio da pagina.
  */
-export function Composer({ onEnviar, ocupado, erro }: ComposerProps) {
+export function Composer({ onEnviar, erro }: ComposerProps) {
   const [texto, setTexto] = useState('')
   const [foto, setFoto] = useState<string | null>(null)
   const [preparando, setPreparando] = useState(false)
@@ -30,16 +29,18 @@ export function Composer({ onEnviar, ocupado, erro }: ComposerProps) {
     }
   }
 
-  const enviar = async (e: FormEvent) => {
+  // Limpa antes de esperar a resposta: o campo vazio e o sinal de que entrou.
+  // A analise segue em segundo plano e a linha aparece na hora, como pendente.
+  const enviar = (e: FormEvent) => {
     e.preventDefault()
     if (!texto.trim() && !foto) return
-    await onEnviar(texto, foto ?? undefined)
+    onEnviar(texto, foto ?? undefined)
     setTexto('')
     setFoto(null)
     if (arquivoRef.current) arquivoRef.current.value = ''
   }
 
-  const podeEnviar = (texto.trim().length > 0 || !!foto) && !ocupado && !preparando
+  const podeEnviar = (texto.trim().length > 0 || !!foto) && !preparando
 
   return (
     <div
@@ -109,11 +110,7 @@ export function Composer({ onEnviar, ocupado, erro }: ComposerProps) {
             aria-label="Registrar"
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-obliq-red text-white transition-all duration-200 active:scale-95 disabled:opacity-30"
           >
-            {ocupado ? (
-              <span className="h-4 w-4 animate-pulse rounded-full bg-white" />
-            ) : (
-              <Icon name="arrowRight" className="h-5 w-5" />
-            )}
+            <Icon name="arrowRight" className="h-5 w-5" />
           </button>
         </div>
 
