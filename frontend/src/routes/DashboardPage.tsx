@@ -10,6 +10,7 @@ import { Button } from '../components/ui/Button'
 import { Icon } from '../components/ui/Icon'
 import { Tabs } from '../components/ui/Tabs'
 import { Habito } from '../components/nutrition/Habito'
+import { Refeicoes } from '../components/nutrition/Refeicoes'
 import { useCountUp } from '../lib/useCountUp'
 import { NutritionHistory } from '../components/nutrition/NutritionHistory'
 import { NutritionStats } from '../components/nutrition/NutritionStats'
@@ -28,6 +29,7 @@ export function DashboardPage() {
   const [editValue, setEditValue] = useState('')
   const [novoId, setNovoId] = useState<string | null>(null)
   const [versao, setVersao] = useState(0)
+  const [ganho, setGanho] = useState<string | null>(null)
 
   const loadToday = useCallback((marcarNovo = false) => {
     fetchTodayFood()
@@ -38,7 +40,10 @@ export function DashboardPage() {
             const recem = novos.find((e) => !vistos.has(e.id))
             if (recem) {
               setNovoId(recem.id)
+              setGanho(`+${recem.kcal}`)
+              navigator.vibrate?.(12)
               setTimeout(() => setNovoId(null), 1200)
+              setTimeout(() => setGanho(null), 1100)
             }
           }
           return novos
@@ -166,7 +171,15 @@ export function DashboardPage() {
               </span>
             </div>
 
-            <div className="mt-3 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+            <div className="relative mt-3 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+              {ganho && (
+                <span
+                  aria-hidden="true"
+                  className="brotar num pointer-events-none absolute -top-1 left-2 text-xl text-obliq-red"
+                >
+                  {ganho}
+                </span>
+              )}
               <p
                 key={bateuMeta ? 'meta' : 'andando'}
                 className={`num text-[clamp(3.5rem,16vw,5.5rem)] font-medium leading-none text-obliq-red ${
@@ -201,6 +214,10 @@ export function DashboardPage() {
               />
             </div>
           </section>
+
+          <div className="mt-10">
+            <Refeicoes entries={entries} />
+          </div>
 
           <div className="mt-10">
             <Habito meta={target} versao={versao} />

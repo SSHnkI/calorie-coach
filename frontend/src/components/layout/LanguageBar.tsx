@@ -1,4 +1,5 @@
 import { LanguageSwitcher } from './LanguageSwitcher'
+import { TemaSwitcher } from './TemaSwitcher'
 import { Link } from 'react-router-dom'
 import { useApp } from '../../context/AppContext'
 import { ADMIN_EMAIL } from '../../lib/users'
@@ -12,6 +13,8 @@ export function LanguageBar() {
     <div style={{ top: 'calc(0.75rem + env(safe-area-inset-top))' }}
       className="fixed right-3 z-50 flex items-center gap-2 rounded-lg bg-obliq-black/80 px-1.5 py-1 backdrop-blur-sm">
       <LanguageSwitcher />
+      <span className="h-3 w-px bg-obliq-border" aria-hidden="true" />
+      <TemaSwitcher />
       {isAuthenticated && (
         <>
           {ehAdmin && (

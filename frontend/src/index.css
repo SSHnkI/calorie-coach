@@ -8,20 +8,47 @@
   so no numero do dia e na acao principal.
 */
 
+/* Paleta em duas camadas: os tokens crus mudam com o tema,
+   o @theme so aponta pra eles. Assim nenhum componente sabe qual tema esta ativo. */
+:root {
+  --ink-900: #101015;
+  --ink-800: #17171e;
+  --ink-700: #1f1f28;
+  --ink-border: #282833;
+  --ink-line: #35353f;
+  --tx-forte: #ece9e4;
+  --tx-medio: #9a9aa8;
+  --tx-fraco: #6b6b7a;
+  --grao: 0.5;
+  --sombra: 0 1px 0 rgba(255, 255, 255, 0.03) inset,
+    0 12px 28px -18px rgba(6, 6, 10, 0.9);
+}
+
+:root[data-theme="light"] {
+  --ink-900: #f6f4f1;
+  --ink-800: #ffffff;
+  --ink-700: #efebe6;
+  --ink-border: #e2ddd6;
+  --ink-line: #c9c2b8;
+  --tx-forte: #16161c;
+  --tx-medio: #5a5a66;
+  --tx-fraco: #8b8b97;
+  --grao: 0.25;
+  --sombra: 0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 12px 28px -20px rgba(40, 35, 30, 0.35);
+}
+
 @theme {
-  /* superficies: tinta neutra levemente fria, sem preto puro */
-  --color-obliq-black: #101015;
-  --color-obliq-surface: #17171e;
-  --color-obliq-raised: #1f1f28;
-  --color-obliq-border: #282833;
-  --color-obliq-line: #35353f;
+  --color-obliq-black: var(--ink-900);
+  --color-obliq-surface: var(--ink-800);
+  --color-obliq-raised: var(--ink-700);
+  --color-obliq-border: var(--ink-border);
+  --color-obliq-line: var(--ink-line);
 
-  /* texto: off-white quente, nao branco puro */
-  --color-obliq-chalk: #ece9e4;
-  --color-obliq-dim: #9a9aa8;
-  --color-obliq-faint: #6b6b7a;
+  --color-obliq-chalk: var(--tx-forte);
+  --color-obliq-dim: var(--tx-medio);
+  --color-obliq-faint: var(--tx-fraco);
 
-  /* marca */
   --color-obliq-red: #e8000d;
   --color-obliq-red-deep: #9e0009;
   --color-obliq-white: #ffffff;
@@ -30,9 +57,7 @@
   --font-sans: "Instrument Sans", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  /* sombras tingidas com o fundo, nunca preto puro */
-  --shadow-lift: 0 1px 0 rgba(255, 255, 255, 0.03) inset,
-    0 12px 28px -18px rgba(6, 6, 10, 0.9);
+  --shadow-lift: var(--sombra);
   --shadow-red-glow: 0 0 0 1px rgba(232, 0, 13, 0.28),
     0 14px 34px -20px rgba(232, 0, 13, 0.55);
   --shadow-red-glow-lg: 0 0 0 1px rgba(232, 0, 13, 0.35),
@@ -50,6 +75,7 @@
 
   body {
     margin: 0;
+    transition: background-color 0.25s ease, color 0.25s ease;
     font-family: var(--font-sans);
     background-color: var(--color-obliq-black);
     color: var(--color-obliq-chalk);
@@ -75,7 +101,7 @@
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    opacity: 0.5;
+    opacity: var(--grao);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
   }
 
@@ -197,6 +223,25 @@
     35% {
       transform: scale(1.06);
     }
+  }
+
+  @keyframes brotar {
+    0% {
+      opacity: 0;
+      transform: translateY(4px) scale(0.9);
+    }
+    30% {
+      opacity: 1;
+      transform: translateY(-2px) scale(1.04);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-22px) scale(1);
+    }
+  }
+
+  .brotar {
+    animation: brotar 1.1s cubic-bezier(0.2, 0.8, 0.3, 1) both;
   }
 
   .bater {
