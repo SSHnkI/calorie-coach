@@ -3,6 +3,14 @@ import type { FoodEntry } from '../types'
 
 const COLS = 'id, name, quantity, unit, kcal, protein_g, carbs_g, fat_g, confidence, logged_at'
 
+// O painel filtra pelo proprio id em vez de confiar so na RLS: a conta de
+// admin tem policy de leitura sobre o food_log inteiro (o painel /usuarios
+// depende dela), e sem este filtro o dia dela somava o diario de todo mundo.
+async function meuId(): Promise<string | null> {
+  const { data } = await supabase.auth.getSession()
+  return data.session?.user.id ?? null
+}
+
 function startOfTodayISO(): string {
   const d = new Date()
   d.setHours(0, 0, 0, 0)
@@ -11,9 +19,13 @@ function startOfTodayISO(): string {
 
 // Itens de comida de hoje (do usuário logado).
 export async function fetchTodayFood(): Promise<FoodEntry[]> {
+  const uid = await meuId()
+  if (!uid) return []
+
   const { data, error } = await supabase
     .from('food_log')
     .select(COLS)
+    .eq('user_id', uid)
     .gte('logged_at', startOfTodayISO())
     .order('logged_at', { ascending: false })
   if (error) throw error
@@ -22,12 +34,16 @@ export async function fetchTodayFood(): Promise<FoodEntry[]> {
 
 // Itens dos últimos `days` dias (para histórico e gráfico).
 export async function fetchFoodHistory(days = 30): Promise<FoodEntry[]> {
+  const uid = await meuId()
+  if (!uid) return []
+
   const since = new Date()
   since.setHours(0, 0, 0, 0)
   since.setDate(since.getDate() - days)
   const { data, error } = await supabase
     .from('food_log')
     .select(COLS)
+    .eq('user_id', uid)
     .gte('logged_at', since.toISOString())
     .order('logged_at', { ascending: false })
   if (error) throw error
