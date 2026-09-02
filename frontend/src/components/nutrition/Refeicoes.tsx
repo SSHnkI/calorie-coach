@@ -35,20 +35,28 @@ export function Refeicoes({ entries }: { entries: FoodEntry[] }) {
   return (
     <section>
       <div className="flex items-baseline justify-between">
-        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
-          refeições do dia
+        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
+          refeições
         </span>
-        <span className="num text-sm">
-          {preenchidas}
-          <span className="text-obliq-faint">/4</span>
+        <span className="num text-xs">
+          {esquecidas > 0 ? (
+            <span className="text-obliq-red">
+              {esquecidas} {esquecidas === 1 ? 'em aberto' : 'em aberto'}
+            </span>
+          ) : preenchidas === 4 ? (
+            <span className="text-obliq-chalk">dia completo</span>
+          ) : (
+            <span className="text-obliq-faint">em dia</span>
+          )}
+          <span className="ml-2 text-obliq-dim">{preenchidas}/4</span>
         </span>
       </div>
 
-      <ol className="mt-3 grid grid-cols-4 gap-1.5">
+      <ol className="mt-2 grid grid-cols-4 gap-1.5">
         {porJanela.map((j) => (
           <li key={j.id}>
             <div
-              className={`rounded-lg px-2 py-3 text-center transition-colors duration-300 ${
+              className={`rounded-lg px-1 py-2 text-center transition-colors duration-300 ${
                 j.itens > 0
                   ? 'bg-obliq-raised ring-1 ring-obliq-border'
                   : j.agora
@@ -57,13 +65,13 @@ export function Refeicoes({ entries }: { entries: FoodEntry[] }) {
               }`}
             >
               <span
-                className={`num block text-lg font-medium leading-none ${
+                className={`num block text-base font-medium leading-none ${
                   j.itens > 0 ? 'text-obliq-chalk' : 'text-obliq-faint'
                 }`}
               >
                 {j.itens > 0 ? j.kcal : '·'}
               </span>
-              <span className="mt-1 block font-mono text-[10px] text-obliq-faint">
+              <span className="mt-0.5 block font-mono text-[10px] text-obliq-faint">
                 {j.rotulo}
               </span>
             </div>
@@ -71,18 +79,6 @@ export function Refeicoes({ entries }: { entries: FoodEntry[] }) {
         ))}
       </ol>
 
-      {esquecidas > 0 && (
-        <p className="mt-2.5 font-mono text-[11px] text-obliq-faint">
-          {esquecidas === 1
-            ? 'falta 1 refeição de hoje sem registro'
-            : `faltam ${esquecidas} refeições de hoje sem registro`}
-        </p>
-      )}
-      {esquecidas === 0 && preenchidas === 4 && (
-        <p className="mt-2.5 font-mono text-[11px] text-obliq-chalk">
-          dia inteiro registrado
-        </p>
-      )}
     </section>
   )
 }

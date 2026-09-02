@@ -152,7 +152,7 @@ export function DashboardPage() {
       />
 
       {tab === 'history' && (
-        <div className="mt-8">
+        <div className="mt-6">
           <NutritionHistory />
         </div>
       )}
@@ -160,17 +160,17 @@ export function DashboardPage() {
       {tab === 'today' && (
         <>
           {/* Numero do dia: o unico lugar onde o vermelho aparece grande. */}
-          <section className="mt-8">
+          <section className="mt-6">
             <div className="flex items-baseline justify-between">
-              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
                 {hoje}
               </span>
-              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
-                {t.common.kcal}
+              <span className="num text-[10px] text-obliq-faint">
+                {Math.round(pct)}%
               </span>
             </div>
 
-            <div className="relative mt-3 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+            <div className="relative mt-1 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
               {ganho && (
                 <span
                   aria-hidden="true"
@@ -204,7 +204,7 @@ export function DashboardPage() {
               </p>
             </div>
 
-            <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-obliq-border">
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-obliq-border">
               <div
                 className={`h-full rounded-full transition-[width] duration-500 ease-out ${
                   totals.kcal > target ? 'bg-obliq-red' : 'bg-obliq-chalk'
@@ -214,47 +214,43 @@ export function DashboardPage() {
             </div>
           </section>
 
-          <div className="mt-10">
+          <div className="mt-6">
             <Refeicoes entries={entries} />
           </div>
 
-          <div className="mt-10">
+          <div className="mt-6">
             <Habito meta={target} versao={versao} />
           </div>
 
-          {/* Macros como linhas de tabela, nao tres cartoes iguais. */}
-          <section className="mt-10">
-            <h2 className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+          {/* Macros em tres colunas: mesma informacao, um terco da altura. */}
+          <section className="mt-6">
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
               {t.dashboard.macros}
-            </h2>
-            <dl className="mt-3 divide-y divide-obliq-border border-y border-obliq-border">
+            </span>
+            <dl className="mt-2 grid grid-cols-3 gap-3">
               {[
                 { l: t.dashboard.protein, cur: totals.protein_g, tgt: macros.protein_g },
                 { l: t.dashboard.carbs, cur: totals.carbs_g, tgt: macros.carbs_g },
                 { l: t.dashboard.fat, cur: totals.fat_g, tgt: macros.fat_g },
               ].map((m) => (
-                <div key={m.l} className="flex items-center gap-4 py-3">
-                  <dt className="w-24 shrink-0 text-sm text-obliq-dim">{m.l}</dt>
-                  <dd className="flex flex-1 items-center gap-4">
-                    <div className="h-px flex-1 bg-obliq-border">
-                      <div
-                        className="h-px bg-obliq-chalk transition-[width] duration-500"
-                        style={{
-                          width: `${Math.min(100, (m.cur / (m.tgt || 1)) * 100)}%`,
-                        }}
-                      />
-                    </div>
-                    <span className="num shrink-0 text-sm">
-                      {Math.round(m.cur)}
-                      <span className="text-obliq-faint">/{m.tgt}g</span>
-                    </span>
+                <div key={m.l}>
+                  <dt className="text-[11px] text-obliq-dim">{m.l}</dt>
+                  <dd className="num mt-0.5 text-sm font-medium">
+                    {Math.round(m.cur)}
+                    <span className="text-obliq-faint">/{m.tgt}g</span>
                   </dd>
+                  <div className="mt-1 h-1 overflow-hidden rounded-full bg-obliq-border">
+                    <div
+                      className="h-full rounded-full bg-obliq-dim transition-[width] duration-500"
+                      style={{ width: `${Math.min(100, (m.cur / (m.tgt || 1)) * 100)}%` }}
+                    />
+                  </div>
                 </div>
               ))}
             </dl>
           </section>
 
-          <div className="mt-10">
+          <div className="mt-6">
             <NutritionStats
               target={target}
               maintenance={maintenance}
@@ -263,10 +259,10 @@ export function DashboardPage() {
           </div>
 
           {/* Registro do dia em forma de livro-caixa. */}
-          <section className="mt-10 pb-28">
-            <h2 className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+          <section className="mt-6 pb-28">
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
               {t.dashboard.foodLog}
-            </h2>
+            </span>
 
             {entries.length === 0 && pendentes.length === 0 ? (
               <div className="mt-3 border-y border-obliq-border py-12 text-center">
@@ -278,7 +274,7 @@ export function DashboardPage() {
             ) : (
               <ul className="mt-3 divide-y divide-obliq-border border-y border-obliq-border">
                 {pendentes.map((p) => (
-                  <li key={p.id} className="rise flex items-center gap-3 py-3.5">
+                  <li key={p.id} className="rise flex items-center gap-3 py-2.5">
                     {p.foto && (
                       <img
                         src={p.foto}
@@ -296,7 +292,7 @@ export function DashboardPage() {
                 {entries.map((item, i) => (
                   <li
                     key={item.id}
-                    className={`rise py-3.5 ${item.id === novoId ? 'fisgada' : ''}`}
+                    className={`rise py-2.5 ${item.id === novoId ? 'fisgada' : ''}`}
                     style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
                   >
                     <div className="flex items-baseline">

@@ -52,17 +52,17 @@ export function NutritionStats({
     }
   }, [items, maintenance, currentWeight])
 
-  if (!items) return <div className="h-14 animate-pulse rounded-lg bg-obliq-surface" />
+  if (!items) return <div className="h-5 animate-pulse rounded bg-obliq-surface" />
 
   if (diasComRegistro === 0) {
     return (
-      <section>
-        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+      <section className="flex flex-wrap items-baseline justify-between gap-x-4">
+        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
           projeção
         </span>
-        <p className="mt-2 text-sm text-obliq-dim">
-          Registre alguns dias e o app projeta seu peso a partir do saldo calórico.
-        </p>
+        <span className="text-xs text-obliq-faint">
+          registre alguns dias para ver
+        </span>
       </section>
     )
   }
@@ -70,35 +70,24 @@ export function NutritionStats({
   const sinal = kgSemana > 0 ? '+' : ''
 
   return (
-    <section>
-      <div className="flex items-baseline justify-between">
-        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
-          projeção
+    <section className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
+        projeção
+      </span>
+      <span className="num text-xs">
+        <span className="text-obliq-chalk">
+          {sinal}
+          {kgSemana.toFixed(2)} kg/sem
         </span>
-        <span className="num text-sm text-obliq-faint">
-          {diasComRegistro} {diasComRegistro === 1 ? 'dia' : 'dias'}
-        </span>
-      </div>
-
-      <div className="mt-3 flex flex-wrap items-baseline gap-x-8 gap-y-2">
-        <p>
-          <span className="num text-2xl font-medium">
-            {sinal}
-            {kgSemana.toFixed(2)}
-          </span>
-          <span className="ml-1 text-sm text-obliq-faint">kg por semana</span>
-        </p>
         {projetado != null && (
-          <p className="num text-sm text-obliq-dim">
-            ~{projetado.toFixed(1)} kg em 4 semanas
-          </p>
+          <span className="text-obliq-faint"> · ~{projetado.toFixed(1)} kg em 4 sem</span>
         )}
-      </div>
-
-      <p className="mt-2 font-mono text-[11px] text-obliq-faint">
-        saldo médio {saldo > 0 ? '+' : ''}
-        {Math.round(saldo)} kcal/dia contra manutenção de {maintenance}
-      </p>
+        <span className="text-obliq-faint">
+          {' '}
+          · saldo {saldo > 0 ? '+' : ''}
+          {Math.round(saldo)}/dia
+        </span>
+      </span>
     </section>
   )
 }

@@ -69,15 +69,15 @@ export function Habito({ meta, versao }: { meta: number; versao: number }) {
     return { dias, sequencia }
   }, [itens, meta])
 
-  if (!itens) return <div className="h-16 animate-pulse rounded-lg bg-obliq-surface" />
+  if (!itens) return <div className="h-14 animate-pulse rounded-lg bg-obliq-surface" />
 
   return (
     <section>
       <div className="flex items-baseline justify-between">
-        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
-          constância
+        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
+          semana
         </span>
-        <span className="num text-sm">
+        <span className="num text-xs">
           {sequencia > 0 ? (
             <>
               {sequencia}
@@ -92,12 +92,12 @@ export function Habito({ meta, versao }: { meta: number; versao: number }) {
         </span>
       </div>
 
-      <ol className="mt-3 flex gap-1.5">
+      <ol className="mt-2 flex gap-1">
         {dias.map((d) => (
           <li key={d.rotulo} className="flex-1">
             <div
               title={d.kcal ? `${d.kcal} kcal` : d.futuro ? 'ainda vem' : 'sem registro'}
-              className={`flex h-10 items-end overflow-hidden rounded ${
+              className={`flex h-8 items-end overflow-hidden rounded ${
                 d.hoje ? 'ring-1 ring-obliq-red/50' : ''
               } ${
                 d.registrou
@@ -115,7 +115,7 @@ export function Habito({ meta, versao }: { meta: number; versao: number }) {
               />
             </div>
             <span
-              className={`mt-1 block text-center font-mono text-[10px] ${
+              className={`mt-0.5 block text-center font-mono text-[9px] ${
                 d.hoje ? 'text-obliq-chalk' : 'text-obliq-faint'
               }`}
             >
