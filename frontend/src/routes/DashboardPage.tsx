@@ -17,23 +17,9 @@ import { Tabs } from '../components/ui/Tabs'
 import { NutritionHistory } from '../components/nutrition/NutritionHistory'
 import { NutritionStats } from '../components/nutrition/NutritionStats'
 
-function ProGate() {
-  const { t } = useI18n()
-  return (
-    <Card glow className="text-center">
-      <div className="text-4xl">🔒</div>
-      <h2 className="mt-2 text-lg font-black uppercase">{t.ui.proFeature}</h2>
-      <p className="mt-1 text-sm text-white/50">{t.ui.proGateDash}</p>
-      <Button to="/pricing" className="mt-4">
-        {t.ui.goPro}
-      </Button>
-    </Card>
-  )
-}
-
 export function DashboardPage() {
   const { t, locale } = useI18n()
-  const { user, isPro } = useApp()
+  const { user } = useApp()
   const [entries, setEntries] = useState<FoodEntry[]>([])
   const [tab, setTab] = useState('today')
   const [macrosOpen, setMacrosOpen] = useState(false)
@@ -122,7 +108,7 @@ export function DashboardPage() {
   }
 
   return (
-    <AppShell titleKey="dashboard">
+    <AppShell titleKey="dashboard" showNav={false}>
       <div className="mb-4">
         <Tabs
           tabs={[
@@ -134,7 +120,7 @@ export function DashboardPage() {
         />
       </div>
 
-      {tab === 'history' && (isPro ? <NutritionHistory /> : <ProGate />)}
+      {tab === 'history' && <NutritionHistory />}
 
       {tab === 'today' && (
         <>
@@ -209,7 +195,7 @@ export function DashboardPage() {
         )}
       </Card>
 
-      {isPro && (
+      {(
         <NutritionStats
           target={target}
           maintenance={maintenance}
@@ -233,7 +219,6 @@ export function DashboardPage() {
             {analyzing ? t.dashboard.analyzing : t.dashboard.analyze}
           </Button>
         </form>
-        {!isPro && <p className="mt-2 text-xs text-white/50">{t.dashboard.freePlanNote}</p>}
         {error && <p className="mt-2 text-sm text-obliq-red">{error}</p>}
       </Card>
 
@@ -267,7 +252,7 @@ export function DashboardPage() {
                         <span>F {item.fat_g}g</span>
                       </div>
                     </div>
-                    {isPro && (
+                    {(
                       <div className="flex flex-col gap-1">
                         <button
                           type="button"

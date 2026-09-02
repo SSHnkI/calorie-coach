@@ -7,12 +7,9 @@ import { LandingPage } from './routes/LandingPage'
 import { AuthPage } from './routes/AuthPage'
 import { OnboardingPage } from './routes/OnboardingPage'
 import { DashboardPage } from './routes/DashboardPage'
-import { WorkoutPage } from './routes/WorkoutPage'
-import { DietPage } from './routes/DietPage'
-import { NutritionistPage } from './routes/NutritionistPage'
-import { PricingPage } from './routes/PricingPage'
-import { AdminPage } from './routes/AdminPage'
-import { TrainerPage } from './routes/TrainerPage'
+
+// ponytail: escopo enxugado para a calculadora de calorias.
+// Treino, dieta, admin, personal, nutri e pricing seguem no git (branch main).
 
 function OnboardingGuard() {
   const { isAuthenticated, user, loading } = useApp()
@@ -30,7 +27,6 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
 
             <Route element={<GuestRoute />}>
               <Route path="/auth" element={<AuthPage />} />
@@ -40,13 +36,8 @@ export default function App() {
 
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/workout" element={<WorkoutPage />} />
-              <Route path="/diet" element={<DietPage />} />
             </Route>
 
-            <Route path="/admin" element={<AdminPage />} />
-            <Route path="/trainer" element={<TrainerPage />} />
-            <Route path="/nutritionist" element={<NutritionistPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

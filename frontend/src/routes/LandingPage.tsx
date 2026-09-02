@@ -44,9 +44,6 @@ export function LandingPage() {
             <Button to="/auth?mode=signup" className="w-full sm:w-auto">
               {t.landing.startFree}
             </Button>
-            <Button to="/pricing" variant="secondary" className="w-full sm:w-auto">
-              {t.landing.viewPricing}
-            </Button>
           </div>
         </div>
       </section>
@@ -69,24 +66,6 @@ export function LandingPage() {
               </Card>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section className="border-t border-obliq-border px-4 py-16">
-        <div className="mx-auto max-w-lg text-center sm:max-w-2xl">
-          <Card glow className="py-8">
-            <p className="text-sm font-bold uppercase tracking-widest text-obliq-red">
-              {t.landing.proLabel}
-            </p>
-            <p className="mt-2 text-5xl font-black tabular-nums">
-              R$19,90
-              <span className="text-lg font-medium text-white/40">{t.common.month}</span>
-            </p>
-            <p className="mt-2 text-white/60">{t.landing.proDesc}</p>
-            <Button to="/auth?mode=signup" className="mt-6">
-              {t.landing.startFree}
-            </Button>
-          </Card>
         </div>
       </section>
 
