@@ -89,17 +89,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUser(profile)
   }, [loadProfile, loadTrainer])
 
-  // Ouve mudanças de sessão do Supabase Auth
+  // Ouve mudanças de sessão do Supabase Auth.
+  // PWA voltando do background: getSession() pode ficar pendurada tentando
+  // renovar o token com a rede ainda dormindo. Sem teto de tempo, loading
+  // nunca cai e o app fica na tela branca (só a barra de idioma aparece).
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session)
-      if (session?.user) await loadAll(session.user.id)
-      setLoading(false)
-    })
+    let vivo = true
+    const solta = setTimeout(() => {
+      if (vivo) setLoading(false)
+    }, 2500)
+
+    supabase.auth
+      .getSession()
+      .then(async ({ data: { session } }) => {
+        if (!vivo) return
+        setSession(session)
+        if (session?.user) await loadAll(session.user.id)
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (vivo) setLoading(false)
+      })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session)
+        setLoading(false)
         if (session?.user) {
           await loadAll(session.user.id)
         } else {
@@ -110,7 +125,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     )
 
-    return () => subscription.unsubscribe()
+    // Voltar pro app é o momento em que os dados estão mais velhos.
+    const aoVoltar = () => {
+      if (document.visibilityState !== 'visible') return
+      setLoading(false)
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(session)
+        if (session?.user) loadAll(session.user.id)
+      })
+    }
+    document.addEventListener('visibilitychange', aoVoltar)
+
+    return () => {
+      vivo = false
+      clearTimeout(solta)
+      document.removeEventListener('visibilitychange', aoVoltar)
+      subscription.unsubscribe()
+    }
   }, [loadAll])
 
   const login = useCallback(async (email: string, password: string): Promise<AuthResult> => {

@@ -1,4 +1,5 @@
-import type { FoodEntry } from '../../types'
+import type { FoodEntry, UserProfile } from '../../types'
+import { metasPorRefeicao } from '../../lib/tdee'
 
 // Quatro janelas do dia. O que cria o impulso de registrar tudo nao e
 // enfeite: e ver um espaco vazio que voce sabe que deveria estar preenchido.
@@ -14,16 +15,28 @@ function janelaDe(hora: number) {
   return JANELAS.find((j) => h >= j.de && h < j.ate)?.id ?? 'noite'
 }
 
-export function Refeicoes({ entries }: { entries: FoodEntry[] }) {
+export function Refeicoes({
+  entries,
+  meta,
+  perfil,
+}: {
+  entries: FoodEntry[]
+  meta: number
+  perfil: UserProfile | null
+}) {
   const agora = new Date().getHours()
   const atual = janelaDe(agora)
+  const metas = metasPorRefeicao(JANELAS, meta, perfil)
 
   const porJanela = JANELAS.map((j) => {
     const itens = entries.filter((e) => janelaDe(new Date(e.logged_at).getHours()) === j.id)
+    const kcal = itens.reduce((s, e) => s + e.kcal, 0)
     return {
       ...j,
       itens: itens.length,
-      kcal: itens.reduce((s, e) => s + e.kcal, 0),
+      kcal,
+      alvo: metas[j.id],
+      estourou: kcal > metas[j.id],
       agora: j.id === atual,
     }
   })
@@ -66,12 +79,19 @@ export function Refeicoes({ entries }: { entries: FoodEntry[] }) {
             >
               <span
                 className={`num block text-base font-medium leading-none ${
-                  j.itens > 0 ? 'text-obliq-chalk' : 'text-obliq-faint'
+                  j.itens === 0
+                    ? 'text-obliq-faint'
+                    : j.estourou
+                      ? 'text-obliq-red'
+                      : 'text-obliq-chalk'
                 }`}
               >
                 {j.itens > 0 ? j.kcal : '·'}
               </span>
-              <span className="mt-0.5 block font-mono text-[11px] text-obliq-faint">
+              <span className="num mt-0.5 block text-[11px] leading-none text-obliq-faint">
+                /{j.alvo}
+              </span>
+              <span className="mt-1 block font-mono text-[11px] text-obliq-faint">
                 {j.rotulo}
               </span>
             </div>

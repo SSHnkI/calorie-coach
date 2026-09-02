@@ -54,6 +54,13 @@ export function DashboardPage() {
 
   useEffect(() => {
     loadToday()
+    // Voltar do background com o registro de ontem na tela e o jeito mais
+    // rapido de o usuario desconfiar do app. Recarrega ao reaparecer.
+    const aoVoltar = () => {
+      if (document.visibilityState === 'visible') loadToday()
+    }
+    document.addEventListener('visibilitychange', aoVoltar)
+    return () => document.removeEventListener('visibilitychange', aoVoltar)
   }, [loadToday])
 
   const totals = useMemo(
@@ -215,7 +222,7 @@ export function DashboardPage() {
           </section>
 
           <div className="mt-6">
-            <Refeicoes entries={entries} />
+            <Refeicoes entries={entries} meta={target} perfil={user} />
           </div>
 
           <div className="mt-6">
