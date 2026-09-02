@@ -16,7 +16,7 @@ function ProGate() {
     <Card glow className="text-center">
       <div className="text-4xl">🔒</div>
       <h2 className="mt-2 text-lg font-black uppercase">{t.ui.proFeature}</h2>
-      <p className="mt-1 text-sm text-white/50">{t.ui.proGateWorkout}</p>
+      <p className="mt-1 text-sm text-obliq-faint">{t.ui.proGateWorkout}</p>
       <Button to="/pricing" className="mt-4">
         {t.ui.goPro}
       </Button>

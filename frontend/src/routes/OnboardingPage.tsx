@@ -61,7 +61,7 @@ export function OnboardingPage() {
       <div className="mx-auto w-full max-w-md">
         <div className="mb-6 text-center">
           <Logo size="md" />
-          <p className="mt-2 text-sm text-white/50">
+          <p className="mt-2 text-sm text-obliq-faint">
             {interpolate(t.onboarding.step, {
               current: Math.min(step, TOTAL_STEPS),
               total: TOTAL_STEPS,
@@ -79,8 +79,8 @@ export function OnboardingPage() {
         <Card glow>
           {step === 1 && (
             <div>
-              <h2 className="text-xl font-black uppercase">{t.onboarding.ageTitle}</h2>
-              <p className="mt-1 text-sm text-white/50">{t.onboarding.ageDesc}</p>
+              <h2 className="font-display text-xl font-bold">{t.onboarding.ageTitle}</h2>
+              <p className="mt-1 text-sm text-obliq-faint">{t.onboarding.ageDesc}</p>
               <div className="mt-6">
                 <Input
                   label={t.onboarding.ageLabel}
@@ -98,8 +98,8 @@ export function OnboardingPage() {
 
           {step === 2 && (
             <div>
-              <h2 className="text-xl font-black uppercase">{t.onboarding.weightTitle}</h2>
-              <p className="mt-1 text-sm text-white/50">{t.onboarding.weightDesc}</p>
+              <h2 className="font-display text-xl font-bold">{t.onboarding.weightTitle}</h2>
+              <p className="mt-1 text-sm text-obliq-faint">{t.onboarding.weightDesc}</p>
               <div className="mt-6">
                 <Input
                   label={t.onboarding.weightLabel}
@@ -117,8 +117,8 @@ export function OnboardingPage() {
 
           {step === 3 && (
             <div>
-              <h2 className="text-xl font-black uppercase">{t.onboarding.heightTitle}</h2>
-              <p className="mt-1 text-sm text-white/50">{t.onboarding.heightDesc}</p>
+              <h2 className="font-display text-xl font-bold">{t.onboarding.heightTitle}</h2>
+              <p className="mt-1 text-sm text-obliq-faint">{t.onboarding.heightDesc}</p>
               <div className="mt-6">
                 <Input
                   label={t.onboarding.heightLabel}
@@ -136,18 +136,18 @@ export function OnboardingPage() {
 
           {step === 4 && (
             <div>
-              <h2 className="text-xl font-black uppercase">{t.onboarding.sexTitle}</h2>
-              <p className="mt-1 text-sm text-white/50">{t.onboarding.sexDesc}</p>
+              <h2 className="font-display text-xl font-bold">{t.onboarding.sexTitle}</h2>
+              <p className="mt-1 text-sm text-obliq-faint">{t.onboarding.sexDesc}</p>
               <div className="mt-6 flex gap-3">
                 {(['male', 'female'] as Sex[]).map((s) => (
                   <button
                     key={s}
                     type="button"
                     onClick={() => setData({ ...data, sex: s })}
-                    className={`flex-1 rounded-xl border py-4 text-sm font-bold uppercase tracking-wide transition-all ${
+                    className={`min-h-12 flex-1 rounded-lg text-sm font-medium ring-1 transition-colors duration-200 ${
                       data.sex === s
-                        ? 'border-obliq-red bg-obliq-red/10 text-white shadow-red-glow'
-                        : 'border-obliq-border text-white/50 hover:border-white/20'
+                        ? 'bg-obliq-red/10 text-obliq-chalk ring-obliq-red'
+                        : 'text-obliq-dim ring-obliq-border hover:ring-obliq-dim'
                     }`}
                   >
                     {s === 'male' ? t.onboarding.male : t.onboarding.female}
@@ -159,18 +159,18 @@ export function OnboardingPage() {
 
           {step === 5 && (
             <div>
-              <h2 className="text-xl font-black uppercase">{t.onboarding.activityTitle}</h2>
-              <p className="mt-1 text-sm text-white/50">{t.onboarding.activityDesc}</p>
+              <h2 className="font-display text-xl font-bold">{t.onboarding.activityTitle}</h2>
+              <p className="mt-1 text-sm text-obliq-faint">{t.onboarding.activityDesc}</p>
               <div className="mt-4 flex flex-col gap-2">
                 {(Object.keys(t.onboarding.activity) as ActivityLevel[]).map((level) => (
                   <button
                     key={level}
                     type="button"
                     onClick={() => setData({ ...data, activity: level })}
-                    className={`rounded-xl border px-4 py-3 text-left text-sm transition-all ${
+                    className={`min-h-12 rounded-lg px-4 py-3 text-left text-sm ring-1 transition-colors duration-200 ${
                       data.activity === level
-                        ? 'border-obliq-red bg-obliq-red/10 shadow-red-glow'
-                        : 'border-obliq-border text-white/60 hover:border-white/20'
+                        ? 'bg-obliq-red/10 text-obliq-chalk ring-obliq-red'
+                        : 'text-obliq-dim ring-obliq-border hover:ring-obliq-dim'
                     }`}
                   >
                     {t.onboarding.activity[level]}
@@ -182,18 +182,18 @@ export function OnboardingPage() {
 
           {step === 6 && (
             <div>
-              <h2 className="text-xl font-black uppercase">{t.onboarding.goalTitle}</h2>
-              <p className="mt-1 text-sm text-white/50">{t.onboarding.goalDesc}</p>
+              <h2 className="font-display text-xl font-bold">{t.onboarding.goalTitle}</h2>
+              <p className="mt-1 text-sm text-obliq-faint">{t.onboarding.goalDesc}</p>
               <div className="mt-4 flex flex-col gap-2">
                 {(Object.keys(t.onboarding.goal) as Goal[]).map((g) => (
                   <button
                     key={g}
                     type="button"
                     onClick={() => setData({ ...data, goal: g })}
-                    className={`rounded-xl border px-4 py-4 text-sm font-bold uppercase tracking-wide transition-all ${
+                    className={`min-h-12 rounded-lg px-4 py-3 text-left text-sm font-medium ring-1 transition-colors duration-200 ${
                       data.goal === g
-                        ? 'border-obliq-red bg-obliq-red/10 shadow-red-glow'
-                        : 'border-obliq-border text-white/60 hover:border-white/20'
+                        ? 'bg-obliq-red/10 text-obliq-chalk ring-obliq-red'
+                        : 'text-obliq-dim ring-obliq-border hover:ring-obliq-dim'
                     }`}
                   >
                     {t.onboarding.goal[g]}
@@ -205,14 +205,14 @@ export function OnboardingPage() {
 
           {step === 7 && (
             <div className="text-center">
-              <p className="text-sm font-bold uppercase tracking-widest text-obliq-red">
+              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
                 {t.onboarding.targetTitle}
               </p>
-              <p className="mt-4 text-6xl font-black tabular-nums text-red-gradient">
+              <p className="num mt-4 text-6xl font-medium leading-none text-obliq-red">
                 {formatKcal(dailyKcal, locale)}
               </p>
-              <p className="text-lg font-medium text-white/60">{t.common.kcalPerDay}</p>
-              <p className="mt-4 text-sm text-white/40">{t.onboarding.targetDesc}</p>
+              <p className="mt-2 text-sm text-obliq-dim">{t.common.kcalPerDay}</p>
+              <p className="mt-4 text-sm text-obliq-faint">{t.onboarding.targetDesc}</p>
             </div>
           )}
 

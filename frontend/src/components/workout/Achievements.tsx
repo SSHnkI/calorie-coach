@@ -40,7 +40,7 @@ export function Achievements() {
 
   return (
     <div>
-      <p className="mb-4 text-sm text-white/50">
+      <p className="mb-4 text-sm text-obliq-faint">
         {unlockedCount} de {items.length} conquistas desbloqueadas
       </p>
       <div className="grid grid-cols-2 gap-3">
@@ -53,7 +53,7 @@ export function Achievements() {
             <div className="text-4xl">{a.unlocked ? (a.icon ?? '🏅') : '🔒'}</div>
             <h3 className="mt-2 text-sm font-bold">{a.name}</h3>
             {a.description && (
-              <p className="mt-1 text-xs text-white/40">{a.description}</p>
+              <p className="mt-1 text-xs text-obliq-faint">{a.description}</p>
             )}
           </Card>
         ))}

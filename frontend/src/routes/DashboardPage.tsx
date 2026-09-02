@@ -4,28 +4,26 @@ import { useI18n } from '../i18n/I18nContext'
 import { analyzeFood } from '../lib/analyzeFood'
 import { deleteFood, fetchTodayFood, updateFoodKcal } from '../lib/foodLog'
 import { calculateDailyKcal, calculateMacroTargets } from '../lib/tdee'
-import { formatKcal } from '../lib/format'
 import type { FoodEntry } from '../types'
 import { AppShell } from '../components/layout/AppShell'
-import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
-import { Card } from '../components/ui/Card'
-import { Input } from '../components/ui/Input'
-import { MacroRing } from '../components/ui/MacroRing'
-import { ProgressBar } from '../components/ui/ProgressBar'
+import { Icon } from '../components/ui/Icon'
 import { Tabs } from '../components/ui/Tabs'
 import { NutritionHistory } from '../components/nutrition/NutritionHistory'
 import { NutritionStats } from '../components/nutrition/NutritionStats'
 
+const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
+
 export function DashboardPage() {
-  const { t, locale } = useI18n()
+  const { t } = useI18n()
   const { user } = useApp()
   const [entries, setEntries] = useState<FoodEntry[]>([])
   const [tab, setTab] = useState('today')
-  const [macrosOpen, setMacrosOpen] = useState(false)
   const [foodInput, setFoodInput] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
   const [error, setError] = useState('')
+  const [editing, setEditing] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState('')
 
   const loadToday = useCallback(() => {
     fetchTodayFood()
@@ -52,7 +50,8 @@ export function DashboardPage() {
   )
 
   const target = user?.daily_kcal ?? 2000
-  const remaining = Math.max(0, target - totals.kcal)
+  const remaining = target - totals.kcal
+  const pct = target > 0 ? Math.min(100, (totals.kcal / target) * 100) : 0
   const macros = calculateMacroTargets(target)
   const maintenance = user
     ? calculateDailyKcal({
@@ -73,11 +72,15 @@ export function DashboardPage() {
     try {
       const result = await analyzeFood(foodInput)
       if (!result.ok) {
-        setError(result.error === 'limit_reached' ? t.dashboard.limitReached : t.dashboard.analyzeError)
+        setError(
+          result.error === 'limit_reached'
+            ? t.dashboard.limitReached
+            : t.dashboard.analyzeError,
+        )
         return
       }
       setFoodInput('')
-      loadToday() // a Edge Function já gravou; recarrega do banco
+      loadToday()
     } catch {
       setError(t.dashboard.analyzeError)
     } finally {
@@ -86,7 +89,7 @@ export function DashboardPage() {
   }
 
   const handleDelete = async (id: string) => {
-    setEntries((prev) => prev.filter((e) => e.id !== id)) // otimista
+    setEntries((prev) => prev.filter((e) => e.id !== id))
     try {
       await deleteFood(id)
     } catch {
@@ -94,11 +97,16 @@ export function DashboardPage() {
     }
   }
 
-  const handleEditKcal = async (item: FoodEntry) => {
-    const input = prompt(`Kcal de "${item.name}":`, String(item.kcal))
-    if (input == null) return
-    const kcal = Number(input)
-    if (!Number.isFinite(kcal) || kcal < 0) return
+  // Edicao no lugar, sem prompt() do navegador.
+  const startEdit = (item: FoodEntry) => {
+    setEditing(item.id)
+    setEditValue(String(item.kcal))
+  }
+
+  const commitEdit = async (item: FoodEntry) => {
+    const kcal = Number(editValue)
+    setEditing(null)
+    if (!Number.isFinite(kcal) || kcal < 0 || kcal === item.kcal) return
     setEntries((prev) => prev.map((e) => (e.id === item.id ? { ...e, kcal } : e)))
     try {
       await updateFoodKcal(item.id, kcal)
@@ -107,183 +115,215 @@ export function DashboardPage() {
     }
   }
 
+  const hoje = DIAS[new Date().getDay()]
+
   return (
     <AppShell titleKey="dashboard" showNav={false}>
-      <div className="mb-4">
-        <Tabs
-          tabs={[
-            { id: 'today', label: 'Hoje' },
-            { id: 'history', label: 'Histórico' },
-          ]}
-          active={tab}
-          onChange={setTab}
-        />
-      </div>
+      <Tabs
+        tabs={[
+          { id: 'today', label: t.dashboard.today },
+          { id: 'history', label: t.ui.tabHistory },
+        ]}
+        active={tab}
+        onChange={setTab}
+      />
 
-      {tab === 'history' && <NutritionHistory />}
+      {tab === 'history' && (
+        <div className="mt-8">
+          <NutritionHistory />
+        </div>
+      )}
 
       {tab === 'today' && (
         <>
-      <Card glow className="mb-4">
-        <div className="flex items-end justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-white/50">
-              {t.dashboard.today}
-            </p>
-            <p className="mt-1 text-4xl font-black tabular-nums">
-              {formatKcal(totals.kcal, locale)}
-              <span className="text-lg font-medium text-white/40">
-                {' '}
-                / {formatKcal(target, locale)}
+          {/* Numero do dia: o unico lugar onde o vermelho aparece grande. */}
+          <section className="mt-8">
+            <div className="flex items-baseline justify-between">
+              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+                {hoje}
               </span>
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-white/40">{t.dashboard.remaining}</p>
-            <p className="text-2xl font-black tabular-nums text-obliq-red">
-              {formatKcal(remaining, locale)}
-            </p>
-          </div>
-        </div>
-        <ProgressBar value={totals.kcal} max={target} showLabel className="mt-4" />
-      </Card>
+              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+                {t.common.kcal}
+              </span>
+            </div>
 
-      <Card className="mb-4">
-        <button
-          type="button"
-          onClick={() => setMacrosOpen((o) => !o)}
-          className="flex w-full items-center justify-between gap-2 text-left"
-        >
-          <h2 className="text-sm font-bold uppercase tracking-widest text-white/50">
-            {t.dashboard.macros}
-          </h2>
-          <span className={`text-white/50 transition-transform ${macrosOpen ? 'rotate-180' : ''}`}>
-            ▾
-          </span>
-        </button>
+            <div className="mt-3 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+              <p className="num text-[clamp(3.5rem,16vw,5.5rem)] font-medium leading-none text-obliq-red">
+                {totals.kcal}
+                <span className="num ml-2 align-baseline text-xl font-normal text-obliq-faint">
+                  / {target}
+                </span>
+              </p>
+              <p className="text-right">
+                <span className="block text-xs text-obliq-faint">
+                  {remaining >= 0 ? t.dashboard.remaining : 'acima da meta'}
+                </span>
+                <span
+                  className={`num text-2xl font-medium ${
+                    remaining >= 0 ? 'text-obliq-chalk' : 'text-obliq-red'
+                  }`}
+                >
+                  {Math.abs(remaining)}
+                </span>
+              </p>
+            </div>
 
-        {!macrosOpen && (
-          <div className="mt-3 grid grid-cols-3 gap-3">
-            {[
-              { l: 'Proteína', cur: totals.protein_g, tgt: macros.protein_g, c: 'bg-obliq-red' },
-              { l: 'Carbo', cur: totals.carbs_g, tgt: macros.carbs_g, c: 'bg-white' },
-              { l: 'Gordura', cur: totals.fat_g, tgt: macros.fat_g, c: 'bg-white/50' },
-            ].map((m) => (
-              <div key={m.l}>
-                <span className="text-[10px] uppercase tracking-wide text-white/40">{m.l}</span>
-                <p className="text-sm font-black tabular-nums">
-                  {Math.round(m.cur)}
-                  <span className="text-[10px] font-medium text-white/50">/{m.tgt}g</span>
-                </p>
-                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-obliq-border">
-                  <div
-                    className={`h-full ${m.c}`}
-                    style={{ width: `${Math.min(100, (m.cur / (m.tgt || 1)) * 100)}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+            <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-obliq-border">
+              <div
+                className={`h-full rounded-full transition-[width] duration-500 ease-out ${
+                  totals.kcal > target ? 'bg-obliq-red' : 'bg-obliq-chalk'
+                }`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </section>
 
-        {macrosOpen && (
-          <div className="mt-4 flex justify-around">
-            <MacroRing label={t.dashboard.protein} current={totals.protein_g} target={macros.protein_g} />
-            <MacroRing label={t.dashboard.carbs} current={totals.carbs_g} target={macros.carbs_g} color="#FFFFFF" />
-            <MacroRing label={t.dashboard.fat} current={totals.fat_g} target={macros.fat_g} color="#888888" />
-          </div>
-        )}
-      </Card>
-
-      {(
-        <NutritionStats
-          target={target}
-          maintenance={maintenance}
-          currentWeight={user?.weight_kg ?? null}
-        />
-      )}
-
-      <Card className="mb-4">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-white/50">
-          {t.dashboard.logFood}
-        </h2>
-        <form onSubmit={handleAnalyze} className="flex flex-col gap-3 sm:flex-row">
-          <Input
-            placeholder={t.dashboard.foodPlaceholder}
-            value={foodInput}
-            onChange={(e) => setFoodInput(e.target.value)}
-            className="flex-1"
-            disabled={analyzing}
-          />
-          <Button type="submit" disabled={analyzing || !foodInput.trim()} className="shrink-0">
-            {analyzing ? t.dashboard.analyzing : t.dashboard.analyze}
-          </Button>
-        </form>
-        {error && <p className="mt-2 text-sm text-obliq-red">{error}</p>}
-      </Card>
-
-      <div>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-white/50">
-          {t.dashboard.foodLog}
-        </h2>
-        {entries.length === 0 ? (
-          <Card>
-            <p className="text-center text-sm text-white/40">{t.dashboard.foodLogEmpty}</p>
-          </Card>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {entries.map((item) => (
-              <Card key={item.id}>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-bold">{item.name}</p>
-                    <p className="text-xs text-white/40">
-                      {item.quantity} {item.unit}
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="text-right">
-                      <p className="font-black tabular-nums text-obliq-red">
-                        {item.kcal} {t.common.kcal}
-                      </p>
-                      <div className="mt-1 flex gap-2 text-[10px] text-white/40">
-                        <span>P {item.protein_g}g</span>
-                        <span>C {item.carbs_g}g</span>
-                        <span>F {item.fat_g}g</span>
-                      </div>
+          {/* Macros como linhas de tabela, nao tres cartoes iguais. */}
+          <section className="mt-10">
+            <h2 className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+              {t.dashboard.macros}
+            </h2>
+            <dl className="mt-3 divide-y divide-obliq-border border-y border-obliq-border">
+              {[
+                { l: t.dashboard.protein, cur: totals.protein_g, tgt: macros.protein_g },
+                { l: t.dashboard.carbs, cur: totals.carbs_g, tgt: macros.carbs_g },
+                { l: t.dashboard.fat, cur: totals.fat_g, tgt: macros.fat_g },
+              ].map((m) => (
+                <div key={m.l} className="flex items-center gap-4 py-3">
+                  <dt className="w-24 shrink-0 text-sm text-obliq-dim">{m.l}</dt>
+                  <dd className="flex flex-1 items-center gap-4">
+                    <div className="h-px flex-1 bg-obliq-border">
+                      <div
+                        className="h-px bg-obliq-chalk transition-[width] duration-500"
+                        style={{
+                          width: `${Math.min(100, (m.cur / (m.tgt || 1)) * 100)}%`,
+                        }}
+                      />
                     </div>
-                    {(
-                      <div className="flex flex-col gap-1">
-                        <button
-                          type="button"
-                          onClick={() => handleEditKcal(item)}
-                          className="text-xs text-white/40 hover:text-white"
-                          title="Editar kcal"
-                        >
-                          ✎
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(item.id)}
-                          className="text-xs text-white/40 hover:text-obliq-red"
-                          title="Excluir"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                    <span className="num shrink-0 text-sm">
+                      {Math.round(m.cur)}
+                      <span className="text-obliq-faint">/{m.tgt}g</span>
+                    </span>
+                  </dd>
                 </div>
-                {item.confidence === 'low' && (
-                  <div className="mt-2">
-                    <Badge>{t.common.estimated}</Badge>
-                  </div>
-                )}
-              </Card>
-            ))}
+              ))}
+            </dl>
+          </section>
+
+          <div className="mt-10">
+            <NutritionStats
+              target={target}
+              maintenance={maintenance}
+              currentWeight={user?.weight_kg ?? null}
+            />
           </div>
-        )}
-      </div>
+
+          {/* Entrada: um campo, um botao. */}
+          <section className="mt-10">
+            <form onSubmit={handleAnalyze}>
+              <label
+                htmlFor="alimento"
+                className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint"
+              >
+                {t.dashboard.logFood}
+              </label>
+              <div className="mt-3 flex gap-2">
+                <input
+                  id="alimento"
+                  placeholder={t.dashboard.foodPlaceholder}
+                  value={foodInput}
+                  onChange={(e) => setFoodInput(e.target.value)}
+                  disabled={analyzing}
+                  autoComplete="off"
+                  className="min-h-11 flex-1 rounded-lg bg-obliq-surface px-3.5 py-3 text-obliq-chalk ring-1 ring-obliq-border outline-none transition-colors duration-200 placeholder:text-obliq-faint focus:ring-obliq-dim"
+                />
+                <Button type="submit" disabled={analyzing || !foodInput.trim()}>
+                  {analyzing ? t.dashboard.analyzing : t.dashboard.analyze}
+                </Button>
+              </div>
+              {error && (
+                <p role="alert" className="mt-2 text-sm text-obliq-red">
+                  {error}
+                </p>
+              )}
+            </form>
+          </section>
+
+          {/* Registro do dia em forma de livro-caixa. */}
+          <section className="mt-10 pb-16">
+            <h2 className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+              {t.dashboard.foodLog}
+            </h2>
+
+            {entries.length === 0 ? (
+              <div className="mt-3 border-y border-obliq-border py-12 text-center">
+                <p className="text-obliq-dim">{t.dashboard.foodLogEmpty}</p>
+                <p className="mt-1 text-sm text-obliq-faint">
+                  Comece por algo simples, como {t.dashboard.foodPlaceholder}.
+                </p>
+              </div>
+            ) : (
+              <ul className="mt-3 divide-y divide-obliq-border border-y border-obliq-border">
+                {entries.map((item, i) => (
+                  <li
+                    key={item.id}
+                    className="rise py-3.5"
+                    style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
+                  >
+                    <div className="flex items-baseline">
+                      <span className="text-obliq-chalk">{item.name}</span>
+                      <span className="leader" aria-hidden="true" />
+
+                      {editing === item.id ? (
+                        <input
+                          autoFocus
+                          type="number"
+                          inputMode="numeric"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onBlur={() => commitEdit(item)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') commitEdit(item)
+                            if (e.key === 'Escape') setEditing(null)
+                          }}
+                          aria-label={`Calorias de ${item.name}`}
+                          className="num w-20 shrink-0 rounded bg-obliq-raised px-2 py-0.5 text-right text-obliq-chalk ring-1 ring-obliq-dim outline-none"
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => startEdit(item)}
+                          title="Editar calorias"
+                          className="num shrink-0 rounded px-1 text-obliq-chalk transition-colors hover:text-obliq-red"
+                        >
+                          {item.kcal}
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(item.id)}
+                        aria-label={`Excluir ${item.name}`}
+                        className="ml-2 shrink-0 p-1 text-obliq-faint transition-colors hover:text-obliq-red"
+                      >
+                        <Icon name="trash" className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="mt-1 flex gap-3 font-mono text-[11px] text-obliq-faint">
+                      <span>
+                        {item.quantity} {item.unit}
+                      </span>
+                      <span>P {item.protein_g}</span>
+                      <span>C {item.carbs_g}</span>
+                      <span>G {item.fat_g}</span>
+                      {item.confidence === 'low' && <span>{t.common.estimated}</span>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         </>
       )}
     </AppShell>

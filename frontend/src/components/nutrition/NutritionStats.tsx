@@ -68,7 +68,7 @@ export function NutritionStats({
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center justify-between gap-2 text-left"
       >
-        <h2 className="text-sm font-bold uppercase tracking-widest text-white/50">
+        <h2 className="text-sm font-bold uppercase tracking-widest text-obliq-faint">
           Últimos 7 dias
         </h2>
         <div className="flex items-center gap-3">
@@ -80,7 +80,7 @@ export function NutritionStats({
               {weeklyKg.toFixed(2)} kg/sem
             </span>
           )}
-          <span className={`text-white/50 transition-transform ${open ? 'rotate-180' : ''}`}>
+          <span className={`text-obliq-faint transition-transform ${open ? 'rotate-180' : ''}`}>
             ▾
           </span>
         </div>
@@ -98,7 +98,7 @@ export function NutritionStats({
                   style={{ height: `${h}%` }}
                 />
               </div>
-              <span className="text-[9px] text-white/40">{d.wd}</span>
+              <span className="text-[9px] text-obliq-faint">{d.wd}</span>
             </div>
           )
         })}
@@ -107,7 +107,7 @@ export function NutritionStats({
       {open && (logged.length > 0 ? (
         <div className="mt-4 grid grid-cols-2 gap-3 border-t border-obliq-border pt-3">
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-white/50">
+            <p className="text-[10px] uppercase tracking-widest text-obliq-faint">
               Saldo médio/dia
             </p>
             <p
@@ -116,10 +116,10 @@ export function NutritionStats({
               {avgBalance > 0 ? '+' : ''}
               {Math.round(avgBalance)} kcal
             </p>
-            <p className="text-[10px] text-white/50">vs manutenção ({maintenance} kcal)</p>
+            <p className="text-[10px] text-obliq-faint">vs manutenção ({maintenance} kcal)</p>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-white/50">Projeção</p>
+            <p className="text-[10px] uppercase tracking-widest text-obliq-faint">Projeção</p>
             <p
               className={`text-lg font-black tabular-nums ${weeklyKg > 0 ? 'text-amber-400' : 'text-emerald-400'}`}
             >
@@ -127,12 +127,12 @@ export function NutritionStats({
               {weeklyKg.toFixed(2)} kg/sem
             </p>
             {projected != null && (
-              <p className="text-[10px] text-white/50">~{projected.toFixed(1)} kg em 4 sem</p>
+              <p className="text-[10px] text-obliq-faint">~{projected.toFixed(1)} kg em 4 sem</p>
             )}
           </div>
         </div>
       ) : (
-        <p className="mt-4 border-t border-obliq-border pt-3 text-center text-xs text-white/40">
+        <p className="mt-4 border-t border-obliq-border pt-3 text-center text-xs text-obliq-faint">
           Registre comida para ver a projeção.
         </p>
       ))}

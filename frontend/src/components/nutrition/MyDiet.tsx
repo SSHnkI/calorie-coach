@@ -97,11 +97,11 @@ export function MyDiet() {
       </Button>
 
       <div className="mb-4">
-        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-white/40">Modelos prontos</p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-obliq-faint">Modelos prontos</p>
         <div className="flex flex-wrap gap-2">
           {PRESETS.map((p) => (
             <button key={p.goal} type="button" disabled={busy} onClick={() => applyPreset(p.goal)}
-              className="rounded-full border border-obliq-border px-3 py-1.5 text-xs font-bold text-white/70 hover:border-obliq-red/50 disabled:opacity-50">
+              className="rounded-full border border-obliq-border px-3 py-1.5 text-xs font-bold text-obliq-dim hover:border-obliq-red/50 disabled:opacity-50">
               {p.label}
             </button>
           ))}
@@ -123,7 +123,7 @@ export function MyDiet() {
       {!loading && !error && plans.length === 0 && (
         <Card className="text-center">
           <div className="text-4xl">🥗</div>
-          <p className="mt-2 text-sm text-white/40">Nenhuma dieta ainda. Use um modelo ou crie a sua.</p>
+          <p className="mt-2 text-sm text-obliq-faint">Nenhuma dieta ainda. Use um modelo ou crie a sua.</p>
         </Card>
       )}
 
@@ -134,12 +134,12 @@ export function MyDiet() {
               <div className="flex items-center justify-between gap-3">
                 <button type="button" onClick={() => setViewing(p)} className="flex-1 text-left">
                   <h3 className="font-bold">{p.name}</h3>
-                  <p className="text-xs text-white/40">
+                  <p className="text-xs text-obliq-faint">
                     {p.kcalDay ? `~${p.kcalDay} kcal/dia` : ''}
                     {p.goal ? `${p.kcalDay ? ' · ' : ''}${GOAL_LABEL[p.goal] ?? p.goal}` : ''}
                   </p>
                 </button>
-                <button type="button" onClick={() => handleDelete(p.id)} className="text-xs font-bold uppercase text-white/40 hover:text-obliq-red">
+                <button type="button" onClick={() => handleDelete(p.id)} className="text-xs font-bold uppercase text-obliq-faint hover:text-obliq-red">
                   Excluir
                 </button>
               </div>

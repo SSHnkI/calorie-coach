@@ -17,10 +17,10 @@ function FeatureList({ items, highlight }: { items: string[]; highlight?: boolea
     <ul className="mt-4 flex flex-col gap-2">
       {items.map((item) => (
         <li key={item} className="flex items-center gap-2 text-sm">
-          <span className={highlight ? 'text-obliq-red' : 'text-white/40'}>
+          <span className={highlight ? 'text-obliq-red' : 'text-obliq-faint'}>
             {highlight ? '✓' : '○'}
           </span>
-          <span className={highlight ? 'text-white' : 'text-white/60'}>{item}</span>
+          <span className={highlight ? 'text-white' : 'text-obliq-dim'}>{item}</span>
         </li>
       ))}
     </ul>
@@ -80,7 +80,7 @@ function TrainerCodeSection() {
 
   return (
     <Card className="mt-4">
-      <p className="text-xs font-bold uppercase tracking-widest text-white/40 mb-3">
+      <p className="text-xs font-bold uppercase tracking-widest text-obliq-faint mb-3">
         Tem um código de treinador?
       </p>
       <div className="flex gap-2">
@@ -95,7 +95,7 @@ function TrainerCodeSection() {
         </Button>
       </div>
       {error && <p className="mt-2 text-xs text-obliq-red">{error}</p>}
-      <p className="mt-2 text-[10px] text-white/50">
+      <p className="mt-2 text-[10px] text-obliq-faint">
         Ativa o plano Pro e vincula você ao seu treinador automaticamente.
       </p>
     </Card>
@@ -148,21 +148,21 @@ export function PricingPage() {
   return (
     <AppShell titleKey="pricing">
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-black uppercase tracking-wide">
+        <h1 className="text-2xl font-display font-bold">
           {t.pricing.title}
         </h1>
-        <p className="mt-2 text-sm text-white/50">{t.pricing.subtitle}</p>
+        <p className="mt-2 text-sm text-obliq-faint">{t.pricing.subtitle}</p>
       </div>
 
       <div className="flex flex-col gap-4">
         <Card>
-          <p className="text-sm font-bold uppercase tracking-widest text-white/40">
+          <p className="text-sm font-bold uppercase tracking-widest text-obliq-faint">
             {t.common.free}
           </p>
           <p className="mt-2 text-3xl font-black">R$0</p>
           <FeatureList items={t.pricing.freeFeatures} />
           {!isPro && (
-            <p className="mt-4 text-xs font-medium text-white/50">
+            <p className="mt-4 text-xs font-medium text-obliq-faint">
               {t.pricing.currentPlan}
             </p>
           )}
@@ -181,7 +181,7 @@ export function PricingPage() {
           </div>
           <p className="mt-2 text-4xl font-black tabular-nums">
             R$19,90
-            <span className="text-base font-medium text-white/40">
+            <span className="text-base font-medium text-obliq-faint">
               {t.common.month}
             </span>
           </p>
@@ -203,23 +203,23 @@ export function PricingPage() {
       <TrainerCodeSection />
 
       <Card className="mt-6">
-        <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-white/50">
+        <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-obliq-faint">
           {t.pricing.comparison}
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-obliq-border text-left text-white/40">
+              <tr className="border-b border-obliq-border text-left text-obliq-faint">
                 <th className="pb-3 pr-4 font-medium">{t.pricing.featureCol}</th>
                 <th className="pb-3 pr-4 font-medium">{t.pricing.freeCol}</th>
                 <th className="pb-3 font-medium text-obliq-red">{t.pricing.proCol}</th>
               </tr>
             </thead>
-            <tbody className="text-white/70">
+            <tbody className="text-obliq-dim">
               {t.pricing.compareRows.map((row) => (
                 <tr key={row.feature} className="border-b border-obliq-border/50">
                   <td className="py-3 pr-4">{row.feature}</td>
-                  <td className="py-3 pr-4 text-white/40">{row.free}</td>
+                  <td className="py-3 pr-4 text-obliq-faint">{row.free}</td>
                   <td className="py-3 font-semibold text-white">{row.pro}</td>
                 </tr>
               ))}

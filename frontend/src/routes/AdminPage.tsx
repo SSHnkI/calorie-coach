@@ -74,7 +74,7 @@ export function AdminPage() {
       <div className="flex min-h-dvh items-center justify-center bg-obliq-black px-4">
         <Card className="text-center max-w-sm w-full">
           <p className="text-obliq-red font-bold text-lg">Acesso restrito</p>
-          <p className="mt-2 text-sm text-white/50">Area exclusiva para administradores.</p>
+          <p className="mt-2 text-sm text-obliq-faint">Area exclusiva para administradores.</p>
           <Button className="mt-4 w-full" onClick={() => navigate('/')}>Voltar</Button>
         </Card>
       </div>
@@ -97,7 +97,7 @@ export function AdminPage() {
         <div className="mx-auto max-w-lg flex items-center justify-between pr-24 md:pr-0">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-obliq-red">Admin</p>
-            <p className="text-xs text-white/50">{ADMIN_EMAIL}</p>
+            <p className="text-xs text-obliq-faint">{ADMIN_EMAIL}</p>
           </div>
         </div>
         {/* Tabs */}
@@ -105,7 +105,7 @@ export function AdminPage() {
           {(Object.keys(TAB_LABELS) as Tab[]).map((t) => (
             <button key={t} type="button" onClick={() => setTab(t)}
               className={`flex-1 rounded-lg py-1.5 text-[10px] font-bold uppercase tracking-wide transition-all ${
-                tab === t ? 'bg-obliq-red text-white' : 'text-white/40 hover:text-white/70'
+                tab === t ? 'bg-obliq-red text-white' : 'text-obliq-faint hover:text-obliq-dim'
               }`}>
               {TAB_LABELS[t]}
             </button>
@@ -207,28 +207,28 @@ function ExerciciosTab() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <button type="button" onClick={() => setEditing(null)}
-            className="text-sm font-bold uppercase text-white/50 hover:text-white">
+            className="text-sm font-bold uppercase text-obliq-faint hover:text-obliq-chalk">
             &larr; Voltar
           </button>
-          <p className="text-xs font-black uppercase tracking-widest text-white/40">
+          <p className="text-xs font-display font-boldst text-obliq-faint">
             {editing === 'new' ? 'Novo Exercicio' : 'Editar'}
           </p>
         </div>
 
         <Card>
-          <p className="mb-3 text-xs font-bold uppercase tracking-widest text-white/40">Foto</p>
+          <p className="mb-3 text-xs font-bold uppercase tracking-widest text-obliq-faint">Foto</p>
           {form.image_url && (
             <img src={form.image_url} alt="preview" className="mb-3 h-48 w-full rounded-xl object-cover" />
           )}
           <input ref={fileRef} type="file" accept="image/*" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }} />
           <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
-            className="w-full rounded-xl border border-dashed border-obliq-border py-3 text-sm text-white/40 hover:border-obliq-red/50 hover:text-white/70 transition-all disabled:opacity-50">
+            className="w-full rounded-xl border border-dashed border-obliq-border py-3 text-sm text-obliq-faint hover:border-obliq-red/50 hover:text-obliq-dim transition-all disabled:opacity-50">
             {uploading ? 'Enviando...' : form.image_url ? 'Trocar foto' : 'Adicionar foto'}
           </button>
           {form.image_url && (
             <button type="button" onClick={() => setForm((f) => ({ ...f, image_url: '' }))}
-              className="mt-2 w-full text-xs text-white/50 hover:text-obliq-red">
+              className="mt-2 w-full text-xs text-obliq-faint hover:text-obliq-red">
               Remover foto
             </button>
           )}
@@ -239,14 +239,14 @@ function ExerciciosTab() {
             <Input label="Nome" placeholder="Ex: Supino reto com barra"
               value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
             <div>
-              <p className="mb-2 text-sm font-medium text-white/70">Grupo muscular</p>
+              <p className="mb-2 text-sm font-medium text-obliq-dim">Grupo muscular</p>
               <div className="flex flex-wrap gap-2">
                 {MUSCLE_GROUPS.map((g) => (
                   <button key={g.key} type="button" onClick={() => setForm((f) => ({ ...f, muscle_group: g.key }))}
                     className={`rounded-full border px-3 py-1.5 text-xs font-bold uppercase transition-all ${
                       form.muscle_group === g.key
                         ? 'border-obliq-red bg-obliq-red/10 text-white'
-                        : 'border-obliq-border text-white/50'
+                        : 'border-obliq-border text-obliq-faint'
                     }`}>
                     {g.label}
                   </button>
@@ -254,14 +254,14 @@ function ExerciciosTab() {
               </div>
             </div>
             <div>
-              <p className="mb-2 text-sm font-medium text-white/70">Dificuldade</p>
+              <p className="mb-2 text-sm font-medium text-obliq-dim">Dificuldade</p>
               <div className="flex gap-2">
                 {DIFFICULTIES.map((d) => (
                   <button key={d.key} type="button" onClick={() => setForm((f) => ({ ...f, difficulty: d.key }))}
                     className={`flex-1 rounded-xl border py-2 text-xs font-bold uppercase transition-all ${
                       form.difficulty === d.key
                         ? 'border-obliq-red bg-obliq-red/10 text-white'
-                        : 'border-obliq-border text-white/50'
+                        : 'border-obliq-border text-obliq-faint'
                     }`}>
                     {d.label}
                   </button>
@@ -275,7 +275,7 @@ function ExerciciosTab() {
         </Card>
 
         <Card>
-          <p className="mb-2 text-sm font-medium text-white/70">Como realizar</p>
+          <p className="mb-2 text-sm font-medium text-obliq-dim">Como realizar</p>
           <textarea value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             placeholder="Descreva a execucao passo a passo..." rows={6}
@@ -293,7 +293,7 @@ function ExerciciosTab() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-xs text-white/50">{filtered.length} exercicios</p>
+        <p className="text-xs text-obliq-faint">{filtered.length} exercicios</p>
         <Button onClick={openNew} className="px-4 py-2 text-xs">+ Novo</Button>
       </div>
       <input type="text" placeholder="Buscar..." value={search}
@@ -318,13 +318,13 @@ function ExerciciosTab() {
               )}
               <button type="button" onClick={() => openEdit(ex)} className="flex-1 min-w-0 text-left">
                 <p className="font-bold truncate text-sm">{ex.name}</p>
-                <p className="text-xs text-white/40">{muscleLabel(ex.muscle_group)}</p>
+                <p className="text-xs text-obliq-faint">{muscleLabel(ex.muscle_group)}</p>
               </button>
               <div className="flex gap-3 shrink-0">
                 <button type="button" onClick={() => openEdit(ex)}
-                  className="text-xs font-bold text-white/40 hover:text-white">Editar</button>
+                  className="text-xs font-bold text-obliq-faint hover:text-obliq-chalk">Editar</button>
                 <button type="button" onClick={() => remove(ex.id)}
-                  className="text-xs font-bold text-white/40 hover:text-obliq-red">X</button>
+                  className="text-xs font-bold text-obliq-faint hover:text-obliq-red">X</button>
               </div>
             </Card>
           ))}
@@ -376,7 +376,7 @@ function UsuariosTab() {
         onChange={(e) => setSearch(e.target.value)}
         className="mb-4 w-full rounded-xl border border-obliq-border bg-obliq-surface px-4 py-2.5 text-sm text-white placeholder-white/20 focus:border-obliq-red focus:outline-none" />
 
-      <p className="mb-3 text-xs text-white/50">{filtered.length} usuario{filtered.length !== 1 ? 's' : ''}</p>
+      <p className="mb-3 text-xs text-obliq-faint">{filtered.length} usuario{filtered.length !== 1 ? 's' : ''}</p>
 
       {error && <p className="mb-3 text-sm text-obliq-red">{error}</p>}
 
@@ -398,22 +398,22 @@ function UsuariosTab() {
                     {u.full_name && (
                       <p className="font-bold text-sm truncate">{u.full_name}</p>
                     )}
-                    <p className="text-sm text-white/70 truncate">{u.email}</p>
+                    <p className="text-sm text-obliq-dim truncate">{u.email}</p>
                     <div className="mt-1.5 flex flex-wrap gap-2">
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
-                        isPro ? 'bg-obliq-red/20 text-obliq-red' : 'bg-obliq-border text-white/40'
+                        isPro ? 'bg-obliq-red/20 text-obliq-red' : 'bg-obliq-border text-obliq-faint'
                       }`}>
                         {isPro ? 'PRO' : 'Free'}
                       </span>
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
-                        u.onboarding_complete ? 'bg-green-500/20 text-green-400' : 'bg-obliq-border text-white/40'
+                        u.onboarding_complete ? 'bg-green-500/20 text-green-400' : 'bg-obliq-border text-obliq-faint'
                       }`}>
                         {u.onboarding_complete ? 'Onboarding OK' : 'Sem onboarding'}
                       </span>
-                      <span className="rounded-full bg-obliq-border px-2 py-0.5 text-[10px] text-white/40">
+                      <span className="rounded-full bg-obliq-border px-2 py-0.5 text-[10px] text-obliq-faint">
                         {u.plan_count} treino{u.plan_count !== 1 ? 's' : ''}
                       </span>
-                      <span className="rounded-full bg-obliq-border px-2 py-0.5 text-[10px] text-white/40">
+                      <span className="rounded-full bg-obliq-border px-2 py-0.5 text-[10px] text-obliq-faint">
                         desde {date}
                       </span>
                     </div>
@@ -425,7 +425,7 @@ function UsuariosTab() {
                     className={`shrink-0 rounded-xl border px-3 py-1.5 text-xs font-bold uppercase transition-all disabled:opacity-50 ${
                       isPro
                         ? 'border-obliq-red/50 text-obliq-red hover:bg-obliq-red/10'
-                        : 'border-obliq-border text-white/50 hover:border-obliq-red/50 hover:text-white'
+                        : 'border-obliq-border text-obliq-faint hover:border-obliq-red/50 hover:text-obliq-chalk'
                     }`}>
                     {togglingId === u.id ? '...' : isPro ? 'Remover Pro' : 'Dar Pro'}
                   </button>
@@ -434,7 +434,7 @@ function UsuariosTab() {
             )
           })}
           {filtered.length === 0 && (
-            <Card><p className="text-center text-sm text-white/40">Nenhum usuario encontrado.</p></Card>
+            <Card><p className="text-center text-sm text-obliq-faint">Nenhum usuario encontrado.</p></Card>
           )}
         </div>
       )}
@@ -542,10 +542,10 @@ function TreinosTab() {
       <div>
         <div className="mb-4 flex items-center justify-between">
           <button type="button" onClick={() => setEditingPlan(null)}
-            className="text-sm font-bold uppercase text-white/50 hover:text-white">
+            className="text-sm font-bold uppercase text-obliq-faint hover:text-obliq-chalk">
             &larr; Voltar
           </button>
-          <p className="text-xs text-white/40 truncate max-w-[60%]">{selectedUser.email}</p>
+          <p className="text-xs text-obliq-faint truncate max-w-[60%]">{selectedUser.email}</p>
         </div>
         <WorkoutBuilder
           plan={editingPlan === 'new' ? null : editingPlan}
@@ -566,19 +566,19 @@ function TreinosTab() {
     return (
       <div>
         <button type="button" onClick={() => setSelectedUser(null)}
-          className="mb-4 text-sm font-bold uppercase text-white/50 hover:text-white">
+          className="mb-4 text-sm font-bold uppercase text-obliq-faint hover:text-obliq-chalk">
           &larr; Clientes
         </button>
 
         <Card className="mb-4">
           <p className="font-bold">{selectedUser.full_name ?? selectedUser.email}</p>
           {selectedUser.full_name && (
-            <p className="text-xs text-white/40">{selectedUser.email}</p>
+            <p className="text-xs text-obliq-faint">{selectedUser.email}</p>
           )}
           <span className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
             selectedUser.subscription_status === 'active'
               ? 'bg-obliq-red/20 text-obliq-red'
-              : 'bg-obliq-border text-white/40'
+              : 'bg-obliq-border text-obliq-faint'
           }`}>
             {selectedUser.subscription_status === 'active' ? 'PRO' : 'Free'}
           </span>
@@ -589,7 +589,7 @@ function TreinosTab() {
             + Novo treino
           </Button>
           <button type="button" onClick={openCopyModal}
-            className="flex-1 rounded-xl border border-obliq-border py-2 text-xs font-bold uppercase text-white/50 hover:border-obliq-red/50 hover:text-white transition-all">
+            className="flex-1 rounded-xl border border-obliq-border py-2 text-xs font-bold uppercase text-obliq-faint hover:border-obliq-red/50 hover:text-obliq-chalk transition-all">
             Copiar modelo
           </button>
         </div>
@@ -604,7 +604,7 @@ function TreinosTab() {
           </div>
         ) : clientPlans.length === 0 ? (
           <Card>
-            <p className="text-center text-sm text-white/40">Nenhum treino ainda.</p>
+            <p className="text-center text-sm text-obliq-faint">Nenhum treino ainda.</p>
           </Card>
         ) : (
           <div className="space-y-2">
@@ -612,16 +612,16 @@ function TreinosTab() {
               <Card key={plan.id} className="flex items-center justify-between gap-2">
                 <div className="min-w-0 flex-1">
                   <p className="font-bold truncate">{plan.name}</p>
-                  <p className="text-xs text-white/40">
+                  <p className="text-xs text-obliq-faint">
                     {plan.exercise_count} exercicio{plan.exercise_count !== 1 ? 's' : ''}
                     {plan.goal ? ` · ${plan.goal}` : ''}
                   </p>
                 </div>
                 <div className="flex gap-3 shrink-0">
                   <button type="button" onClick={() => setEditingPlan(plan as WorkoutPlan)}
-                    className="text-xs font-bold text-white/40 hover:text-white">Editar</button>
+                    className="text-xs font-bold text-obliq-faint hover:text-obliq-chalk">Editar</button>
                   <button type="button" onClick={() => deletePlanForUser(plan.id)}
-                    className="text-xs font-bold text-white/40 hover:text-obliq-red">X</button>
+                    className="text-xs font-bold text-obliq-faint hover:text-obliq-red">X</button>
                 </div>
               </Card>
             ))}
@@ -632,12 +632,12 @@ function TreinosTab() {
         {showCopyModal && (
           <div className="fixed inset-0 z-50 flex flex-col bg-obliq-black/95 backdrop-blur-sm">
             <div className="flex items-center justify-between border-b border-obliq-border px-4 py-3">
-              <p className="text-sm font-black uppercase tracking-wide">Copiar meu treino para cliente</p>
+              <p className="text-sm font-display font-bold">Copiar meu treino para cliente</p>
               <button type="button" onClick={() => setShowCopyModal(false)}
-                className="text-sm font-bold text-white/50 hover:text-white">Fechar</button>
+                className="text-sm font-bold text-obliq-faint hover:text-obliq-chalk">Fechar</button>
             </div>
             <div className="flex-1 overflow-y-auto px-4 py-3">
-              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-white/40">Modelos prontos</p>
+              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-obliq-faint">Modelos prontos</p>
               <div className="mb-5 grid grid-cols-2 gap-2">
                 {PRESETS.map((p) => (
                   <button key={p.id} type="button" disabled={copying === p.id}
@@ -647,9 +647,9 @@ function TreinosTab() {
                   </button>
                 ))}
               </div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-white/40">Meus treinos</p>
+              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-obliq-faint">Meus treinos</p>
               {adminPlans.length === 0 ? (
-                <p className="text-center text-sm text-white/40 pt-2">Voce nao tem treinos modelo.</p>
+                <p className="text-center text-sm text-obliq-faint pt-2">Voce nao tem treinos modelo.</p>
               ) : (
                 <div className="space-y-2">
                   {adminPlans.map((plan) => (
@@ -658,7 +658,7 @@ function TreinosTab() {
                       onClick={() => doCopy(plan.id)}
                       className="w-full rounded-xl border border-obliq-border bg-obliq-surface px-4 py-3 text-left hover:border-obliq-red/50 transition-all disabled:opacity-50">
                       <p className="font-bold text-sm">{plan.name}</p>
-                      <p className="text-xs text-white/40">
+                      <p className="text-xs text-obliq-faint">
                         {copying === plan.id ? 'Copiando...' : `${plan.exercise_count} exercicios`}
                       </p>
                     </button>
@@ -675,7 +675,7 @@ function TreinosTab() {
   // Lista de clientes
   return (
     <div>
-      <p className="mb-3 text-xs text-white/40">Selecione um cliente para gerenciar os treinos</p>
+      <p className="mb-3 text-xs text-obliq-faint">Selecione um cliente para gerenciar os treinos</p>
       <input type="text" placeholder="Buscar cliente..." value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="mb-4 w-full rounded-xl border border-obliq-border bg-obliq-surface px-4 py-2.5 text-sm text-white placeholder-white/20 focus:border-obliq-red focus:outline-none" />
@@ -694,8 +694,8 @@ function TreinosTab() {
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   {u.full_name && <p className="font-bold text-sm truncate">{u.full_name}</p>}
-                  <p className="text-sm text-white/60 truncate">{u.email}</p>
-                  <p className="text-xs text-white/50 mt-0.5">
+                  <p className="text-sm text-obliq-dim truncate">{u.email}</p>
+                  <p className="text-xs text-obliq-faint mt-0.5">
                     {u.plan_count} treino{u.plan_count !== 1 ? 's' : ''}
                   </p>
                 </div>
@@ -705,13 +705,13 @@ function TreinosTab() {
                       PRO
                     </span>
                   )}
-                  <span className="text-white/50">›</span>
+                  <span className="text-obliq-faint">›</span>
                 </div>
               </div>
             </button>
           ))}
           {filtered.length === 0 && (
-            <Card><p className="text-center text-sm text-white/40">Nenhum cliente encontrado.</p></Card>
+            <Card><p className="text-center text-sm text-obliq-faint">Nenhum cliente encontrado.</p></Card>
           )}
         </div>
       )}
@@ -782,7 +782,7 @@ function TreinadoresTab() {
         </Button>
       ) : (
         <Card>
-          <p className="text-xs font-bold uppercase tracking-widest text-white/40 mb-4">
+          <p className="text-xs font-bold uppercase tracking-widest text-obliq-faint mb-4">
             Novo Treinador
           </p>
           <div className="space-y-3">
@@ -816,7 +816,7 @@ function TreinadoresTab() {
                 <button key={k} type="button"
                   onClick={() => setForm((f) => ({ ...f, [k]: !f[k] }))}
                   className={`flex-1 rounded-xl border px-3 py-2 text-xs font-bold uppercase transition-all ${
-                    form[k] ? 'border-obliq-red bg-obliq-red/10 text-white' : 'border-obliq-border text-white/40'
+                    form[k] ? 'border-obliq-red bg-obliq-red/10 text-white' : 'border-obliq-border text-obliq-faint'
                   }`}>
                   {form[k] ? '✓ ' : ''}{label}
                 </button>
@@ -829,7 +829,7 @@ function TreinadoresTab() {
               {saving ? 'Criando...' : 'Criar'}
             </Button>
             <button type="button" onClick={() => { setShowForm(false); setError('') }}
-              className="flex-1 rounded-xl border border-obliq-border py-2 text-xs font-bold uppercase text-white/50 hover:text-white transition-all">
+              className="flex-1 rounded-xl border border-obliq-border py-2 text-xs font-bold uppercase text-obliq-faint hover:text-obliq-chalk transition-all">
               Cancelar
             </button>
           </div>
@@ -838,7 +838,7 @@ function TreinadoresTab() {
 
       {!showForm && error && <p className="text-sm text-obliq-red">{error}</p>}
 
-      <p className="text-xs text-white/50">{trainers.length} treinador{trainers.length !== 1 ? 'es' : ''}</p>
+      <p className="text-xs text-obliq-faint">{trainers.length} treinador{trainers.length !== 1 ? 'es' : ''}</p>
 
       {loading ? (
         <div className="space-y-3">
@@ -848,7 +848,7 @@ function TreinadoresTab() {
         </div>
       ) : trainers.length === 0 ? (
         <Card className="text-center py-6">
-          <p className="text-white/50 text-sm">Nenhum treinador cadastrado.</p>
+          <p className="text-obliq-faint text-sm">Nenhum treinador cadastrado.</p>
         </Card>
       ) : (
         <div className="space-y-2">
@@ -864,12 +864,12 @@ function TreinadoresTab() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-white/40 truncate">{t.email}</p>
+                  <p className="text-xs text-obliq-faint truncate">{t.email}</p>
                   <div className="mt-1.5 flex items-center gap-2">
-                    <span className="rounded-md border border-obliq-border bg-obliq-surface px-2 py-0.5 font-mono text-[10px] font-black tracking-widest text-white/60">
+                    <span className="rounded-md border border-obliq-border bg-obliq-surface px-2 py-0.5 font-mono text-[10px] font-black tracking-widest text-obliq-dim">
                       {t.code}
                     </span>
-                    <span className="text-[10px] text-white/50">
+                    <span className="text-[10px] text-obliq-faint">
                       {t.client_count ?? 0} cliente{(t.client_count ?? 0) !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -878,7 +878,7 @@ function TreinadoresTab() {
                   type="button"
                   disabled={deletingId === t.id}
                   onClick={() => handleDelete(t.id, t.name)}
-                  className="shrink-0 rounded-xl border border-obliq-border px-3 py-1.5 text-xs font-bold uppercase text-white/50 hover:border-obliq-red/50 hover:text-obliq-red transition-all disabled:opacity-50">
+                  className="shrink-0 rounded-xl border border-obliq-border px-3 py-1.5 text-xs font-bold uppercase text-obliq-faint hover:border-obliq-red/50 hover:text-obliq-red transition-all disabled:opacity-50">
                   {deletingId === t.id ? '...' : 'Excluir'}
                 </button>
               </div>

@@ -143,18 +143,18 @@ export function WorkoutSession({
         <button
           type="button"
           onClick={onCancel}
-          className="text-sm font-bold uppercase tracking-wide text-white/50 hover:text-white"
+          className="text-sm font-bold uppercase tracking-wide text-obliq-faint hover:text-obliq-chalk"
         >
           ← Sair
         </button>
-        <p className="text-sm font-black uppercase tracking-wide">{plan.name}</p>
+        <p className="text-sm font-display font-bold">{plan.name}</p>
       </div>
 
       <div className="space-y-3">
         {blocks.map((b, bi) => (
           <Card key={bi}>
             <div className="mb-3">
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/50">
+              <p className="text-[10px] font-display font-boldst text-obliq-faint">
                 {muscleLabel(b.muscle_group)}
               </p>
               <h3 className="font-bold">{b.name}</h3>
@@ -165,8 +165,8 @@ export function WorkoutSession({
                 if (lastTop <= 0) return null
                 const suggestion = Math.round((lastTop + 2.5) * 2) / 2
                 return (
-                  <p className="mt-1 text-xs text-white/50">
-                    Último: <span className="font-bold text-white/70">{lastTop}kg</span> · tente{' '}
+                  <p className="mt-1 text-xs text-obliq-faint">
+                    Último: <span className="font-bold text-obliq-dim">{lastTop}kg</span> · tente{' '}
                     <span className="font-bold text-obliq-red">{suggestion}kg</span>
                     {p.bestWeight ? ` · recorde ${p.bestWeight}kg` : ''}
                   </p>
@@ -177,7 +177,7 @@ export function WorkoutSession({
             <div className="space-y-2">
               {b.sets.map((s, si) => (
                 <div key={si} className="flex items-center gap-2">
-                  <span className="w-6 text-center text-xs font-black text-white/40">
+                  <span className="w-6 text-center text-xs font-black text-obliq-faint">
                     {si + 1}
                   </span>
                   <input
@@ -202,7 +202,7 @@ export function WorkoutSession({
                     className={`flex h-9 w-10 shrink-0 items-center justify-center rounded-lg border text-lg transition-all ${
                       s.done
                         ? 'border-obliq-red bg-obliq-red text-white shadow-red-glow'
-                        : 'border-obliq-border text-white/40'
+                        : 'border-obliq-border text-obliq-faint'
                     }`}
                   >
                     ✓
@@ -230,7 +230,7 @@ export function WorkoutSession({
               Descanso: {rest}s · pular
             </button>
           ) : (
-            <span className="flex-1 text-xs text-white/40">
+            <span className="flex-1 text-xs text-obliq-faint">
               {doneCount} série{doneCount === 1 ? '' : 's'} concluída
               {doneCount === 1 ? '' : 's'}
             </span>

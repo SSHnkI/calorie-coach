@@ -68,20 +68,20 @@ export function WorkoutHistory() {
     <div>
       <div className="mb-4 grid grid-cols-2 gap-3">
         <Card>
-          <p className="text-[10px] font-black uppercase tracking-widest text-white/50">
+          <p className="text-[10px] font-display font-boldst text-obliq-faint">
             Esta semana
           </p>
           <p className="mt-1 text-2xl font-black tabular-nums">{week.length}</p>
-          <p className="text-xs text-white/40">
+          <p className="text-xs text-obliq-faint">
             treinos · {sum(week).toLocaleString('pt-BR')} kg vol
           </p>
         </Card>
         <Card>
-          <p className="text-[10px] font-black uppercase tracking-widest text-white/50">
+          <p className="text-[10px] font-display font-boldst text-obliq-faint">
             Este mês
           </p>
           <p className="mt-1 text-2xl font-black tabular-nums">{month.length}</p>
-          <p className="text-xs text-white/40">
+          <p className="text-xs text-obliq-faint">
             treinos · {sum(month).toLocaleString('pt-BR')} kg vol
           </p>
         </Card>
@@ -102,7 +102,7 @@ export function WorkoutHistory() {
             className={`rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wide transition-all ${
               period === p.key
                 ? 'border-obliq-red bg-obliq-red/10 text-white shadow-red-glow'
-                : 'border-obliq-border text-white/50'
+                : 'border-obliq-border text-obliq-faint'
             }`}
           >
             {p.label}
@@ -112,7 +112,7 @@ export function WorkoutHistory() {
 
       {filtered.length === 0 ? (
         <Card>
-          <p className="text-center text-sm text-white/40">Nenhum treino neste período.</p>
+          <p className="text-center text-sm text-obliq-faint">Nenhum treino neste período.</p>
         </Card>
       ) : (
         <div className="space-y-2">
@@ -121,13 +121,13 @@ export function WorkoutHistory() {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h3 className="font-bold">{s.planName ?? 'Treino'}</h3>
-                  <p className="text-xs text-white/40">{fmt(s.date)}</p>
+                  <p className="text-xs text-obliq-faint">{fmt(s.date)}</p>
                 </div>
                 <div className="text-right">
                   <p className="font-black tabular-nums text-obliq-red">
                     {s.volume.toLocaleString('pt-BR')} kg
                   </p>
-                  <p className="text-[10px] uppercase tracking-widest text-white/50">
+                  <p className="text-[10px] uppercase tracking-widest text-obliq-faint">
                     {s.sets} série{s.sets === 1 ? '' : 's'}
                   </p>
                 </div>

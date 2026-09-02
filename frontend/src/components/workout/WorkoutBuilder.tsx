@@ -157,7 +157,7 @@ export function WorkoutBuilder({
         <button
           type="button"
           onClick={onClose}
-          className="text-sm font-bold uppercase tracking-wide text-white/50 hover:text-white"
+          className="text-sm font-bold uppercase tracking-wide text-obliq-faint hover:text-obliq-chalk"
         >
           Voltar
         </button>
@@ -173,7 +173,7 @@ export function WorkoutBuilder({
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <p className="mt-4 mb-2 text-sm font-medium text-white/70">Objetivo</p>
+        <p className="mt-4 mb-2 text-sm font-medium text-obliq-dim">Objetivo</p>
         <div className="flex flex-wrap gap-2">
           {GOALS.map((g) => (
             <button
@@ -183,7 +183,7 @@ export function WorkoutBuilder({
               className={`rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wide transition-all ${
                 goal === g.key
                   ? 'border-obliq-red bg-obliq-red/10 text-white shadow-red-glow'
-                  : 'border-obliq-border text-white/50 hover:border-white/20'
+                  : 'border-obliq-border text-obliq-faint hover:border-white/20'
               }`}
             >
               {g.label}
@@ -202,7 +202,7 @@ export function WorkoutBuilder({
                     type="button"
                     onClick={() => moveRow(r.key, -1)}
                     disabled={i === 0}
-                    className="text-white/50 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
+                    className="text-obliq-faint hover:text-obliq-chalk disabled:opacity-20 text-xs leading-none px-1"
                   >&#9650;</button>
                   <input
                     type="number"
@@ -210,18 +210,18 @@ export function WorkoutBuilder({
                     max={rows.length}
                     value={i + 1}
                     onChange={(e) => moveToPosition(r.key, Number(e.target.value))}
-                    className="w-10 rounded-lg border border-obliq-border bg-obliq-surface text-center text-sm font-black text-white/60 focus:border-obliq-red focus:outline-none py-0.5"
+                    className="w-10 rounded-lg border border-obliq-border bg-obliq-surface text-center text-sm font-black text-obliq-dim focus:border-obliq-red focus:outline-none py-0.5"
                     title="Posicao do exercicio"
                   />
                   <button
                     type="button"
                     onClick={() => moveRow(r.key, 1)}
                     disabled={i === rows.length - 1}
-                    className="text-white/50 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
+                    className="text-obliq-faint hover:text-obliq-chalk disabled:opacity-20 text-xs leading-none px-1"
                   >&#9660;</button>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/50">
+                  <p className="text-[10px] font-display font-boldst text-obliq-faint">
                     {muscleLabel(r.muscle_group)}
                   </p>
                   <h3 className="font-bold">{r.name}</h3>
@@ -230,7 +230,7 @@ export function WorkoutBuilder({
               <button
                 type="button"
                 onClick={() => removeRow(r.key)}
-                className="text-xs font-bold uppercase text-white/40 hover:text-obliq-red"
+                className="text-xs font-bold uppercase text-obliq-faint hover:text-obliq-red"
               >
                 Remover
               </button>
@@ -330,11 +330,11 @@ function ExercisePicker({
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-obliq-black/95 backdrop-blur-sm">
       <div className="flex items-center justify-between border-b border-obliq-border px-4 py-3">
-        <p className="text-sm font-black uppercase tracking-wide">Adicionar exercicio</p>
+        <p className="text-sm font-display font-bold">Adicionar exercicio</p>
         <button
           type="button"
           onClick={onClose}
-          className="text-sm font-bold uppercase text-white/50 hover:text-white"
+          className="text-sm font-bold uppercase text-obliq-faint hover:text-obliq-chalk"
         >
           Fechar
         </button>
@@ -349,7 +349,7 @@ function ExercisePicker({
             className={`shrink-0 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide transition-all ${
               filter === g.key
                 ? 'border-obliq-red bg-obliq-red/10 text-white'
-                : 'border-obliq-border text-white/50'
+                : 'border-obliq-border text-obliq-faint'
             }`}
           >
             {g.label}
@@ -374,11 +374,11 @@ function ExercisePicker({
                 className="w-full rounded-xl border border-obliq-border bg-obliq-surface px-4 py-3 text-left transition-all hover:border-obliq-red/50 active:scale-[0.98]"
               >
                 <p className="font-bold text-sm">{ex.name}</p>
-                <p className="text-xs text-white/40">{muscleLabel(ex.muscle_group)}</p>
+                <p className="text-xs text-obliq-faint">{muscleLabel(ex.muscle_group)}</p>
               </button>
             ))}
             {filtered.length === 0 && (
-              <p className="text-center text-sm text-white/40 pt-8">Nenhum exercicio encontrado.</p>
+              <p className="text-center text-sm text-obliq-faint pt-8">Nenhum exercicio encontrado.</p>
             )}
           </div>
         )}

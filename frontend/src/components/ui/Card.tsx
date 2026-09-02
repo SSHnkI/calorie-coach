@@ -6,10 +6,14 @@ type CardProps = {
   glow?: boolean
 }
 
+// Cartao sem borda por padrao: a superficie ja separa do fundo.
+// `glow` fica so no bloco principal de cada tela.
 export function Card({ children, className = '', glow = false }: CardProps) {
   return (
     <div
-      className={`rounded-2xl border border-obliq-border bg-obliq-surface p-4 sm:p-5 ${glow ? 'border-obliq-red/30 shadow-red-glow' : ''} ${className}`}
+      className={`rounded-xl bg-obliq-surface p-5 shadow-lift sm:p-6 ${
+        glow ? 'ring-1 ring-obliq-red/25' : 'ring-1 ring-obliq-border'
+      } ${className}`}
     >
       {children}
     </div>

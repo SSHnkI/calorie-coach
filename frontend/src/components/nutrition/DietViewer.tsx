@@ -47,7 +47,7 @@ export function DietViewer({
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <button type="button" onClick={onBack} className="text-sm font-bold uppercase text-white/50 hover:text-white">
+        <button type="button" onClick={onBack} className="text-sm font-bold uppercase text-obliq-faint hover:text-obliq-chalk">
           ← Voltar
         </button>
         <Button variant="secondary" onClick={onEdit} className="px-4 py-2 text-xs">
@@ -55,13 +55,13 @@ export function DietViewer({
         </Button>
       </div>
 
-      <h1 className="mb-1 text-2xl font-black uppercase tracking-wide">{plan.name}</h1>
+      <h1 className="mb-1 text-2xl font-display font-bold">{plan.name}</h1>
 
       <div className="mb-4 mt-3 flex flex-wrap gap-2">
         {DAYS.map((d, i) => (
           <button key={d} type="button" onClick={() => setDay(i)}
             className={`rounded-full border px-3 py-1 text-xs font-bold transition-all ${
-              day === i ? 'border-obliq-red bg-obliq-red/10 text-white' : 'border-obliq-border text-white/50'
+              day === i ? 'border-obliq-red bg-obliq-red/10 text-white' : 'border-obliq-border text-obliq-faint'
             }`}>
             {d}
           </button>
@@ -75,7 +75,7 @@ export function DietViewer({
           ))}
         </div>
       ) : meals.length === 0 ? (
-        <Card><p className="text-center text-sm text-white/40">Sem refeições neste dia.</p></Card>
+        <Card><p className="text-center text-sm text-obliq-faint">Sem refeições neste dia.</p></Card>
       ) : (
         <>
           <p className="mb-3 text-sm font-bold text-obliq-red">{total} kcal no dia</p>
@@ -86,16 +86,16 @@ export function DietViewer({
                 <Card key={mi}>
                   <div className="mb-2 flex items-center justify-between">
                     <h3 className="font-bold">{MEAL_LABEL[m.meal_type] ?? m.meal_type}</h3>
-                    <span className="text-xs font-black tabular-nums text-white/40">{Math.round(k)} kcal</span>
+                    <span className="text-xs font-black tabular-nums text-obliq-faint">{Math.round(k)} kcal</span>
                   </div>
                   <div className="space-y-1">
                     {m.items.map((it, ii) => (
                       <div key={ii} className="flex justify-between text-sm">
-                        <span className="text-white/80">
+                        <span className="text-obliq-chalk">
                           {it.food_name}
-                          {it.quantity ? <span className="text-white/40"> · {it.quantity}{it.unit ? ` ${it.unit}` : ''}</span> : null}
+                          {it.quantity ? <span className="text-obliq-faint"> · {it.quantity}{it.unit ? ` ${it.unit}` : ''}</span> : null}
                         </span>
-                        <span className="tabular-nums text-white/40">{it.kcal} kcal</span>
+                        <span className="tabular-nums text-obliq-faint">{it.kcal} kcal</span>
                       </div>
                     ))}
                   </div>

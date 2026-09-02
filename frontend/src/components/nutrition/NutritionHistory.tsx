@@ -74,7 +74,7 @@ export function NutritionHistory() {
   if (days.length === 0) {
     return (
       <Card>
-        <p className="text-center text-sm text-white/40">Sem registros ainda.</p>
+        <p className="text-center text-sm text-obliq-faint">Sem registros ainda.</p>
       </Card>
     )
   }
@@ -92,7 +92,7 @@ export function NutritionHistory() {
             >
               <div>
                 <h3 className="font-bold capitalize">{d.label}</h3>
-                <p className="text-xs text-white/40">
+                <p className="text-xs text-obliq-faint">
                   {d.items.length} {d.items.length === 1 ? 'item' : 'itens'}
                 </p>
               </div>
@@ -104,8 +104,8 @@ export function NutritionHistory() {
               <div className="mt-3 space-y-1 border-t border-obliq-border pt-3">
                 {d.items.map((it) => (
                   <div key={it.id} className="flex justify-between text-sm">
-                    <span className="text-white/70">{it.name}</span>
-                    <span className="tabular-nums text-white/50">{it.kcal} kcal</span>
+                    <span className="text-obliq-dim">{it.name}</span>
+                    <span className="tabular-nums text-obliq-faint">{it.kcal} kcal</span>
                   </div>
                 ))}
               </div>

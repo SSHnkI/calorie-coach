@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { BottomNav } from './BottomNav'
 import { Sidebar } from './Sidebar'
 import { Logo } from './Logo'
-import { useI18n } from '../../i18n/I18nContext'
 
 type AppShellProps = {
   children: ReactNode
@@ -10,34 +9,22 @@ type AppShellProps = {
   titleKey?: 'dashboard' | 'workout' | 'pricing' | 'diet'
 }
 
-export function AppShell({ children, showNav = true, titleKey }: AppShellProps) {
-  const { t } = useI18n()
-  const title = titleKey
-    ? titleKey === 'dashboard'
-      ? t.dashboard.title
-      : titleKey === 'workout'
-        ? t.workout.title
-        : titleKey === 'diet'
-          ? t.ui.diet
-          : t.pricing.title
-    : undefined
-
+export function AppShell({ children, showNav = true }: AppShellProps) {
   return (
     <div className={`min-h-dvh bg-obliq-black ${showNav ? 'md:pl-56' : ''}`}>
       {showNav && <Sidebar />}
-      {title && (
-        <header className="sticky top-0 z-40 border-b border-obliq-border bg-obliq-black/95 backdrop-blur-md md:hidden">
-          <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-4 pr-24">
-            <Logo size="sm" />
-            <span className="text-sm font-bold uppercase tracking-wider text-white/60">
-              {title}
-            </span>
-          </div>
-        </header>
-      )}
-      <main className={`mx-auto max-w-lg px-4 md:max-w-3xl ${showNav ? 'pb-24 pt-4 md:pb-8' : 'py-4'}`}>
+
+      <header className="mx-auto max-w-3xl px-5 pt-6">
+        <Logo size="sm" />
+      </header>
+
+      <main
+        id="conteudo"
+        className={`mx-auto max-w-3xl px-5 pt-6 ${showNav ? 'pb-24 md:pb-10' : 'pb-10'}`}
+      >
         {children}
       </main>
+
       {showNav && <BottomNav />}
     </div>
   )

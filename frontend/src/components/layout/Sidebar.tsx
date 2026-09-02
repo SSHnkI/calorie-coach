@@ -31,7 +31,7 @@ export function Sidebar() {
               `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide transition-all ${
                 isActive
                   ? 'bg-obliq-red/10 text-obliq-red shadow-red-glow'
-                  : 'text-white/50 hover:text-white/80'
+                  : 'text-obliq-faint hover:text-obliq-chalk'
               }`
             }
           >

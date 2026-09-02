@@ -169,7 +169,7 @@ export function DietBuilder({
         ))}
       </datalist>
       <div className="mb-4 flex items-center justify-between">
-        <button type="button" onClick={onClose} className="text-sm font-bold uppercase text-white/50 hover:text-white">
+        <button type="button" onClick={onClose} className="text-sm font-bold uppercase text-obliq-faint hover:text-obliq-chalk">
           ← Voltar
         </button>
         <Button onClick={save} disabled={saving} className="px-4 py-2 text-xs">
@@ -183,7 +183,7 @@ export function DietBuilder({
           {GOALS.map((g) => (
             <button key={g.key} type="button" onClick={() => setGoal(goal === g.key ? null : g.key)}
               className={`rounded-full border px-3 py-1 text-xs font-bold uppercase transition-all ${
-                goal === g.key ? 'border-obliq-red bg-obliq-red/10 text-white' : 'border-obliq-border text-white/50'
+                goal === g.key ? 'border-obliq-red bg-obliq-red/10 text-white' : 'border-obliq-border text-obliq-faint'
               }`}>
               {g.label}
             </button>
@@ -195,14 +195,14 @@ export function DietBuilder({
         {DAYS.map((d, i) => (
           <button key={d} type="button" onClick={() => setDay(i)}
             className={`rounded-full border px-3 py-1 text-xs font-bold transition-all ${
-              day === i ? 'border-obliq-red bg-obliq-red/10 text-white' : 'border-obliq-border text-white/50'
+              day === i ? 'border-obliq-red bg-obliq-red/10 text-white' : 'border-obliq-border text-obliq-faint'
             }`}>
             {d}
           </button>
         ))}
       </div>
 
-      <p className="mb-3 text-xs text-white/40">
+      <p className="mb-3 text-xs text-obliq-faint">
         {DAYS[day]} · {Math.round(totals.k)} kcal · P {Math.round(totals.p)} C {Math.round(totals.c)} G {Math.round(totals.f)}
       </p>
 
@@ -211,7 +211,7 @@ export function DietBuilder({
           <Card key={mi}>
             <div className="mb-2 flex items-center justify-between">
               <h3 className="font-bold">{MEAL_LABEL[m.meal_type]}</h3>
-              <button type="button" onClick={() => removeMeal(mi)} className="text-xs text-white/40 hover:text-obliq-red">
+              <button type="button" onClick={() => removeMeal(mi)} className="text-xs text-obliq-faint hover:text-obliq-red">
                 Remover
               </button>
             </div>
@@ -227,9 +227,9 @@ export function DietBuilder({
                       className="shrink-0 rounded-md border border-obliq-border px-2 py-1 text-sm hover:border-obliq-red/50 disabled:opacity-50">
                       {calcKey === `${mi}-${ii}` ? '⏳' : '✨'}
                     </button>
-                    <button type="button" onClick={() => removeItem(mi, ii)} className="text-xs text-white/40 hover:text-obliq-red">✕</button>
+                    <button type="button" onClick={() => removeItem(mi, ii)} className="text-xs text-obliq-faint hover:text-obliq-red">✕</button>
                   </div>
-                  <div className="mt-2 grid grid-cols-6 gap-1 text-center text-[10px] text-white/40">
+                  <div className="mt-2 grid grid-cols-6 gap-1 text-center text-[10px] text-obliq-faint">
                     <input value={it.quantity ?? ''} placeholder="qtd" inputMode="decimal"
                       onChange={(e) => patchItem(mi, ii, { quantity: e.target.value === '' ? null : Number(e.target.value) })}
                       className="rounded bg-obliq-black px-1 py-1 text-white" />
@@ -262,7 +262,7 @@ export function DietBuilder({
       <div className="mt-3 flex flex-wrap gap-2">
         {MEAL_TYPES.map((t) => (
           <button key={t} type="button" onClick={() => addMeal(t)}
-            className="rounded-full border border-obliq-border px-3 py-1 text-xs font-bold text-white/60 hover:border-obliq-red/50">
+            className="rounded-full border border-obliq-border px-3 py-1 text-xs font-bold text-obliq-dim hover:border-obliq-red/50">
             + {MEAL_LABEL[t]}
           </button>
         ))}

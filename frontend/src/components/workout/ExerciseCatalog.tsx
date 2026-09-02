@@ -60,7 +60,7 @@ export function ExerciseCatalog() {
             className={`shrink-0 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wide transition-all ${
               filter === g.key
                 ? 'border-obliq-red bg-obliq-red/10 text-white shadow-red-glow'
-                : 'border-obliq-border text-white/50 hover:border-white/20'
+                : 'border-obliq-border text-obliq-faint hover:border-white/20'
             }`}
           >
             {g.label}
@@ -86,7 +86,7 @@ export function ExerciseCatalog() {
 
       {!loading && !error && filtered.length === 0 && (
         <Card>
-          <p className="text-center text-sm text-white/40">
+          <p className="text-center text-sm text-obliq-faint">
             Nenhum exercício neste grupo ainda.
           </p>
         </Card>
@@ -106,17 +106,17 @@ export function ExerciseCatalog() {
                 >
                   <div>
                     <h3 className="font-bold">{exercise.name}</h3>
-                    <p className="text-xs text-white/40">
+                    <p className="text-xs text-obliq-faint">
                       {muscleLabel(exercise.muscle_group)}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     {diff && (
-                      <span className={`text-[10px] font-black uppercase tracking-widest ${diff.color}`}>
+                      <span className={`text-[10px] font-display font-boldst ${diff.color}`}>
                         {diff.label}
                       </span>
                     )}
-                    <span className={`text-white/50 transition-transform ${open ? 'rotate-180' : ''}`}>
+                    <span className={`text-obliq-faint transition-transform ${open ? 'rotate-180' : ''}`}>
                       ▾
                     </span>
                   </div>
@@ -125,11 +125,11 @@ export function ExerciseCatalog() {
                 {open && (
                   <div className="mt-3 border-t border-obliq-border pt-3">
                     {exercise.description && (
-                      <p className="text-sm text-white/70">{exercise.description}</p>
+                      <p className="text-sm text-obliq-dim">{exercise.description}</p>
                     )}
                     {exercise.muscles_worked && (
-                      <p className="mt-2 text-xs text-white/40">
-                        <span className="font-bold uppercase tracking-widest text-white/50">
+                      <p className="mt-2 text-xs text-obliq-faint">
+                        <span className="font-bold uppercase tracking-widest text-obliq-faint">
                           Músculos:{' '}
                         </span>
                         {exercise.muscles_worked}

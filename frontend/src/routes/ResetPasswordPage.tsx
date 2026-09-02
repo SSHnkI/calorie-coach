@@ -58,21 +58,21 @@ export function ResetPasswordPage() {
     <div className="flex min-h-dvh flex-col items-center justify-center bg-obliq-black px-4 py-8">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Logo size="lg" />
+          <Logo size="md" />
         </div>
 
         <Card glow>
           {done ? (
             <div className="text-center">
-              <div className="text-4xl">✅</div>
-              <h1 className="mt-3 text-xl font-black uppercase">Senha alterada</h1>
-              <p className="mt-2 text-sm text-white/60">Levando você para o painel.</p>
+              <div className="mx-auto mb-5 h-px w-10 bg-obliq-red" aria-hidden="true" />
+              <h1 className="font-display text-xl font-bold">Senha alterada</h1>
+              <p className="mt-2 text-sm text-obliq-dim">Levando você para o painel.</p>
             </div>
           ) : ready === false ? (
             <div className="text-center">
-              <div className="text-4xl">⏳</div>
-              <h1 className="mt-3 text-xl font-black uppercase">Link inválido ou expirado</h1>
-              <p className="mt-2 text-sm text-white/60">
+              <div className="mx-auto mb-5 h-px w-10 bg-obliq-line" aria-hidden="true" />
+              <h1 className="font-display text-xl font-bold">Link inválido ou expirado</h1>
+              <p className="mt-2 text-sm text-obliq-dim">
                 Peça um novo link de recuperação na tela de login.
               </p>
               <Button to="/auth" className="mt-5">
@@ -80,11 +80,11 @@ export function ResetPasswordPage() {
               </Button>
             </div>
           ) : ready === null ? (
-            <p className="text-center text-sm text-white/60">Verificando o link…</p>
+            <p className="text-center text-sm text-obliq-dim">Verificando o link…</p>
           ) : (
             <>
-              <h1 className="text-xl font-black uppercase">Nova senha</h1>
-              <p className="mt-1 text-sm text-white/60">Escolha uma senha para entrar.</p>
+              <h1 className="font-display text-xl font-bold">Nova senha</h1>
+              <p className="mt-1 text-sm text-obliq-dim">Escolha uma senha para entrar.</p>
               <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-4">
                 <Input
                   label="Nova senha"

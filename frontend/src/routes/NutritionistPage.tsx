@@ -39,7 +39,7 @@ export function NutritionistPage() {
     return (
       <AppShell>
         <Card className="text-center">
-          <p className="text-sm text-white/50">Acesso restrito a nutricionistas.</p>
+          <p className="text-sm text-obliq-faint">Acesso restrito a nutricionistas.</p>
         </Card>
       </AppShell>
     )
@@ -52,7 +52,7 @@ export function NutritionistPage() {
           <p className="text-xs font-bold uppercase tracking-widest text-obliq-red">Nutricionista</p>
           <p className="text-sm font-black">{trainerData.name}</p>
         </div>
-        <span className="rounded-md border border-obliq-border bg-obliq-surface px-2 py-1 font-mono text-[10px] font-black tracking-widest text-white/50">
+        <span className="rounded-md border border-obliq-border bg-obliq-surface px-2 py-1 font-mono text-[10px] font-black tracking-widest text-obliq-faint">
           {trainerData.code}
         </span>
       </div>
@@ -67,7 +67,7 @@ export function NutritionistPage() {
         </div>
       ) : clients.length === 0 ? (
         <Card>
-          <p className="text-center text-sm text-white/40">
+          <p className="text-center text-sm text-obliq-faint">
             Nenhum cliente vinculado. Passe seu código para os alunos.
           </p>
         </Card>
@@ -77,7 +77,7 @@ export function NutritionistPage() {
             <Card key={c.id}>
               <button type="button" onClick={() => setSelected(c)} className="w-full text-left">
                 <p className="font-bold text-sm">{c.email}</p>
-                <p className="text-xs text-white/40">Meta: {c.daily_kcal ?? '—'} kcal/dia</p>
+                <p className="text-xs text-obliq-faint">Meta: {c.daily_kcal ?? '—'} kcal/dia</p>
               </button>
             </Card>
           ))}
@@ -120,12 +120,12 @@ function ClientDiets({ client, onBack }: { client: Client; onBack: () => void })
 
   return (
     <div>
-      <button type="button" onClick={onBack} className="mb-4 text-sm font-bold uppercase text-white/50 hover:text-white">
+      <button type="button" onClick={onBack} className="mb-4 text-sm font-bold uppercase text-obliq-faint hover:text-obliq-chalk">
         ← Clientes
       </button>
       <Card className="mb-4">
         <p className="font-bold">{client.email}</p>
-        <p className="text-xs text-white/40">Meta: {client.daily_kcal ?? '—'} kcal/dia</p>
+        <p className="text-xs text-obliq-faint">Meta: {client.daily_kcal ?? '—'} kcal/dia</p>
       </Card>
 
       <Button onClick={() => setEditing('new')} className="mb-4 w-full">
@@ -135,7 +135,7 @@ function ClientDiets({ client, onBack }: { client: Client; onBack: () => void })
       {loading ? (
         <div className="h-16 animate-pulse rounded-2xl bg-obliq-border/50" />
       ) : plans.length === 0 ? (
-        <Card><p className="text-center text-sm text-white/40">Nenhuma dieta criada.</p></Card>
+        <Card><p className="text-center text-sm text-obliq-faint">Nenhuma dieta criada.</p></Card>
       ) : (
         <div className="space-y-2">
           {plans.map((p) => (
@@ -152,7 +152,7 @@ function ClientDiets({ client, onBack }: { client: Client; onBack: () => void })
                       load()
                     }
                   }}
-                  className="text-xs font-bold uppercase text-white/40 hover:text-obliq-red"
+                  className="text-xs font-bold uppercase text-obliq-faint hover:text-obliq-red"
                 >
                   Excluir
                 </button>

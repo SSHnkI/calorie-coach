@@ -46,7 +46,7 @@ export function TrainerPage() {
       <div className="flex min-h-dvh items-center justify-center bg-obliq-black px-4">
         <Card className="text-center max-w-sm w-full">
           <p className="text-obliq-red font-bold text-lg">Acesso restrito</p>
-          <p className="mt-2 text-sm text-white/50">Área exclusiva para treinadores.</p>
+          <p className="mt-2 text-sm text-obliq-faint">Área exclusiva para treinadores.</p>
           <Button className="mt-4 w-full" onClick={() => navigate('/')}>Voltar</Button>
         </Card>
       </div>
@@ -64,7 +64,7 @@ export function TrainerPage() {
             <p className="text-sm font-black">{trainerData.name}</p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="rounded-md bg-obliq-surface border border-obliq-border px-2 py-1 text-[10px] font-black font-mono tracking-widest text-white/50">
+            <span className="rounded-md bg-obliq-surface border border-obliq-border px-2 py-1 text-[10px] font-black font-mono tracking-widest text-obliq-faint">
               {trainerData.code}
             </span>
           </div>
@@ -116,7 +116,7 @@ function TrainerDashboard({ trainerId }: { trainerId: string }) {
         {(['clientes', 'relatorio'] as Tab[]).map((t) => (
           <button key={t} type="button" onClick={() => setTab(t)}
             className={`flex-1 rounded-lg py-1.5 text-xs font-bold uppercase tracking-wide transition-all ${
-              tab === t ? 'bg-obliq-red text-white' : 'text-white/40 hover:text-white/70'
+              tab === t ? 'bg-obliq-red text-white' : 'text-obliq-faint hover:text-obliq-dim'
             }`}>
             {t === 'clientes' ? 'Clientes' : 'Relatório Geral'}
           </button>
@@ -131,7 +131,7 @@ function TrainerDashboard({ trainerId }: { trainerId: string }) {
             </div>
           ) : clients.length === 0 ? (
             <Card className="text-center py-8">
-              <p className="text-white/50 text-sm">Nenhum cliente vinculado ainda.</p>
+              <p className="text-obliq-faint text-sm">Nenhum cliente vinculado ainda.</p>
               <p className="text-white/20 text-xs mt-1">Compartilhe seu código para que se cadastrem.</p>
             </Card>
           ) : (
@@ -142,13 +142,13 @@ function TrainerDashboard({ trainerId }: { trainerId: string }) {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-bold text-sm">{c.full_name ?? c.email}</p>
-                      {c.full_name && <p className="text-xs text-white/40">{c.email}</p>}
+                      {c.full_name && <p className="text-xs text-obliq-faint">{c.email}</p>}
                     </div>
                     <div className="flex items-center gap-2 text-xs">
                       {c.daily_kcal && (
-                        <span className="text-white/40">{c.daily_kcal} kcal</span>
+                        <span className="text-obliq-faint">{c.daily_kcal} kcal</span>
                       )}
-                      <span className="text-white/50">›</span>
+                      <span className="text-obliq-faint">›</span>
                     </div>
                   </div>
                 </button>
@@ -231,20 +231,20 @@ function ClientDetail({ client, onBack }: { client: Client; onBack: () => void }
   return (
     <div className="space-y-4">
       <button type="button" onClick={onBack}
-        className="text-sm font-bold uppercase text-white/50 hover:text-white">
+        className="text-sm font-bold uppercase text-obliq-faint hover:text-obliq-chalk">
         ← Voltar
       </button>
 
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-black">{client.full_name ?? client.email}</h2>
-          {client.full_name && <p className="text-xs text-white/40">{client.email}</p>}
+          {client.full_name && <p className="text-xs text-obliq-faint">{client.email}</p>}
         </div>
       </div>
 
       {/* Meta kcal */}
       <Card>
-        <p className="text-xs font-bold uppercase tracking-widest text-white/40 mb-3">Meta de Kcal/dia</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-obliq-faint mb-3">Meta de Kcal/dia</p>
         <div className="flex gap-2">
           <Input
             type="number"
@@ -269,7 +269,7 @@ function ClientDetail({ client, onBack }: { client: Client; onBack: () => void }
         {(['treinos', 'historico'] as const).map((t) => (
           <button key={t} type="button" onClick={() => setSubTab(t)}
             className={`flex-1 rounded-lg py-1.5 text-xs font-bold uppercase tracking-wide transition-all ${
-              subTab === t ? 'bg-obliq-red text-white' : 'text-white/40 hover:text-white/70'
+              subTab === t ? 'bg-obliq-red text-white' : 'text-obliq-faint hover:text-obliq-dim'
             }`}>
             {t === 'treinos' ? 'Treinos' : 'Histórico'}
           </button>
@@ -284,7 +284,7 @@ function ClientDetail({ client, onBack }: { client: Client; onBack: () => void }
             </div>
           ) : plans.length === 0 ? (
             <Card className="text-center py-6">
-              <p className="text-white/50 text-sm">Nenhum treino criado.</p>
+              <p className="text-obliq-faint text-sm">Nenhum treino criado.</p>
             </Card>
           ) : (
             plans.map(p => (
@@ -292,13 +292,13 @@ function ClientDetail({ client, onBack }: { client: Client; onBack: () => void }
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-bold">{p.name}</p>
-                    <p className="text-xs text-white/40">{p.exercise_count} exercícios · {p.goal ?? 'sem objetivo'}</p>
+                    <p className="text-xs text-obliq-faint">{p.exercise_count} exercícios · {p.goal ?? 'sem objetivo'}</p>
                   </div>
                   <div className="flex gap-2">
                     <button type="button" onClick={() => { setEditingPlan(p as WorkoutPlan); setShowBuilder(true) }}
-                      className="text-xs text-white/40 hover:text-white">Editar</button>
+                      className="text-xs text-obliq-faint hover:text-obliq-chalk">Editar</button>
                     <button type="button" onClick={() => deletePlan(p.id)}
-                      className="text-xs text-white/40 hover:text-obliq-red">Excluir</button>
+                      className="text-xs text-obliq-faint hover:text-obliq-red">Excluir</button>
                   </div>
                 </div>
               </Card>
@@ -360,7 +360,7 @@ function ClientHistory({ clientId }: { clientId: string }) {
   if (logs.length === 0) {
     return (
       <Card className="text-center py-6">
-        <p className="text-white/50 text-sm">Sem histórico de treinos.</p>
+        <p className="text-obliq-faint text-sm">Sem histórico de treinos.</p>
       </Card>
     )
   }
@@ -372,13 +372,13 @@ function ClientHistory({ clientId }: { clientId: string }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-bold text-sm">{l.plan_name ?? 'Treino livre'}</p>
-              <p className="text-xs text-white/40">
+              <p className="text-xs text-obliq-faint">
                 {new Date(l.completed_at).toLocaleDateString('pt-BR')} · {l.sets} séries
               </p>
             </div>
             <div className="text-right">
               <p className="text-sm font-black">{l.volume.toLocaleString('pt-BR')}</p>
-              <p className="text-[10px] text-white/50">kg volume</p>
+              <p className="text-[10px] text-obliq-faint">kg volume</p>
             </div>
           </div>
         </Card>
@@ -421,7 +421,7 @@ function GeneralReport({ clients }: { trainerId: string; clients: Client[] }) {
   if (clients.length === 0) {
     return (
       <Card className="text-center py-8">
-        <p className="text-white/50 text-sm">Sem clientes ainda.</p>
+        <p className="text-obliq-faint text-sm">Sem clientes ainda.</p>
       </Card>
     )
   }
@@ -435,7 +435,7 @@ function GeneralReport({ clients }: { trainerId: string; clients: Client[] }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-bold text-sm">{c.full_name ?? c.email}</p>
-                <p className="text-xs text-white/40">
+                <p className="text-xs text-obliq-faint">
                   {s?.lastWorkout
                     ? `Último treino: ${new Date(s.lastWorkout).toLocaleDateString('pt-BR')}`
                     : 'Sem treinos registrados'}
@@ -443,7 +443,7 @@ function GeneralReport({ clients }: { trainerId: string; clients: Client[] }) {
               </div>
               <div className="text-right">
                 <p className="text-lg font-black">{s?.totalSessions ?? 0}</p>
-                <p className="text-[10px] text-white/50">sessões</p>
+                <p className="text-[10px] text-obliq-faint">sessões</p>
               </div>
             </div>
           </Card>

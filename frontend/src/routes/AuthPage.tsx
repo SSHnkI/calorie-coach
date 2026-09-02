@@ -80,38 +80,36 @@ export function AuthPage() {
       <div className="flex min-h-dvh flex-col items-center justify-center bg-obliq-black px-4 py-8">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
-            <Logo size="lg" />
+            <Logo size="md" />
           </div>
           <Card glow>
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-obliq-red/10 text-3xl">
-                ✉️
-              </div>
-              <h2 className="text-xl font-black uppercase tracking-wide text-white">
+              <div className="mx-auto mb-5 h-px w-10 bg-obliq-red" aria-hidden="true" />
+              <h2 className="text-xl font-display font-bold text-white">
                 Verifique seu e-mail
               </h2>
-              <p className="mt-3 text-sm text-white/60">
+              <p className="mt-3 text-sm text-obliq-dim">
                 Enviamos um link de confirmação para
               </p>
               <p className="mt-1 font-bold text-white">{email}</p>
               <div className="mt-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-left">
                 <p className="text-xs font-bold uppercase tracking-widest text-yellow-400">
-                  ⚠ Verifique a pasta de spam
+                  Verifique a pasta de spam
                 </p>
                 <p className="mt-1 text-xs text-yellow-200/70">
                   O email pode cair no spam. Procure por "Supabase" ou "noreply".
                 </p>
               </div>
-              <p className="mt-4 text-xs text-white/40">
+              <p className="mt-4 text-xs text-obliq-faint">
                 Após clicar no link você será redirecionado automaticamente, sem precisar logar de novo.
               </p>
             </div>
           </Card>
-          <p className="mt-4 text-center text-xs text-white/50">
+          <p className="mt-4 text-center text-xs text-obliq-faint">
             Não recebeu?{' '}
             <button
               type="button"
-              className="text-white/50 underline hover:text-white"
+              className="text-obliq-faint underline hover:text-obliq-chalk"
               onClick={() => { setEmailSent(false); setTab('signup') }}
             >
               Tentar novamente
@@ -126,8 +124,8 @@ export function AuthPage() {
     <div className="flex min-h-dvh flex-col items-center justify-center bg-obliq-black px-4 py-8">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Logo size="lg" />
-          <p className="mt-3 text-sm text-white/50">
+          <Logo size="md" />
+          <p className="mt-3 text-sm text-obliq-faint">
             {tab === 'signup' ? t.auth.createAccount : t.auth.welcomeBack}
           </p>
         </div>
@@ -148,7 +146,7 @@ export function AuthPage() {
               type="button"
               onClick={handleGoogle}
               disabled={socialLoading || isLoading}
-              className="flex w-full items-center justify-center gap-3 rounded-xl border border-obliq-border py-3 text-sm font-bold text-white/80 transition-all hover:border-white/20 hover:text-white disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-3 min-h-11 rounded-lg py-3 text-sm font-medium text-obliq-chalk ring-1 ring-obliq-border transition-colors duration-200 hover:bg-white/[0.03] hover:ring-obliq-dim disabled:opacity-40"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -156,13 +154,13 @@ export function AuthPage() {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              {socialLoading ? 'Aguarde...' : 'Continuar com Google'}
+              {socialLoading ? 'Aguarde…' : 'Continuar com Google'}
             </button>
           </div>
 
           <div className="my-5 flex items-center gap-3">
             <div className="h-px flex-1 bg-obliq-border" />
-            <span className="text-xs text-white/50 font-medium">ou</span>
+            <span className="text-xs text-obliq-faint font-medium">ou</span>
             <div className="h-px flex-1 bg-obliq-border" />
           </div>
 
@@ -197,13 +195,13 @@ export function AuthPage() {
             {tab === 'login' && (
               <div className="text-right -mt-2">
                 {resetSent ? (
-                  <p className="text-xs text-green-400">Link enviado! Verifique seu e-mail (e o spam).</p>
+                  <p className="text-xs text-obliq-dim">Link enviado. Confira seu e-mail e o spam.</p>
                 ) : (
                   <button
                     type="button"
                     onClick={handleForgotPassword}
                     disabled={isLoading}
-                    className="text-xs text-white/40 hover:text-white/70 transition-colors"
+                    className="text-xs text-obliq-faint hover:text-obliq-dim transition-colors"
                   >
                     Esqueci minha senha
                   </button>
@@ -217,7 +215,7 @@ export function AuthPage() {
 
             <Button type="submit" className="mt-1 w-full" disabled={isLoading || socialLoading}>
               {isLoading
-                ? 'Aguarde...'
+                ? 'Aguarde…'
                 : tab === 'signup'
                   ? t.auth.createAccountBtn
                   : t.auth.signInBtn}
@@ -225,8 +223,8 @@ export function AuthPage() {
           </form>
         </Card>
 
-        <p className="mt-6 text-center text-sm text-white/40">
-          <Link to="/" className="hover:text-white/70">
+        <p className="mt-6 text-center text-sm text-obliq-faint">
+          <Link to="/" className="hover:text-obliq-dim">
             {t.auth.backHome}
           </Link>
         </p>

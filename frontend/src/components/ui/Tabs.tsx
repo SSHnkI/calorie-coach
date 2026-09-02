@@ -4,23 +4,32 @@ type TabsProps = {
   onChange: (id: string) => void
 }
 
+// Abas de sublinhado, nao pilulas coloridas: a cor da marca fica pro numero.
 export function Tabs({ tabs, active, onChange }: TabsProps) {
   return (
-    <div className="flex overflow-x-auto rounded-xl border border-obliq-border bg-obliq-black p-1 gap-1 scrollbar-none">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          onClick={() => onChange(tab.id)}
-          className={`shrink-0 flex-1 min-w-fit rounded-lg px-3 py-2.5 text-xs font-bold uppercase tracking-normal transition-all ${
-            active === tab.id
-              ? 'bg-red-gradient text-white shadow-red-glow'
-              : 'text-white/50 hover:text-white/80'
-          }`}
-        >
-          {tab.label}
-        </button>
-      ))}
+    <div
+      role="tablist"
+      className="flex gap-6 overflow-x-auto border-b border-obliq-border scrollbar-none"
+    >
+      {tabs.map((tab) => {
+        const on = active === tab.id
+        return (
+          <button
+            key={tab.id}
+            role="tab"
+            aria-selected={on}
+            type="button"
+            onClick={() => onChange(tab.id)}
+            className={`shrink-0 border-b-2 pb-3 text-sm font-medium tracking-tight transition-colors duration-200 ${
+              on
+                ? 'border-obliq-red text-obliq-chalk'
+                : 'border-transparent text-obliq-faint hover:text-obliq-dim'
+            }`}
+          >
+            {tab.label}
+          </button>
+        )
+      })}
     </div>
   )
 }

@@ -91,7 +91,7 @@ export function MyWorkouts() {
       </Button>
 
       <div className="mb-4">
-        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-white/40">
+        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-obliq-faint">
           Modelos rápidos
         </p>
         <div className="flex flex-wrap gap-2">
@@ -101,7 +101,7 @@ export function MyWorkouts() {
               type="button"
               disabled={presetBusy}
               onClick={() => applyPreset(p)}
-              className="rounded-full border border-obliq-border px-3 py-1.5 text-xs font-bold text-white/70 transition-all hover:border-obliq-red/50 disabled:opacity-50"
+              className="rounded-full border border-obliq-border px-3 py-1.5 text-xs font-bold text-obliq-dim transition-all hover:border-obliq-red/50 disabled:opacity-50"
             >
               {p.label}
             </button>
@@ -128,7 +128,7 @@ export function MyWorkouts() {
       {!loading && !error && plans.length === 0 && (
         <Card className="text-center">
           <div className="text-4xl">💪</div>
-          <p className="mt-2 text-sm text-white/40">
+          <p className="mt-2 text-sm text-obliq-faint">
             Nenhum treino ainda. Crie o seu ou use um modelo rápido acima.
           </p>
         </Card>
@@ -149,13 +149,13 @@ export function MyWorkouts() {
                     <h3 className="font-bold group-hover:text-obliq-red transition-colors">
                       {plan.name}
                     </h3>
-                    <p className="text-xs text-white/40 mt-0.5">
+                    <p className="text-xs text-obliq-faint mt-0.5">
                       {plan.exercise_count}{' '}
                       {plan.exercise_count === 1 ? 'exercício' : 'exercícios'}
                       {plan.goal ? ` · ${GOAL_LABEL[plan.goal] ?? plan.goal}` : ''}
                     </p>
                   </div>
-                  <span className="text-white/50 group-hover:text-obliq-red transition-colors text-lg">›</span>
+                  <span className="text-obliq-faint group-hover:text-obliq-red transition-colors text-lg">›</span>
                 </div>
                 <p className="mt-1 text-[10px] text-white/25 font-medium uppercase tracking-widest">
                   Toque para ver e editar exercícios
@@ -173,7 +173,7 @@ export function MyWorkouts() {
                 <button
                   type="button"
                   onClick={() => handleDelete(plan.id)}
-                  className="px-2 text-xs font-bold uppercase text-white/50 hover:text-obliq-red"
+                  className="px-2 text-xs font-bold uppercase text-obliq-faint hover:text-obliq-red"
                 >
                   ✕
                 </button>

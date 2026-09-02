@@ -10,22 +10,18 @@ export function LanguageSwitcher() {
   const { locale, setLocale } = useI18n()
 
   return (
-    <div
-      className="inline-flex rounded-lg border border-obliq-border bg-obliq-surface p-0.5"
-      role="group"
-      aria-label="Language"
-    >
+    <div className="inline-flex gap-1" role="group" aria-label="Idioma">
       {options.map(({ locale: loc, label }) => (
         <button
           key={loc}
           type="button"
           onClick={() => setLocale(loc)}
-          className={`rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider transition-all ${
-            locale === loc
-              ? 'bg-red-gradient text-white shadow-red-glow'
-              : 'text-white/40 hover:text-white/70'
-          }`}
           aria-pressed={locale === loc}
+          className={`rounded px-1.5 py-0.5 font-mono text-[10px] tracking-[0.1em] transition-colors duration-200 ${
+            locale === loc
+              ? 'text-obliq-chalk'
+              : 'text-obliq-faint hover:text-obliq-dim'
+          }`}
         >
           {label}
         </button>

@@ -1,20 +1,24 @@
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { useApp } from '../../context/AppContext'
 
+// Barra utilitaria discreta. Nao compete com o conteudo da tela.
 export function LanguageBar() {
   const { isAuthenticated, logout } = useApp()
 
   return (
-    <div className="fixed right-3 top-3 z-[100] flex flex-col items-end gap-1.5 rounded-xl bg-obliq-black/85 p-1.5 backdrop-blur-sm">
+    <div className="fixed right-3 top-3 z-50 flex items-center gap-2 rounded-lg bg-obliq-black/80 px-1.5 py-1 backdrop-blur-sm">
       <LanguageSwitcher />
       {isAuthenticated && (
-        <button
-          type="button"
-          onClick={() => logout()}
-          className="rounded-md border border-obliq-border bg-obliq-surface px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white/50 hover:text-white"
-        >
-          Sair
-        </button>
+        <>
+          <span className="h-3 w-px bg-obliq-border" aria-hidden="true" />
+          <button
+            type="button"
+            onClick={() => logout()}
+            className="rounded px-1.5 py-0.5 font-mono text-[10px] tracking-[0.1em] text-obliq-faint transition-colors duration-200 hover:text-obliq-red"
+          >
+            SAIR
+          </button>
+        </>
       )}
     </div>
   )

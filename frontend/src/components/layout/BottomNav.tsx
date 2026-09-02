@@ -28,7 +28,7 @@ export function BottomNav() {
               `flex shrink-0 flex-col items-center gap-0.5 rounded-xl px-2.5 py-2 text-[9px] font-bold uppercase tracking-wide transition-all active:scale-95 ${
                 isActive
                   ? 'text-obliq-red'
-                  : 'text-white/40 hover:text-white/70'
+                  : 'text-obliq-faint hover:text-obliq-dim'
               }`
             }
           >
