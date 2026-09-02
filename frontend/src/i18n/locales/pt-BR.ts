@@ -1,7 +1,7 @@
 import type { TranslationKeys } from '../types'
 
 const ptBR: TranslationKeys = {
-  meta: { title: 'Obliq — Monitore. Treine. Transforme.' },
+  meta: { title: 'Obliq: calorias e macros do seu dia' },
   common: {
     back: 'Voltar',
     continue: 'Continuar',
@@ -36,26 +36,26 @@ const ptBR: TranslationKeys = {
     proGateDash: 'Histórico, edição e projeção de peso fazem parte do Pro.',
   },
   landing: {
-    tagline1: 'Monitore.',
-    tagline2: 'Treine.',
-    tagline3: 'Transforme.',
+    tagline1: 'Anote.',
+    tagline2: 'Calcule.',
+    tagline3: 'Evolua.',
     subtitle:
-      'O app poderoso de fitness e nutrição que te ajuda a alcançar seus objetivos — com IA.',
+      'Escreva o que você comeu. A gente calcula as calorias e os macros do seu dia.',
     startFree: 'Começar grátis',
     viewPricing: 'Ver preços',
-    featuresTitle: 'Tudo que você precisa',
-    feature1Title: 'Análise nutricional com IA',
+    featuresTitle: 'Como funciona',
+    feature1Title: 'Escreva em português comum',
     feature1Desc:
-      'Digite qualquer alimento em linguagem natural — nossa IA calcula calorias e macros na hora.',
-    feature2Title: 'Planos de treino',
+      '"2 pães de queijo", "prato de arroz com feijão". Sem procurar em lista, sem pesar nada.',
+    feature2Title: 'Números de base real',
     feature2Desc:
-      'Catálogo estruturado de exercícios com séries, reps e grupos musculares.',
-    feature3Title: 'Acompanhamento de progresso',
+      'As calorias vêm do Open Food Facts, base pública de alimentos, e não de chute.',
+    feature3Title: 'Sua meta calculada',
     feature3Desc:
-      'Progresso diário de calorias e macros com feedback visual para manter o foco.',
+      'Informe idade, peso, altura e rotina. O app define quantas calorias você precisa por dia.',
     proLabel: 'Obliq Pro',
     proDesc: 'Análises IA ilimitadas e catálogo completo de treinos',
-    footer: '© 2026 Obliq. Monitore. Treine. Transforme.',
+    footer: '© 2026 Obliq. Anote. Calcule. Evolua.',
   },
   auth: {
     createAccount: 'Crie sua conta',
@@ -96,11 +96,11 @@ const ptBR: TranslationKeys = {
     targetDesc: 'Com base na idade, peso, altura, atividade e objetivo.',
     startTracking: 'Começar a monitorar',
     activity: {
-      sedentary: 'Sedentário — pouco ou nenhum exercício',
-      light: 'Leve — 1–3 dias/semana',
-      moderate: 'Moderado — 3–5 dias/semana',
-      active: 'Ativo — 6–7 dias/semana',
-      very_active: 'Muito ativo — intenso diariamente',
+      sedentary: 'Sedentário: pouco ou nenhum exercício',
+      light: 'Leve: 1 a 3 dias por semana',
+      moderate: 'Moderado: 3 a 5 dias por semana',
+      active: 'Ativo: 6 a 7 dias por semana',
+      very_active: 'Muito ativo: intenso todo dia',
     },
     goal: {
       lose: 'Perder peso',

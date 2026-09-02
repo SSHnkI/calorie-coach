@@ -7,6 +7,7 @@ import { LandingPage } from './routes/LandingPage'
 import { AuthPage } from './routes/AuthPage'
 import { OnboardingPage } from './routes/OnboardingPage'
 import { DashboardPage } from './routes/DashboardPage'
+import { ResetPasswordPage } from './routes/ResetPasswordPage'
 
 // ponytail: escopo enxugado para a calculadora de calorias.
 // Treino, dieta, admin, personal, nutri e pricing seguem no git (branch main).
@@ -31,6 +32,8 @@ export default function App() {
             <Route element={<GuestRoute />}>
               <Route path="/auth" element={<AuthPage />} />
             </Route>
+
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             <Route path="/onboarding" element={<OnboardingGuard />} />
 

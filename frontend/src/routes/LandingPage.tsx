@@ -13,12 +13,12 @@ export function LandingPage() {
       description: t.landing.feature1Desc,
     },
     {
-      icon: '🏋️',
+      icon: '🥗',
       title: t.landing.feature2Title,
       description: t.landing.feature2Desc,
     },
     {
-      icon: '📈',
+      icon: '🎯',
       title: t.landing.feature3Title,
       description: t.landing.feature3Desc,
     },

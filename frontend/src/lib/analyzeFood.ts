@@ -35,7 +35,7 @@ export async function analyzeFood(input: string): Promise<AnalyzeResult> {
         return { ok: false, error: 'unauthorized' }
       }
     } catch {
-      // corpo não-JSON — cai no erro genérico abaixo
+      // corpo nao-JSON, cai no erro generico abaixo
     }
     return { ok: false, error: 'failed' }
   }

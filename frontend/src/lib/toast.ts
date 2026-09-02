@@ -1,4 +1,4 @@
-// Toast minimalista (sem libs/estado) — estilos inline pra não depender do purge do Tailwind.
+// Toast minimalista (sem libs/estado), estilos inline pra nao depender do purge do Tailwind.
 export function toast(message: string) {
   const el = document.createElement('div')
   el.textContent = message
