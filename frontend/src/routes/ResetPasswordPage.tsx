@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useApp } from '../context/AppContext'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
@@ -11,6 +12,7 @@ import { Logo } from '../components/layout/Logo'
 // entao aqui basta esperar a sessao aparecer e chamar updateUser.
 export function ResetPasswordPage() {
   const navigate = useNavigate()
+  const { isAuthenticated } = useApp()
   const [ready, setReady] = useState<boolean | null>(null)
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -83,8 +85,10 @@ export function ResetPasswordPage() {
             <p className="text-center text-sm text-obliq-dim">Verificando o link…</p>
           ) : (
             <>
-              <h1 className="font-display text-xl font-bold">Nova senha</h1>
-              <p className="mt-1 text-sm text-obliq-dim">Escolha uma senha para entrar.</p>
+              <h1 className="font-display text-xl font-bold">Trocar senha</h1>
+              <p className="mt-1 text-sm text-obliq-dim">
+                Escolha uma senha nova. A atual deixa de valer.
+              </p>
               <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-4">
                 <Input
                   label="Nova senha"
@@ -103,9 +107,19 @@ export function ResetPasswordPage() {
                   disabled={saving}
                 />
                 {error && <p className="text-sm text-obliq-red">{error}</p>}
-                <Button type="submit" disabled={saving}>
-                  {saving ? 'Salvando…' : 'Salvar senha'}
-                </Button>
+                <div className="flex items-center gap-5">
+                  <Button type="submit" disabled={saving}>
+                    {saving ? 'Salvando…' : 'Salvar senha'}
+                  </Button>
+                  {isAuthenticated && (
+                    <Link
+                      to="/dashboard"
+                      className="text-sm text-obliq-dim underline decoration-obliq-line underline-offset-4 transition-colors hover:text-obliq-chalk"
+                    >
+                      Cancelar
+                    </Link>
+                  )}
+                </div>
               </form>
             </>
           )}

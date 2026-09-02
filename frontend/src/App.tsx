@@ -46,8 +46,8 @@ export default function App() {
   return (
     <I18nProvider>
       <AppProvider>
-        <LanguageBar />
         <BrowserRouter>
+          <LanguageBar />
           <RecoveryRedirect />
           <Routes>
             <Route path="/" element={<LandingPage />} />

@@ -16,9 +16,9 @@ export function LandingPage() {
   const total = LEDGER.reduce((s, l) => s + l.kcal, 0)
 
   const steps = [
-    { n: 'um', title: t.landing.feature1Title, body: t.landing.feature1Desc },
-    { n: 'dois', title: t.landing.feature2Title, body: t.landing.feature2Desc },
-    { n: 'três', title: t.landing.feature3Title, body: t.landing.feature3Desc },
+    { title: t.landing.feature1Title, body: t.landing.feature1Desc, art: <ArtCampo /> },
+    { title: t.landing.feature2Title, body: t.landing.feature2Desc, art: <ArtBase /> },
+    { title: t.landing.feature3Title, body: t.landing.feature3Desc, art: <ArtMeta /> },
   ]
 
   return (
@@ -81,35 +81,38 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* Passos numerados por extenso: e uma sequencia de verdade. */}
+        {/* Cada passo mostra o artefato real do produto, nao so a descricao. */}
         <section className="border-t border-obliq-border">
-          <div className="mx-auto max-w-5xl px-5 py-20 md:py-24">
-            <h2 className="font-display text-2xl font-bold md:text-3xl">
+          <div className="mx-auto max-w-5xl px-5 py-20 md:py-28">
+            <h2 className="font-display text-3xl font-bold md:text-4xl">
               {t.landing.featuresTitle}
             </h2>
 
-            <div className="mt-10 flex flex-col gap-px bg-obliq-border">
-              {steps.map((s) => (
+            <div className="mt-12 flex flex-col">
+              {steps.map((s, i) => (
                 <article
                   key={s.title}
-                  className="grid gap-2 bg-obliq-black py-7 md:grid-cols-[7rem_1fr] md:gap-8"
+                  className="grid items-center gap-6 border-t border-obliq-border py-10 md:grid-cols-2 md:gap-14 md:py-12"
                 >
-                  <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
-                    {s.n}
-                  </span>
-                  <div className="max-w-[62ch]">
-                    <h3 className="font-display text-lg font-bold">{s.title}</h3>
-                    <p className="mt-1.5 leading-relaxed text-obliq-dim">{s.body}</p>
+                  <div className={i % 2 ? 'md:order-2' : ''}>
+                    <h3 className="font-display text-xl font-bold md:text-2xl">
+                      {s.title}
+                    </h3>
+                    <p className="mt-2 max-w-[46ch] leading-relaxed text-obliq-dim">
+                      {s.body}
+                    </p>
                   </div>
+                  <div className={i % 2 ? 'md:order-1' : ''}>{s.art}</div>
                 </article>
               ))}
             </div>
 
-            <div className="mt-14">
+            <div className="border-t border-obliq-border pt-12">
               <Button to="/auth?mode=signup">{t.landing.startFree}</Button>
             </div>
           </div>
         </section>
+
       </main>
 
       <footer className="border-t border-obliq-border">
@@ -118,6 +121,66 @@ export function LandingPage() {
           <p>{t.landing.footer}</p>
         </div>
       </footer>
+    </div>
+  )
+}
+
+// Passo 1: o campo de registro, do jeito que o usuario ve.
+function ArtCampo() {
+  return (
+    <div className="rounded-xl bg-obliq-surface p-5 ring-1 ring-obliq-border">
+      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+        registrar alimento
+      </span>
+      <div className="mt-3 flex items-center rounded-lg bg-obliq-black px-3.5 py-3 ring-1 ring-obliq-dim">
+        <span className="text-obliq-chalk">2 pães de queijo</span>
+        <span className="ml-0.5 inline-block h-5 w-px animate-pulse bg-obliq-red" />
+      </div>
+    </div>
+  )
+}
+
+// Passo 2: de onde vem o numero.
+function ArtBase() {
+  return (
+    <div className="rounded-xl bg-obliq-surface p-5 ring-1 ring-obliq-border">
+      <div className="flex items-baseline justify-between border-b border-obliq-border pb-3">
+        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+          open food facts
+        </span>
+        <span className="font-mono text-[11px] text-obliq-faint">100 g</span>
+      </div>
+      <dl className="divide-y divide-obliq-border">
+        {[
+          ['energia', '320 kcal'],
+          ['proteína', '12 g'],
+          ['carboidrato', '32 g'],
+          ['gordura', '16 g'],
+        ].map(([k, v]) => (
+          <div key={k} className="flex items-baseline py-2.5 text-sm">
+            <dt className="text-obliq-dim">{k}</dt>
+            <span className="leader" aria-hidden="true" />
+            <dd className="num shrink-0 text-obliq-chalk">{v}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )
+}
+
+// Passo 3: a meta calculada, o numero que o app entrega.
+function ArtMeta() {
+  return (
+    <div className="rounded-xl bg-obliq-surface p-5 ring-1 ring-obliq-border">
+      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+        sua meta
+      </span>
+      <p className="num mt-2 text-5xl font-medium leading-none text-obliq-red">2.303</p>
+      <p className="mt-2 text-sm text-obliq-dim">kcal por dia</p>
+      <div className="mt-5 space-y-2 border-t border-obliq-border pt-4 font-mono text-[11px] text-obliq-faint">
+        <p>32 anos · 78 kg · 1,79 m</p>
+        <p>ativo · perder peso</p>
+      </div>
     </div>
   )
 }

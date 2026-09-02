@@ -1,4 +1,5 @@
 import { LanguageSwitcher } from './LanguageSwitcher'
+import { Link } from 'react-router-dom'
 import { useApp } from '../../context/AppContext'
 
 // Barra utilitaria discreta. Nao compete com o conteudo da tela.
@@ -10,6 +11,13 @@ export function LanguageBar() {
       <LanguageSwitcher />
       {isAuthenticated && (
         <>
+          <span className="h-3 w-px bg-obliq-border" aria-hidden="true" />
+          <Link
+            to="/reset-password"
+            className="rounded px-1.5 py-0.5 font-mono text-[10px] tracking-[0.1em] text-obliq-faint transition-colors duration-200 hover:text-obliq-chalk"
+          >
+            SENHA
+          </Link>
           <span className="h-3 w-px bg-obliq-border" aria-hidden="true" />
           <button
             type="button"
