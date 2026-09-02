@@ -10,6 +10,8 @@ type IconName =
   | 'scale'
   | 'text'
   | 'target'
+  | 'camera'
+  | 'menu'
 
 type IconProps = {
   name: IconName
@@ -30,6 +32,9 @@ const paths: Record<IconName, string> = {
   scale: 'M12 4v16M5 8h14l-3 6h-8l-3-6Z',
   text: 'M5 6h14M5 12h14M5 18h9',
   target: 'M12 12h.01M12 3v3m0 12v3M3 12h3m12 0h3M12 19a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z',
+  camera:
+    'M4 8h3l1.5-2h7L17 8h3v11H4V8Zm8 9a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z',
+  menu: 'M5 8h14M5 16h14',
 }
 
 export function Icon({ name, className = 'h-4 w-4', title }: IconProps) {

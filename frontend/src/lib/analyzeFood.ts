@@ -18,9 +18,9 @@ export async function estimateFood(input: string): Promise<NutritionResult | nul
 }
 
 // Chama a Edge Function `analyze-food` (Groq + Open Food Facts).
-export async function analyzeFood(input: string): Promise<AnalyzeResult> {
+export async function analyzeFood(input: string, image?: string): Promise<AnalyzeResult> {
   const { data, error } = await supabase.functions.invoke('analyze-food', {
-    body: { food_input: input },
+    body: { food_input: input, ...(image ? { image } : {}) },
   })
 
   // Respostas não-2xx (ex.: 402 limite atingido) chegam como FunctionsHttpError;

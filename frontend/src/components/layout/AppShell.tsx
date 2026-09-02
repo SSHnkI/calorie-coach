@@ -14,7 +14,7 @@ export function AppShell({ children, showNav = true }: AppShellProps) {
     <div className={`min-h-dvh bg-obliq-black ${showNav ? 'md:pl-56' : ''}`}>
       {showNav && <Sidebar />}
 
-      <header className="mx-auto max-w-3xl px-5 pt-6">
+      <header className="mx-auto max-w-3xl px-5 pb-1 pt-14 sm:pt-6">
         <Logo size="sm" />
       </header>
 

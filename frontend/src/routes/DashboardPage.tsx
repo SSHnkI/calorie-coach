@@ -1,4 +1,4 @@
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { useI18n } from '../i18n/I18nContext'
 import { analyzeFood } from '../lib/analyzeFood'
@@ -6,11 +6,11 @@ import { deleteFood, fetchTodayFood, updateFoodKcal } from '../lib/foodLog'
 import { calculateDailyKcal, calculateMacroTargets } from '../lib/tdee'
 import type { FoodEntry } from '../types'
 import { AppShell } from '../components/layout/AppShell'
-import { Button } from '../components/ui/Button'
 import { Icon } from '../components/ui/Icon'
 import { Tabs } from '../components/ui/Tabs'
 import { Habito } from '../components/nutrition/Habito'
 import { Refeicoes } from '../components/nutrition/Refeicoes'
+import { Composer } from '../components/nutrition/Composer'
 import { useCountUp } from '../lib/useCountUp'
 import { NutritionHistory } from '../components/nutrition/NutritionHistory'
 import { NutritionStats } from '../components/nutrition/NutritionStats'
@@ -22,7 +22,6 @@ export function DashboardPage() {
   const { user } = useApp()
   const [entries, setEntries] = useState<FoodEntry[]>([])
   const [tab, setTab] = useState('today')
-  const [foodInput, setFoodInput] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
   const [error, setError] = useState('')
   const [editing, setEditing] = useState<string | null>(null)
@@ -86,13 +85,11 @@ export function DashboardPage() {
       })
     : target
 
-  const handleAnalyze = async (e: FormEvent) => {
-    e.preventDefault()
-    if (!foodInput.trim()) return
+  const handleAnalyze = async (texto: string, foto?: string) => {
     setAnalyzing(true)
     setError('')
     try {
-      const result = await analyzeFood(foodInput)
+      const result = await analyzeFood(texto, foto)
       if (!result.ok) {
         setError(
           result.error === 'limit_reached'
@@ -101,7 +98,6 @@ export function DashboardPage() {
         )
         return
       }
-      setFoodInput('')
       loadToday(true)
     } catch {
       setError(t.dashboard.analyzeError)
@@ -263,39 +259,8 @@ export function DashboardPage() {
             />
           </div>
 
-          {/* Entrada: um campo, um botao. */}
-          <section className="mt-10">
-            <form onSubmit={handleAnalyze}>
-              <label
-                htmlFor="alimento"
-                className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint"
-              >
-                {t.dashboard.logFood}
-              </label>
-              <div className="mt-3 flex gap-2">
-                <input
-                  id="alimento"
-                  placeholder={t.dashboard.foodPlaceholder}
-                  value={foodInput}
-                  onChange={(e) => setFoodInput(e.target.value)}
-                  disabled={analyzing}
-                  autoComplete="off"
-                  className="min-h-11 flex-1 rounded-lg bg-obliq-surface px-3.5 py-3 text-obliq-chalk ring-1 ring-obliq-border outline-none transition-colors duration-200 placeholder:text-obliq-faint focus:ring-obliq-dim"
-                />
-                <Button type="submit" disabled={analyzing || !foodInput.trim()}>
-                  {analyzing ? t.dashboard.analyzing : t.dashboard.analyze}
-                </Button>
-              </div>
-              {error && (
-                <p role="alert" className="mt-2 text-sm text-obliq-red">
-                  {error}
-                </p>
-              )}
-            </form>
-          </section>
-
           {/* Registro do dia em forma de livro-caixa. */}
-          <section className="mt-10 pb-16">
+          <section className="mt-10 pb-28">
             <h2 className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
               {t.dashboard.foodLog}
             </h2>
@@ -371,6 +336,8 @@ export function DashboardPage() {
           </section>
         </>
       )}
+
+      <Composer onEnviar={handleAnalyze} ocupado={analyzing} erro={error} />
     </AppShell>
   )
 }

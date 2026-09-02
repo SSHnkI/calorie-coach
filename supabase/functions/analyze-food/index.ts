@@ -48,10 +48,35 @@ const MODELS = [
   'llama-3.1-8b-instant',
 ]
 
-async function askGroq(foodInput: string, key: string): Promise<Nutrition> {
-  let lastErr = 'sem modelo disponivel'
+// So os multimodais aceitam imagem.
+const MODELS_VISAO = [
+  'meta-llama/llama-4-scout-17b-16e-instruct',
+  'meta-llama/llama-4-maverick-17b-128e-instruct',
+]
 
-  for (const model of MODELS) {
+const EXTRA_FOTO = `
+A entrada e uma foto de comida. Identifique o que esta no prato e estime a porcao
+pelo tamanho aparente, usando talheres, prato ou embalagem como referencia de escala.
+Se houver varios alimentos, some tudo em um unico registro e descreva no name.
+Porcao vinda de foto e sempre estimativa: use confidence "low", ou "medium" so quando
+houver embalagem legivel.`
+
+async function askGroq(
+  foodInput: string,
+  key: string,
+  image?: string,
+): Promise<Nutrition> {
+  let lastErr = 'sem modelo disponivel'
+  const modelos = image ? MODELS_VISAO : MODELS
+
+  const conteudoUsuario = image
+    ? [
+        { type: 'text', text: foodInput?.trim() || 'O que tem neste prato?' },
+        { type: 'image_url', image_url: { url: image } },
+      ]
+    : foodInput
+
+  for (const model of modelos) {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
@@ -60,8 +85,8 @@ async function askGroq(foodInput: string, key: string): Promise<Nutrition> {
         temperature: 0.2,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: SYSTEM },
-          { role: 'user', content: foodInput },
+          { role: 'system', content: image ? SYSTEM + EXTRA_FOTO : SYSTEM },
+          { role: 'user', content: conteudoUsuario },
         ],
       }),
     })
@@ -138,8 +163,17 @@ Deno.serve(async (req) => {
       .single()
     if (!profile) return json({ error: 'profile_not_found' }, 404)
 
-    const { food_input, log = true } = await req.json()
-    if (!food_input?.trim()) return json({ error: 'food_input required' }, 400)
+    const { food_input, image, log = true } = await req.json()
+    if (!food_input?.trim() && !image) {
+      return json({ error: 'food_input required' }, 400)
+    }
+    // A foto e usada e descartada: nao gravamos imagem em lugar nenhum.
+    if (image && (typeof image !== 'string' || !image.startsWith('data:image/'))) {
+      return json({ error: 'imagem invalida' }, 400)
+    }
+    if (image && image.length > 6_000_000) {
+      return json({ error: 'imagem grande demais' }, 413)
+    }
 
     const today = new Date().toISOString().split('T')[0]
     const aiToday = profile.analyses_date === today ? (profile.analyses_today ?? 0) : 0
@@ -148,7 +182,7 @@ Deno.serve(async (req) => {
     const groqKey = Deno.env.get('GROQ_API_KEY')
     if (!groqKey) return json({ error: 'GROQ_API_KEY nao configurada' }, 500)
 
-    const n = await askGroq(food_input, groqKey)
+    const n = await askGroq(food_input ?? '', groqKey, image)
 
     // Open Food Facts manda no numero quando encontra. A IA so serve de rede de seguranca.
     let source = 'ai'
