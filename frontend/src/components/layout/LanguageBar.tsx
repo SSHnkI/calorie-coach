@@ -9,7 +9,8 @@ export function LanguageBar() {
   const ehAdmin = user?.email === ADMIN_EMAIL
 
   return (
-    <div className="fixed right-3 top-3 z-50 flex items-center gap-2 rounded-lg bg-obliq-black/80 px-1.5 py-1 backdrop-blur-sm">
+    <div style={{ top: 'calc(0.75rem + env(safe-area-inset-top))' }}
+      className="fixed right-3 z-50 flex items-center gap-2 rounded-lg bg-obliq-black/80 px-1.5 py-1 backdrop-blur-sm">
       <LanguageSwitcher />
       {isAuthenticated && (
         <>

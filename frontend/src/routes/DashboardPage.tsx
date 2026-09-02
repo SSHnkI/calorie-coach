@@ -9,6 +9,8 @@ import { AppShell } from '../components/layout/AppShell'
 import { Button } from '../components/ui/Button'
 import { Icon } from '../components/ui/Icon'
 import { Tabs } from '../components/ui/Tabs'
+import { Habito } from '../components/nutrition/Habito'
+import { useCountUp } from '../lib/useCountUp'
 import { NutritionHistory } from '../components/nutrition/NutritionHistory'
 import { NutritionStats } from '../components/nutrition/NutritionStats'
 
@@ -24,10 +26,25 @@ export function DashboardPage() {
   const [error, setError] = useState('')
   const [editing, setEditing] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
+  const [novoId, setNovoId] = useState<string | null>(null)
+  const [versao, setVersao] = useState(0)
 
-  const loadToday = useCallback(() => {
+  const loadToday = useCallback((marcarNovo = false) => {
     fetchTodayFood()
-      .then(setEntries)
+      .then((novos) => {
+        setEntries((antigos) => {
+          if (marcarNovo) {
+            const vistos = new Set(antigos.map((e) => e.id))
+            const recem = novos.find((e) => !vistos.has(e.id))
+            if (recem) {
+              setNovoId(recem.id)
+              setTimeout(() => setNovoId(null), 1200)
+            }
+          }
+          return novos
+        })
+        if (marcarNovo) setVersao((v) => v + 1)
+      })
       .catch(() => {})
   }, [])
 
@@ -80,7 +97,7 @@ export function DashboardPage() {
         return
       }
       setFoodInput('')
-      loadToday()
+      loadToday(true)
     } catch {
       setError(t.dashboard.analyzeError)
     } finally {
@@ -116,6 +133,8 @@ export function DashboardPage() {
   }
 
   const hoje = DIAS[new Date().getDay()]
+  const exibido = useCountUp(totals.kcal)
+  const bateuMeta = target > 0 && totals.kcal >= target
 
   return (
     <AppShell titleKey="dashboard" showNav={false}>
@@ -148,8 +167,13 @@ export function DashboardPage() {
             </div>
 
             <div className="mt-3 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
-              <p className="num text-[clamp(3.5rem,16vw,5.5rem)] font-medium leading-none text-obliq-red">
-                {totals.kcal}
+              <p
+                key={bateuMeta ? 'meta' : 'andando'}
+                className={`num text-[clamp(3.5rem,16vw,5.5rem)] font-medium leading-none text-obliq-red ${
+                  bateuMeta ? 'bater' : ''
+                }`}
+              >
+                {exibido}
                 <span className="num ml-2 align-baseline text-xl font-normal text-obliq-faint">
                   / {target}
                 </span>
@@ -177,6 +201,10 @@ export function DashboardPage() {
               />
             </div>
           </section>
+
+          <div className="mt-10">
+            <Habito meta={target} versao={versao} />
+          </div>
 
           {/* Macros como linhas de tabela, nao tres cartoes iguais. */}
           <section className="mt-10">
@@ -267,7 +295,7 @@ export function DashboardPage() {
                 {entries.map((item, i) => (
                   <li
                     key={item.id}
-                    className="rise py-3.5"
+                    className={`rise py-3.5 ${item.id === novoId ? 'fisgada' : ''}`}
                     style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
                   >
                     <div className="flex items-baseline">

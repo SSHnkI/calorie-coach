@@ -35,6 +35,14 @@ function RecoveryRedirect() {
   return null
 }
 
+// Quem ja tem sessao nao ve a landing: cai direto no app, como PWA instalado espera.
+function Entrada() {
+  const { isAuthenticated, user, loading } = useApp()
+  if (loading) return null
+  if (!isAuthenticated) return <LandingPage />
+  return <Navigate to={user?.onboarding_complete ? '/dashboard' : '/onboarding'} replace />
+}
+
 function OnboardingGuard() {
   const { isAuthenticated, user, loading } = useApp()
   if (loading) return null
@@ -51,7 +59,7 @@ export default function App() {
           <LanguageBar />
           <RecoveryRedirect />
           <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<Entrada />} />
 
             <Route element={<GuestRoute />}>
               <Route path="/auth" element={<AuthPage />} />
