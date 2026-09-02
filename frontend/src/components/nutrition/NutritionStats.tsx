@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchFoodHistory } from '../../lib/foodLog'
 import type { FoodEntry } from '../../types'
-import { Card } from '../ui/Card'
-
-const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
 function keyOf(d: Date) {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
 }
 
+/**
+ * Projecao de peso a partir do saldo calorico dos ultimos 7 dias.
+ * O grafico de barras saiu daqui: a corrente de constancia ja mostra os 7 dias,
+ * e duas leituras do mesmo dado competiam entre si.
+ */
 export function NutritionStats({
-  target,
+  target: _target,
   maintenance,
   currentWeight,
 }: {
@@ -18,124 +20,85 @@ export function NutritionStats({
   maintenance: number
   currentWeight: number | null
 }) {
-  const [items, setItems] = useState<FoodEntry[]>([])
-  const [loading, setLoading] = useState(true)
-  const [open, setOpen] = useState(false)
+  const [items, setItems] = useState<FoodEntry[] | null>(null)
 
   useEffect(() => {
-    let active = true
     fetchFoodHistory(7)
-      .then((d) => active && setItems(d))
-      .catch(() => {})
-      .finally(() => active && setLoading(false))
-    return () => {
-      active = false
-    }
+      .then(setItems)
+      .catch(() => setItems([]))
   }, [])
 
-  const days = useMemo(() => {
-    const today0 = new Date()
-    today0.setHours(0, 0, 0, 0)
-    const base = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(today0)
-      d.setDate(d.getDate() - (6 - i))
-      return d
-    })
-    const byDay: Record<string, number> = {}
-    for (const it of items) {
+  const { saldo, kgSemana, projetado, diasComRegistro } = useMemo(() => {
+    const hoje = new Date()
+    hoje.setHours(0, 0, 0, 0)
+
+    const porDia: Record<string, number> = {}
+    for (const it of items ?? []) {
       const k = keyOf(new Date(it.logged_at))
-      byDay[k] = (byDay[k] ?? 0) + it.kcal
+      porDia[k] = (porDia[k] ?? 0) + it.kcal
     }
-    return base.map((d) => ({ kcal: byDay[keyOf(d)] ?? 0, wd: WEEKDAYS[d.getDay()] }))
-  }, [items])
 
-  const logged = days.filter((d) => d.kcal > 0)
-  const maxScale = Math.max(target, ...days.map((d) => d.kcal), 1)
-  const avgBalance = logged.length
-    ? logged.reduce((s, d) => s + (d.kcal - maintenance), 0) / logged.length
-    : 0
-  const weeklyKg = (avgBalance * 7) / 7700
-  const projected = currentWeight != null ? currentWeight + weeklyKg * 4 : null
+    const dias = Object.values(porDia).filter((k) => k > 0)
+    const saldo = dias.length
+      ? dias.reduce((s, k) => s + (k - maintenance), 0) / dias.length
+      : 0
+    // 7700 kcal ~ 1 kg de tecido adiposo.
+    const kgSemana = (saldo * 7) / 7700
+    return {
+      saldo,
+      kgSemana,
+      projetado: currentWeight != null ? currentWeight + kgSemana * 4 : null,
+      diasComRegistro: dias.length,
+    }
+  }, [items, maintenance, currentWeight])
 
-  if (loading) {
-    return <div className="mb-4 h-44 animate-pulse rounded-2xl bg-obliq-border/50" />
+  if (!items) return <div className="h-14 animate-pulse rounded-lg bg-obliq-surface" />
+
+  if (diasComRegistro === 0) {
+    return (
+      <section>
+        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+          projeção
+        </span>
+        <p className="mt-2 text-sm text-obliq-dim">
+          Registre alguns dias e o app projeta seu peso a partir do saldo calórico.
+        </p>
+      </section>
+    )
   }
 
-  return (
-    <Card className="mb-4">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between gap-2 text-left"
-      >
-        <h2 className="text-sm font-bold uppercase tracking-widest text-obliq-faint">
-          Últimos 7 dias
-        </h2>
-        <div className="flex items-center gap-3">
-          {!open && logged.length > 0 && (
-            <span
-              className={`text-xs font-bold tabular-nums ${weeklyKg > 0 ? 'text-amber-400' : 'text-emerald-400'}`}
-            >
-              {weeklyKg > 0 ? '+' : ''}
-              {weeklyKg.toFixed(2)} kg/sem
-            </span>
-          )}
-          <span className={`text-obliq-faint transition-transform ${open ? 'rotate-180' : ''}`}>
-            ▾
-          </span>
-        </div>
-      </button>
+  const sinal = kgSemana > 0 ? '+' : ''
 
-      <div className={`${open ? 'mt-3' : 'hidden'} flex h-28 items-end gap-1.5`}>
-        {days.map((d, i) => {
-          const h = Math.round((d.kcal / maxScale) * 100)
-          const over = d.kcal > target
-          return (
-            <div key={i} className="flex flex-1 flex-col items-center gap-1">
-              <div className="flex w-full flex-1 items-end">
-                <div
-                  className={`w-full rounded-t ${over ? 'bg-obliq-red' : 'bg-red-gradient'}`}
-                  style={{ height: `${h}%` }}
-                />
-              </div>
-              <span className="text-[9px] text-obliq-faint">{d.wd}</span>
-            </div>
-          )
-        })}
+  return (
+    <section>
+      <div className="flex items-baseline justify-between">
+        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+          projeção
+        </span>
+        <span className="num text-sm text-obliq-faint">
+          {diasComRegistro} {diasComRegistro === 1 ? 'dia' : 'dias'}
+        </span>
       </div>
 
-      {open && (logged.length > 0 ? (
-        <div className="mt-4 grid grid-cols-2 gap-3 border-t border-obliq-border pt-3">
-          <div>
-            <p className="text-[10px] uppercase tracking-widest text-obliq-faint">
-              Saldo médio/dia
-            </p>
-            <p
-              className={`text-lg font-black tabular-nums ${avgBalance > 0 ? 'text-amber-400' : 'text-emerald-400'}`}
-            >
-              {avgBalance > 0 ? '+' : ''}
-              {Math.round(avgBalance)} kcal
-            </p>
-            <p className="text-[10px] text-obliq-faint">vs manutenção ({maintenance} kcal)</p>
-          </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-widest text-obliq-faint">Projeção</p>
-            <p
-              className={`text-lg font-black tabular-nums ${weeklyKg > 0 ? 'text-amber-400' : 'text-emerald-400'}`}
-            >
-              {weeklyKg > 0 ? '+' : ''}
-              {weeklyKg.toFixed(2)} kg/sem
-            </p>
-            {projected != null && (
-              <p className="text-[10px] text-obliq-faint">~{projected.toFixed(1)} kg em 4 sem</p>
-            )}
-          </div>
-        </div>
-      ) : (
-        <p className="mt-4 border-t border-obliq-border pt-3 text-center text-xs text-obliq-faint">
-          Registre comida para ver a projeção.
+      <div className="mt-3 flex flex-wrap items-baseline gap-x-8 gap-y-2">
+        <p>
+          <span className="num text-2xl font-medium">
+            {sinal}
+            {kgSemana.toFixed(2)}
+          </span>
+          <span className="ml-1 text-sm text-obliq-faint">kg por semana</span>
         </p>
-      ))}
-    </Card>
+        {projetado != null && (
+          <p className="num text-sm text-obliq-dim">
+            ~{projetado.toFixed(1)} kg em 4 semanas
+          </p>
+        )}
+      </div>
+
+      <p className="mt-2 font-mono text-[11px] text-obliq-faint">
+        saldo médio {saldo > 0 ? '+' : ''}
+        {Math.round(saldo)} kcal/dia contra manutenção de {maintenance}
+      </p>
+    </section>
   )
 }
