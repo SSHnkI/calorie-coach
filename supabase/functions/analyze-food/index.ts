@@ -39,25 +39,47 @@ Regras:
 Responda SOMENTE com JSON neste formato:
 {"name":string,"quantity":number,"unit":string,"grams_total":number,"search_term":string,"kcal":number,"protein_g":number,"carbs_g":number,"fat_g":number,"confidence":"high"|"medium"|"low"}`
 
+// ponytail: a disponibilidade de modelo varia por conta/chave na Groq.
+// Tenta em ordem e fica no primeiro que a chave puder usar.
+const MODELS = [
+  'llama-3.3-70b-versatile',
+  'meta-llama/llama-4-scout-17b-16e-instruct',
+  'openai/gpt-oss-20b',
+  'llama-3.1-8b-instant',
+]
+
 async function askGroq(foodInput: string, key: string): Promise<Nutrition> {
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      temperature: 0.2,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: SYSTEM },
-        { role: 'user', content: foodInput },
-      ],
-    }),
-  })
-  if (!res.ok) throw new Error(`groq_${res.status}: ${await res.text()}`)
-  const data = await res.json()
-  const raw = data?.choices?.[0]?.message?.content
-  if (!raw) throw new Error('groq_empty')
-  return JSON.parse(raw)
+  let lastErr = 'sem modelo disponivel'
+
+  for (const model of MODELS) {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model,
+        temperature: 0.2,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: SYSTEM },
+          { role: 'user', content: foodInput },
+        ],
+      }),
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const raw = data?.choices?.[0]?.message?.content
+      if (!raw) throw new Error('groq_empty')
+      console.log('modelo usado:', model)
+      return JSON.parse(raw)
+    }
+
+    lastErr = `${model} -> ${res.status}: ${await res.text()}`
+    // 404/400 costuma ser modelo indisponivel; qualquer outro erro tambem vale tentar o proximo
+    console.warn('groq falhou:', lastErr)
+  }
+
+  throw new Error(`groq_indisponivel: ${lastErr}`)
 }
 
 // Busca valores reais no Open Food Facts. Gratuito, sem chave.
@@ -111,7 +133,7 @@ Deno.serve(async (req) => {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('ai_calls_today, ai_calls_date')
+      .select('analyses_today, analyses_date')
       .eq('id', user.id)
       .single()
     if (!profile) return json({ error: 'profile_not_found' }, 404)
@@ -120,7 +142,7 @@ Deno.serve(async (req) => {
     if (!food_input?.trim()) return json({ error: 'food_input required' }, 400)
 
     const today = new Date().toISOString().split('T')[0]
-    const aiToday = profile.ai_calls_date === today ? (profile.ai_calls_today ?? 0) : 0
+    const aiToday = profile.analyses_date === today ? (profile.analyses_today ?? 0) : 0
     if (aiToday >= AI_CAP) return json({ error: 'ai_daily_cap' }, 429)
 
     const groqKey = Deno.env.get('GROQ_API_KEY')
@@ -164,7 +186,7 @@ Deno.serve(async (req) => {
 
     await supabase
       .from('profiles')
-      .update({ ai_calls_today: aiToday + 1, ai_calls_date: today })
+      .update({ analyses_today: aiToday + 1, analyses_date: today })
       .eq('id', user.id)
 
     return json({ ...n, source })
