@@ -9,6 +9,7 @@ import { AuthPage } from './routes/AuthPage'
 import { OnboardingPage } from './routes/OnboardingPage'
 import { DashboardPage } from './routes/DashboardPage'
 import { ResetPasswordPage } from './routes/ResetPasswordPage'
+import { UsersPage } from './routes/UsersPage'
 import { supabase } from './lib/supabase'
 
 // ponytail: escopo enxugado para a calculadora de calorias.
@@ -62,6 +63,7 @@ export default function App() {
 
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/usuarios" element={<UsersPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
