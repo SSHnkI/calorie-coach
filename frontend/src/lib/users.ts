@@ -73,3 +73,16 @@ export async function generatePasswordLink(email: string): Promise<string> {
   if (error || !data?.link) throw new Error('nao_gerou')
   return data.link as string
 }
+
+// Define a senha de um usuario direto, sem e-mail.
+// A validacao de quem pode fazer isso mora na edge function, nao aqui.
+export async function setUserPassword(userId: string, password: string): Promise<void> {
+  const { data, error } = await supabase.functions.invoke('admin-set-password', {
+    body: { user_id: userId, password },
+  })
+  if (error) {
+    const corpo = await (error as { context?: Response }).context?.json?.().catch(() => null)
+    throw new Error(corpo?.error ?? 'falhou')
+  }
+  if (!data?.ok) throw new Error('falhou')
+}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import {
@@ -6,8 +6,7 @@ import {
   AI_CAP,
   fetchTodayIntake,
   fetchUsers,
-  generatePasswordLink,
-  sendPasswordReset,
+  setUserPassword,
   type AppUser,
 } from '../lib/users'
 import { AppShell } from '../components/layout/AppShell'
@@ -41,8 +40,6 @@ function diasDesde(iso: string) {
   return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
 }
 
-type EstadoEnvio = 'idle' | 'confirmar' | 'enviando' | 'enviado' | 'erro'
-type EstadoLink = { estado: 'idle' | 'gerando' | 'pronto' | 'erro'; url?: string }
 type Filtro = 'todos' | 'ativos' | 'incompletos'
 type Ordem = 'recentes' | 'ativos' | 'email'
 
@@ -79,9 +76,6 @@ export function UsersPage() {
   const [filtro, setFiltro] = useState<Filtro>('todos')
   const [ordem, setOrdem] = useState<Ordem>('recentes')
   const [aberto, setAberto] = useState<string | null>(null)
-  const [envio, setEnvio] = useState<Record<string, EstadoEnvio>>({})
-  const [link, setLink] = useState<Record<string, EstadoLink>>({})
-  const [copiado, setCopiado] = useState<string | null>(null)
 
   const ehAdmin = user?.email === ADMIN_EMAIL
 
@@ -115,40 +109,6 @@ export function UsersPage() {
     return ordenado
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [users, busca, filtro, ordem, intake])
-
-  const enviarReset = async (u: AppUser) => {
-    if (envio[u.id] !== 'confirmar') {
-      setEnvio((e) => ({ ...e, [u.id]: 'confirmar' }))
-      return
-    }
-    setEnvio((e) => ({ ...e, [u.id]: 'enviando' }))
-    try {
-      await sendPasswordReset(u.email)
-      setEnvio((e) => ({ ...e, [u.id]: 'enviado' }))
-    } catch {
-      setEnvio((e) => ({ ...e, [u.id]: 'erro' }))
-    }
-  }
-
-  const gerarLink = async (u: AppUser) => {
-    setLink((l) => ({ ...l, [u.id]: { estado: 'gerando' } }))
-    try {
-      const url = await generatePasswordLink(u.email)
-      setLink((l) => ({ ...l, [u.id]: { estado: 'pronto', url } }))
-    } catch {
-      setLink((l) => ({ ...l, [u.id]: { estado: 'erro' } }))
-    }
-  }
-
-  const copiar = async (id: string, url: string) => {
-    try {
-      await navigator.clipboard.writeText(url)
-      setCopiado(id)
-      setTimeout(() => setCopiado(null), 2000)
-    } catch {
-      setCopiado(null)
-    }
-  }
 
   if (loading) return null
   // A tela some pra quem nao e admin. O banco recusa mesmo assim.
@@ -258,7 +218,6 @@ export function UsersPage() {
             const usadas = analisesDe(u)
             const kcal = intake[u.id] ?? 0
             const meta = u.daily_kcal ?? 0
-            const estado = envio[u.id] ?? 'idle'
             const on = aberto === u.id
             const ativoHoje = usadas > 0 || kcal > 0
 
@@ -341,80 +300,7 @@ export function UsersPage() {
                       ))}
                     </dl>
 
-                    <div className="flex flex-col items-start gap-2 md:items-end">
-                      {(() => {
-                        const l = link[u.id] ?? { estado: 'idle' as const }
-                        if (l.estado === 'pronto' && l.url) {
-                          return (
-                            <div className="w-full md:max-w-xs">
-                              <p className="font-mono text-[11px] text-obliq-dim">
-                                link válido por 1 hora, uso único
-                              </p>
-                              <div className="mt-1.5 flex gap-2">
-                                <input
-                                  readOnly
-                                  value={l.url}
-                                  onFocus={(e) => e.currentTarget.select()}
-                                  aria-label={`Link de senha de ${u.email}`}
-                                  className="num min-w-0 flex-1 rounded bg-obliq-black px-2 py-1.5 text-[11px] text-obliq-chalk ring-1 ring-obliq-border outline-none focus:ring-obliq-dim"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => copiar(u.id, l.url!)}
-                                  className="shrink-0 rounded px-2 py-1.5 font-mono text-[11px] text-obliq-faint ring-1 ring-obliq-border transition-colors duration-200 hover:text-obliq-chalk hover:ring-obliq-dim"
-                                >
-                                  {copiado === u.id ? 'copiado' : 'copiar'}
-                                </button>
-                              </div>
-                            </div>
-                          )
-                        }
-                        if (l.estado === 'erro') {
-                          return (
-                            <p className="font-mono text-[11px] text-obliq-red">
-                              não foi possível gerar o link
-                            </p>
-                          )
-                        }
-                        return (
-                          <button
-                            type="button"
-                            onClick={() => gerarLink(u)}
-                            disabled={l.estado === 'gerando'}
-                            className="min-h-9 rounded px-2.5 py-1.5 font-mono text-[11px] text-obliq-faint ring-1 ring-obliq-border transition-colors duration-200 hover:text-obliq-chalk hover:ring-obliq-dim disabled:opacity-40"
-                          >
-                            {l.estado === 'gerando' ? 'gerando…' : 'gerar link de senha'}
-                          </button>
-                        )
-                      })()}
-
-                      {estado === 'enviado' ? (
-                        <p className="font-mono text-[11px] text-obliq-dim">
-                          link enviado
-                        </p>
-                      ) : estado === 'erro' ? (
-                        <p className="font-mono text-[11px] text-obliq-red">
-                          falhou, o Supabase limita e-mails por hora
-                        </p>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => enviarReset(u)}
-                          disabled={estado === 'enviando'}
-                          className={`min-h-9 rounded px-2.5 py-1.5 font-mono text-[11px] ring-1 transition-colors duration-200 disabled:opacity-40 ${
-                            estado === 'confirmar'
-                              ? 'text-obliq-chalk ring-obliq-red'
-                              : 'text-obliq-faint ring-obliq-border hover:text-obliq-chalk hover:ring-obliq-dim'
-                          }`}
-                        >
-                          {estado === 'enviando'
-                            ? 'enviando…'
-                            : estado === 'confirmar'
-                              ? 'confirmar envio'
-                              : 'enviar link de senha'}
-                        </button>
-                      )}
-                    </div>
+                    <SenhaAdmin usuario={u} />
                   </div>
                 )}
               </li>
@@ -439,5 +325,111 @@ export function UsersPage() {
         </div>
       )}
     </AppShell>
+  )
+}
+
+// Troca de senha pelo admin. O valor vai direto pra edge function e nao fica em lugar nenhum.
+function SenhaAdmin({ usuario }: { usuario: AppUser }) {
+  const [aberto, setAberto] = useState(false)
+  const [senha, setSenha] = useState('')
+  const [estado, setEstado] = useState<'idle' | 'salvando' | 'ok' | 'erro'>('idle')
+  const [msg, setMsg] = useState('')
+
+  const salvar = async (e: FormEvent) => {
+    e.preventDefault()
+    if (senha.length < 8) {
+      setEstado('erro')
+      setMsg('Use pelo menos 8 caracteres.')
+      return
+    }
+    setEstado('salvando')
+    try {
+      await setUserPassword(usuario.id, senha)
+      setSenha('')
+      setEstado('ok')
+      setMsg(`Senha de ${usuario.email} alterada.`)
+    } catch (err) {
+      setEstado('erro')
+      setMsg(
+        (err as Error).message === 'senha_curta'
+          ? 'Use pelo menos 8 caracteres.'
+          : 'Não foi possível alterar. Tente de novo.',
+      )
+    }
+  }
+
+  if (!aberto) {
+    return (
+      <div className="md:text-right">
+        <button
+          type="button"
+          onClick={() => setAberto(true)}
+          className="min-h-9 rounded px-2.5 py-1.5 font-mono text-[11px] text-obliq-faint ring-1 ring-obliq-border transition-colors duration-200 hover:text-obliq-chalk hover:ring-obliq-dim"
+        >
+          definir senha
+        </button>
+        {estado === 'ok' && (
+          <p className="mt-2 font-mono text-[11px] text-obliq-dim">{msg}</p>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={salvar} className="w-full md:max-w-xs">
+      <label
+        htmlFor={`senha-${usuario.id}`}
+        className="font-mono text-[11px] text-obliq-faint"
+      >
+        nova senha de {usuario.email}
+      </label>
+      <div className="mt-1.5 flex gap-2">
+        <input
+          id={`senha-${usuario.id}`}
+          type="text"
+          autoComplete="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          value={senha}
+          onChange={(e) => {
+            setSenha(e.target.value)
+            setEstado('idle')
+          }}
+          placeholder="mínimo 8 caracteres"
+          className="num min-w-0 flex-1 rounded bg-obliq-black px-2 py-1.5 text-[12px] text-obliq-chalk ring-1 ring-obliq-border outline-none placeholder:text-obliq-faint focus:ring-obliq-dim"
+        />
+        <button
+          type="submit"
+          disabled={estado === 'salvando' || senha.length < 8}
+          className="shrink-0 rounded bg-obliq-red px-2.5 py-1.5 font-mono text-[11px] text-white transition-colors duration-200 hover:bg-[#ff1420] disabled:opacity-40"
+        >
+          {estado === 'salvando' ? 'salvando…' : 'salvar'}
+        </button>
+      </div>
+
+      {msg && (
+        <p
+          role={estado === 'erro' ? 'alert' : undefined}
+          className={`mt-2 font-mono text-[11px] ${
+            estado === 'erro' ? 'text-obliq-red' : 'text-obliq-dim'
+          }`}
+        >
+          {msg}
+        </p>
+      )}
+
+      <button
+        type="button"
+        onClick={() => {
+          setAberto(false)
+          setSenha('')
+          setEstado('idle')
+          setMsg('')
+        }}
+        className="mt-2 font-mono text-[11px] text-obliq-faint underline decoration-obliq-line underline-offset-4 hover:text-obliq-chalk"
+      >
+        cancelar
+      </button>
+    </form>
   )
 }
