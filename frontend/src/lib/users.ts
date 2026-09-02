@@ -31,3 +31,35 @@ export async function fetchUsers(): Promise<AppUser[]> {
   if (error) throw error
   return (data ?? []) as AppUser[]
 }
+
+// Teto diario de chamadas a IA por conta, espelha AI_CAP da edge function analyze-food.
+export const AI_CAP = 100
+
+// Calorias registradas hoje por usuario.
+// Depende da policy de leitura de food_log pelo admin; sem ela volta so o proprio diario.
+export async function fetchTodayIntake(): Promise<Record<string, number>> {
+  const inicio = new Date()
+  inicio.setHours(0, 0, 0, 0)
+
+  const { data, error } = await supabase
+    .from('food_log')
+    .select('user_id, kcal')
+    .gte('logged_at', inicio.toISOString())
+
+  if (error) throw error
+
+  const soma: Record<string, number> = {}
+  for (const linha of data ?? []) {
+    const r = linha as { user_id: string; kcal: number }
+    soma[r.user_id] = (soma[r.user_id] ?? 0) + (r.kcal ?? 0)
+  }
+  return soma
+}
+
+// Dispara o e-mail de troca de senha. Nao definimos senha por aqui: o usuario escolhe a dele.
+export async function sendPasswordReset(email: string): Promise<void> {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  })
+  if (error) throw error
+}
