@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { AppProvider, useApp } from './context/AppContext'
 import { I18nProvider } from './i18n/I18nContext'
@@ -9,8 +9,10 @@ import { AuthPage } from './routes/AuthPage'
 import { OnboardingPage } from './routes/OnboardingPage'
 import { DashboardPage } from './routes/DashboardPage'
 import { ResetPasswordPage } from './routes/ResetPasswordPage'
-import { UsersPage } from './routes/UsersPage'
 import { supabase } from './lib/supabase'
+
+// ponytail: painel de usuarios so carrega para quem abre /usuarios.
+const UsersPage = lazy(() => import('./routes/UsersPage').then((m) => ({ default: m.UsersPage })))
 
 // ponytail: escopo enxugado para a calculadora de calorias.
 // Treino, dieta, admin, personal, nutri e pricing seguem no git (branch main).
@@ -71,7 +73,7 @@ export default function App() {
 
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/usuarios" element={<UsersPage />} />
+              <Route path="/usuarios" element={<Suspense fallback={null}><UsersPage /></Suspense>} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

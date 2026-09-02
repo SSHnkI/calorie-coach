@@ -158,7 +158,7 @@ export function DashboardPage() {
   }, [bateuMeta])
 
   return (
-    <AppShell titleKey="dashboard" showNav={false}>
+    <AppShell>
       <Tabs
         tabs={[
           { id: 'today', label: t.dashboard.today },

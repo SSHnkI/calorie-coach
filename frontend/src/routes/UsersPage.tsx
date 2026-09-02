@@ -122,7 +122,7 @@ export function UsersPage() {
   const usoPct = tetoTotal > 0 ? Math.min(100, (analisesHoje / tetoTotal) * 100) : 0
 
   return (
-    <AppShell showNav={false}>
+    <AppShell>
       <header className="flex items-baseline justify-between border-b border-obliq-border pb-5">
         <h1 className="font-display text-2xl font-bold">Usuários</h1>
         <span className="num text-sm text-obliq-faint">{total}</span>

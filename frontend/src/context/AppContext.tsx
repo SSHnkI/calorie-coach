@@ -13,7 +13,6 @@ import { calculateDailyKcal } from '../lib/tdee'
 import type {
   FoodEntry,
   OnboardingData,
-  SubscriptionStatus,
   UserProfile,
 } from '../types'
 
@@ -31,24 +30,11 @@ function mensagemDeErro(bruto: unknown, padrao: string) {
 }
 type SignupResult = { error: string | null; emailSent?: boolean }
 
-export type TrainerData = {
-  id: string
-  user_id: string
-  name: string
-  email: string
-  code: string
-  is_trainer: boolean
-  is_nutri: boolean
-}
-
 type AppContextValue = {
   user: UserProfile | null
   foodLog: FoodEntry[]
   isAuthenticated: boolean
   isPro: boolean
-  isTrainer: boolean
-  isNutri: boolean
-  trainerData: TrainerData | null
   loading: boolean
   login: (email: string, password: string) => Promise<AuthResult>
   signup: (email: string, password: string) => Promise<SignupResult>
@@ -57,7 +43,6 @@ type AppContextValue = {
   logout: () => Promise<void>
   completeOnboarding: (data: OnboardingData) => Promise<{ error: string | null }>
   addFoodEntry: (entry: Omit<FoodEntry, 'id' | 'logged_at'>) => void
-  upgradeToPro: () => void
   refreshUser: () => Promise<void>
   totals: {
     kcal: number
@@ -72,7 +57,6 @@ const AppContext = createContext<AppContextValue | null>(null)
 export function AppProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<UserProfile | null>(null)
-  const [trainerData, setTrainerData] = useState<TrainerData | null>(null)
   const [foodLog, setFoodLog] = useState<FoodEntry[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -86,19 +70,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return data as UserProfile
   }, [])
 
-  const loadTrainer = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from('professionals')
-      .select('id, user_id, name, email, code, is_trainer, is_nutri')
-      .eq('user_id', userId)
-      .maybeSingle()
-    setTrainerData(data ?? null)
-  }, [])
-
   const loadAll = useCallback(async (userId: string) => {
-    const [profile] = await Promise.all([loadProfile(userId), loadTrainer(userId)])
-    setUser(profile)
-  }, [loadProfile, loadTrainer])
+    setUser(await loadProfile(userId))
+  }, [loadProfile])
 
   // Ouve mudanças de sessão do Supabase Auth.
   // PWA voltando do background: getSession() pode ficar pendurada tentando
@@ -130,7 +104,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
           await loadAll(session.user.id)
         } else {
           setUser(null)
-          setTrainerData(null)
           setFoodLog([])
         }
       }
@@ -245,11 +218,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [],
   )
 
-  const upgradeToPro = useCallback(() => {
-    if (!user) return
-    setUser({ ...user, subscription_status: 'active' as SubscriptionStatus })
-  }, [user])
-
   const refreshUser = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session?.user) return
@@ -277,9 +245,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       foodLog,
       isAuthenticated: !!session,
       isPro: user?.subscription_status === 'active',
-      isTrainer: !!trainerData?.is_trainer,
-      isNutri: !!trainerData?.is_nutri,
-      trainerData,
       loading,
       login,
       signup,
@@ -288,14 +253,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       logout,
       completeOnboarding,
       addFoodEntry,
-      upgradeToPro,
       refreshUser,
       totals,
     }),
     [
       session,
       user,
-      trainerData,
       foodLog,
       loading,
       login,
@@ -305,7 +268,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       logout,
       completeOnboarding,
       addFoodEntry,
-      upgradeToPro,
       refreshUser,
       totals,
     ],

@@ -1,0 +1,1878 @@
+{
+ "workout_plans": [
+  {
+   "id": "136e2ab0-545c-477e-a563-02e63376a8eb",
+   "user_id": "065f549b-46cf-4ee6-a6ba-048dab17ce15",
+   "name": "Pull — Puxar",
+   "goal": null,
+   "created_at": "2026-06-24T10:10:09.357382+00:00"
+  },
+  {
+   "id": "6b451a65-58f8-4473-a015-3256caee8e55",
+   "user_id": "065f549b-46cf-4ee6-a6ba-048dab17ce15",
+   "name": "Legs — Pernas",
+   "goal": null,
+   "created_at": "2026-06-24T10:10:09.510341+00:00"
+  },
+  {
+   "id": "de950aed-179d-4142-a364-2209bda87b51",
+   "user_id": "065f549b-46cf-4ee6-a6ba-048dab17ce15",
+   "name": "Push — Empurrar",
+   "goal": null,
+   "created_at": "2026-06-24T10:10:09.204378+00:00"
+  }
+ ],
+ "workout_exercises": [
+  {
+   "id": "fbf01297-2f7d-4374-bb1c-962763ebfdf1",
+   "plan_id": "136e2ab0-545c-477e-a563-02e63376a8eb",
+   "exercise_id": "2408fd72-d945-4c82-9212-12346eb586d3",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 0,
+   "created_at": "2026-06-24T10:10:09.465086+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "d54e9ec3-4d84-45dc-a8a6-09f99078aa4a",
+   "plan_id": "136e2ab0-545c-477e-a563-02e63376a8eb",
+   "exercise_id": "556065b3-b0cc-469b-82d9-12128e51c789",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 1,
+   "created_at": "2026-06-24T10:10:09.465086+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "b3821c80-5527-4cc7-8932-720157940417",
+   "plan_id": "136e2ab0-545c-477e-a563-02e63376a8eb",
+   "exercise_id": "18d33c47-47dd-42b6-8e8a-bc0ee68b9ae5",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 2,
+   "created_at": "2026-06-24T10:10:09.465086+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "bbbef60e-7925-46ce-b564-eafcb406e143",
+   "plan_id": "136e2ab0-545c-477e-a563-02e63376a8eb",
+   "exercise_id": "c000baa3-1a02-40dd-b537-980c59c98feb",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 3,
+   "created_at": "2026-06-24T10:10:09.465086+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "99baedbd-d5af-4601-b21e-f7ab25395192",
+   "plan_id": "136e2ab0-545c-477e-a563-02e63376a8eb",
+   "exercise_id": "39cf9cd3-6f6e-49c7-872b-39ee231b769f",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 4,
+   "created_at": "2026-06-24T10:10:09.465086+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "9bb9f7cf-d2cd-4697-83f9-2c8bbef1805d",
+   "plan_id": "136e2ab0-545c-477e-a563-02e63376a8eb",
+   "exercise_id": "3be986c7-6085-470c-a291-d3031069aed2",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 5,
+   "created_at": "2026-06-24T10:10:09.465086+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "3b716ecd-54ba-470e-84f6-7677ff2f61c4",
+   "plan_id": "6b451a65-58f8-4473-a015-3256caee8e55",
+   "exercise_id": "8644dc52-5d14-47a2-afda-98574a088211",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 0,
+   "created_at": "2026-06-24T10:10:09.604347+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "711ccffb-d703-4953-86bb-9b35f73f391e",
+   "plan_id": "6b451a65-58f8-4473-a015-3256caee8e55",
+   "exercise_id": "2a448aa1-517a-412a-81ac-f2976b8d04e7",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 1,
+   "created_at": "2026-06-24T10:10:09.604347+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "79f7568d-bf40-4e47-9a71-465c639e02e5",
+   "plan_id": "6b451a65-58f8-4473-a015-3256caee8e55",
+   "exercise_id": "7284eba0-143d-40cb-827b-1fe12d826c50",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 2,
+   "created_at": "2026-06-24T10:10:09.604347+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "d8242e17-1bba-4376-9a39-ce2fa4b7aa88",
+   "plan_id": "6b451a65-58f8-4473-a015-3256caee8e55",
+   "exercise_id": "72bbf273-e349-40d2-9bfb-529b1f3ae3f8",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 3,
+   "created_at": "2026-06-24T10:10:09.604347+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "dcf22d31-fd7c-4400-abec-b591817df4ad",
+   "plan_id": "6b451a65-58f8-4473-a015-3256caee8e55",
+   "exercise_id": "6439b8da-5efd-45e8-b99c-c74d3551e9b2",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 4,
+   "created_at": "2026-06-24T10:10:09.604347+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "31eaa541-eab5-4622-9000-354dfd3e233e",
+   "plan_id": "6b451a65-58f8-4473-a015-3256caee8e55",
+   "exercise_id": "cc1e55b6-4b93-453f-95c5-98728f5137d7",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 5,
+   "created_at": "2026-06-24T10:10:09.604347+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "6b62847a-3436-4af6-a75d-617330d81ba7",
+   "plan_id": "de950aed-179d-4142-a364-2209bda87b51",
+   "exercise_id": "d297815f-76ee-4e2f-880f-2d99404cd08d",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 0,
+   "created_at": "2026-06-24T10:33:53.585441+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "eb7a7258-9900-447a-8719-d4f019eaaaea",
+   "plan_id": "de950aed-179d-4142-a364-2209bda87b51",
+   "exercise_id": "4c7d1801-8a25-485f-a511-e4219200cb5e",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 1,
+   "created_at": "2026-06-24T10:33:53.585441+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "f357257d-21ed-4564-9f70-6a60a1249697",
+   "plan_id": "de950aed-179d-4142-a364-2209bda87b51",
+   "exercise_id": "58f0e550-d804-4aef-97fc-6948f881f23a",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 2,
+   "created_at": "2026-06-24T10:33:53.585441+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "fd643059-34b8-4441-8f26-10cb7244bb33",
+   "plan_id": "de950aed-179d-4142-a364-2209bda87b51",
+   "exercise_id": "c95a45ab-35fe-43c7-8089-fe7a9dfd68c8",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 3,
+   "created_at": "2026-06-24T10:33:53.585441+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "673a4dd8-9843-4cf4-9e9a-025c23ac7aab",
+   "plan_id": "de950aed-179d-4142-a364-2209bda87b51",
+   "exercise_id": "be21e133-657a-46f6-bc61-611edf3cd45c",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 4,
+   "created_at": "2026-06-24T10:33:53.585441+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "8f58bbb3-46b0-4617-a1e3-67e2547f3828",
+   "plan_id": "de950aed-179d-4142-a364-2209bda87b51",
+   "exercise_id": "4e34adde-5275-4f9f-857c-396db05fc8b4",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 5,
+   "created_at": "2026-06-24T10:33:53.585441+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "331df436-bb05-4979-bb03-8ca2dccf2873",
+   "plan_id": "de950aed-179d-4142-a364-2209bda87b51",
+   "exercise_id": "91b38d82-7168-4473-bf9e-8fc7469f3391",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 6,
+   "created_at": "2026-06-24T10:33:53.585441+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "85d16ebd-75e0-4302-a925-dc795278c952",
+   "plan_id": "de950aed-179d-4142-a364-2209bda87b51",
+   "exercise_id": "a36ca356-6fc1-40be-ab92-7e5ca8d97785",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 7,
+   "created_at": "2026-06-24T10:33:53.585441+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  },
+  {
+   "id": "534e5bef-09eb-480a-926c-4c5fda9c0761",
+   "plan_id": "de950aed-179d-4142-a364-2209bda87b51",
+   "exercise_id": "6b7e90a9-ba6d-478b-b577-a06052626d66",
+   "sets": 3,
+   "reps": "10",
+   "rest_seconds": 60,
+   "order_index": 8,
+   "created_at": "2026-06-24T10:33:53.585441+00:00",
+   "notes": null,
+   "target_weight_kg": null
+  }
+ ],
+ "exercises": [
+  {
+   "id": "a840186c-9456-40f6-b63f-429f9f8a4eda",
+   "name": "Supino reto",
+   "description": "Deitado no banco, empurre a barra do peito para cima.",
+   "muscle_group": "peito",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Peitoral, tríceps, ombro"
+  },
+  {
+   "id": "58f0e550-d804-4aef-97fc-6948f881f23a",
+   "name": "Supino inclinado com halteres",
+   "description": "Banco inclinado, empurre os halteres para cima.",
+   "muscle_group": "peito",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Peitoral superior, deltoide anterior"
+  },
+  {
+   "id": "d297815f-76ee-4e2f-880f-2d99404cd08d",
+   "name": "Crucifixo",
+   "description": "Abertura com halteres alongando o peito.",
+   "muscle_group": "peito",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Peitoral maior"
+  },
+  {
+   "id": "4c7d1801-8a25-485f-a511-e4219200cb5e",
+   "name": "Flexão de braço",
+   "description": "Empurre o corpo do chão mantendo o core firme.",
+   "muscle_group": "peito",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Peitoral, tríceps, core"
+  },
+  {
+   "id": "18d33c47-47dd-42b6-8e8a-bc0ee68b9ae5",
+   "name": "Puxada na frente",
+   "description": "Puxe a barra em direção ao peito no pulley.",
+   "muscle_group": "costas",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Latíssimo do dorso, bíceps"
+  },
+  {
+   "id": "c1d5b8d9-2230-45d6-8b0d-472772295698",
+   "name": "Supino inclinado",
+   "description": "Banco inclinado, empurre a barra/halteres para cima.",
+   "muscle_group": "peito",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Peitoral superior, ombro"
+  },
+  {
+   "id": "2408fd72-d945-4c82-9212-12346eb586d3",
+   "name": "Barra fixa",
+   "description": "Eleve o corpo até o queixo passar a barra.",
+   "muscle_group": "costas",
+   "difficulty": "avancado",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Latíssimo, bíceps, antebraço"
+  },
+  {
+   "id": "556065b3-b0cc-469b-82d9-12128e51c789",
+   "name": "Levantamento terra",
+   "description": "Levante a barra do chão mantendo a coluna neutra.",
+   "muscle_group": "costas",
+   "difficulty": "avancado",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Lombar, glúteos, posterior de coxa, dorsais"
+  },
+  {
+   "id": "be21e133-657a-46f6-bc61-611edf3cd45c",
+   "name": "Desenvolvimento militar",
+   "description": "Empurre a barra acima da cabeça.",
+   "muscle_group": "ombro",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Deltoides, tríceps"
+  },
+  {
+   "id": "8ad7a48c-7280-46a3-b695-f0019f39262e",
+   "name": "Supino declinado",
+   "description": "Banco declinado, empurre para cima.",
+   "muscle_group": "peito",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Peitoral inferior"
+  },
+  {
+   "id": "c95a45ab-35fe-43c7-8089-fe7a9dfd68c8",
+   "name": "Crucifixo invertido",
+   "description": "Abertura inclinada para trás.",
+   "muscle_group": "ombro",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Deltoide posterior, romboides"
+  },
+  {
+   "id": "39cf9cd3-6f6e-49c7-872b-39ee231b769f",
+   "name": "Rosca direta",
+   "description": "Flexione os cotovelos elevando a barra.",
+   "muscle_group": "biceps",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Bíceps braquial"
+  },
+  {
+   "id": "3be986c7-6085-470c-a291-d3031069aed2",
+   "name": "Rosca martelo",
+   "description": "Pegada neutra, eleve os halteres.",
+   "muscle_group": "biceps",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Bíceps, braquiorradial"
+  },
+  {
+   "id": "a36ca356-6fc1-40be-ab92-7e5ca8d97785",
+   "name": "Tríceps pulley",
+   "description": "Empurre a barra do pulley para baixo.",
+   "muscle_group": "triceps",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Tríceps"
+  },
+  {
+   "id": "6b7e90a9-ba6d-478b-b577-a06052626d66",
+   "name": "Tríceps testa",
+   "description": "Deitado, flexione os cotovelos levando a barra à testa.",
+   "muscle_group": "triceps",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Tríceps"
+  },
+  {
+   "id": "91b38d82-7168-4473-bf9e-8fc7469f3391",
+   "name": "Mergulho no banco",
+   "description": "Apoie as mãos no banco e flexione os cotovelos.",
+   "muscle_group": "triceps",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Tríceps, peito"
+  },
+  {
+   "id": "8644dc52-5d14-47a2-afda-98574a088211",
+   "name": "Agachamento livre",
+   "description": "Agache com a barra nas costas até as coxas paralelas.",
+   "muscle_group": "pernas",
+   "difficulty": "avancado",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Quadríceps, glúteos, posterior"
+  },
+  {
+   "id": "7284eba0-143d-40cb-827b-1fe12d826c50",
+   "name": "Leg press",
+   "description": "Empurre a plataforma com as pernas.",
+   "muscle_group": "pernas",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Quadríceps, glúteos"
+  },
+  {
+   "id": "2a448aa1-517a-412a-81ac-f2976b8d04e7",
+   "name": "Cadeira extensora",
+   "description": "Estenda os joelhos contra a resistência.",
+   "muscle_group": "pernas",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Quadríceps"
+  },
+  {
+   "id": "c8644d9e-aacc-405e-a538-fd3ea7a0d046",
+   "name": "Supino com halteres",
+   "description": "Empurre os halteres para cima deitado no banco.",
+   "muscle_group": "peito",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Peitoral, tríceps"
+  },
+  {
+   "id": "4a1d008a-5033-4099-8477-d36474f91289",
+   "name": "Crucifixo",
+   "description": "Abra e feche os braços com halteres, leve abertura.",
+   "muscle_group": "peito",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Peitoral"
+  },
+  {
+   "id": "c9499669-1bd6-4422-8339-d7785f362f8d",
+   "name": "Crucifixo inclinado",
+   "description": "Crucifixo no banco inclinado.",
+   "muscle_group": "peito",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Peitoral superior"
+  },
+  {
+   "id": "f9483d99-01f8-4a2d-9500-b188fb3f93a0",
+   "name": "Crossover",
+   "description": "Puxe os cabos cruzando à frente do corpo.",
+   "muscle_group": "peito",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Peitoral"
+  },
+  {
+   "id": "cc1e55b6-4b93-453f-95c5-98728f5137d7",
+   "name": "Elevação de pernas",
+   "description": "Eleve as pernas estendidas deitado.",
+   "muscle_group": "abdomen",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Abdômen inferior"
+  },
+  {
+   "id": "72bbf273-e349-40d2-9bfb-529b1f3ae3f8",
+   "name": "Abdominal infra na barra",
+   "description": "Pendurado, eleve os joelhos ao peito.",
+   "muscle_group": "abdomen",
+   "difficulty": "avancado",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Abdômen inferior, flexores do quadril"
+  },
+  {
+   "id": "5e4b249c-c48a-4a28-b1a3-d5e440efcc40",
+   "name": "Voador (peck deck)",
+   "description": "Junte os braços na máquina à frente do peito.",
+   "muscle_group": "peito",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Peitoral"
+  },
+  {
+   "id": "5741944d-551b-4ae3-8206-6ca608d6dd78",
+   "name": "Pullover",
+   "description": "Deitado, leve o halter atrás da cabeça e retorne.",
+   "muscle_group": "peito",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Peitoral, dorsal"
+  },
+  {
+   "id": "e7078c5f-7ec2-40f2-816a-afd137cba712",
+   "name": "Puxada frente",
+   "description": "Puxe a barra do pulley até o peito.",
+   "muscle_group": "costas",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Dorsal, bíceps"
+  },
+  {
+   "id": "d8a82868-a366-402e-8c0a-0c2f310cbf0a",
+   "name": "Puxada atrás",
+   "description": "Puxe a barra atrás da nuca.",
+   "muscle_group": "costas",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Dorsal"
+  },
+  {
+   "id": "c91212d3-5c63-4ead-9502-3d4ce011e69e",
+   "name": "Remada curvada",
+   "description": "Tronco inclinado, puxe a barra ao abdômen.",
+   "muscle_group": "costas",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Dorsal, romboides, bíceps"
+  },
+  {
+   "id": "c33608cc-55c2-4b51-ae0c-3145ceb432f9",
+   "name": "Remada baixa",
+   "description": "Sentado, puxe o cabo ao abdômen.",
+   "muscle_group": "costas",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Dorsal, romboides"
+  },
+  {
+   "id": "26341a87-eb89-4b61-8b62-f5c29223e2bd",
+   "name": "Remada cavalinho",
+   "description": "Puxe a barra T em pé, tronco inclinado.",
+   "muscle_group": "costas",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Dorsal médio"
+  },
+  {
+   "id": "fe7aeb9e-5ff5-445a-aea1-085fcef75490",
+   "name": "Remada serrote",
+   "description": "Um joelho no banco, puxe o halter com um braço.",
+   "muscle_group": "costas",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Dorsal, bíceps"
+  },
+  {
+   "id": "ce9a2b64-0fde-4ad1-b2eb-4b932077f3c8",
+   "name": "Barra fixa",
+   "description": "Eleve o corpo até o queixo passar a barra.",
+   "muscle_group": "costas",
+   "difficulty": "avancado",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Dorsal, bíceps"
+  },
+  {
+   "id": "5000e310-218a-4c16-912b-f89967e90599",
+   "name": "Desenvolvimento",
+   "description": "Empurre a barra/halteres acima da cabeça.",
+   "muscle_group": "ombro",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Ombro, tríceps"
+  },
+  {
+   "id": "0cefa2ed-031d-4edc-a1eb-a3ce0425006a",
+   "name": "Desenvolvimento Arnold",
+   "description": "Gire os halteres ao empurrar acima da cabeça.",
+   "muscle_group": "ombro",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Ombro"
+  },
+  {
+   "id": "b60500a1-981a-492f-a485-58fb6fea3c5e",
+   "name": "Elevação lateral",
+   "description": "Eleve os halteres para os lados até os ombros.",
+   "muscle_group": "ombro",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Ombro lateral"
+  },
+  {
+   "id": "48131f14-af39-4f51-bfb3-b01ceeb1f5ea",
+   "name": "Crucifixo invertido",
+   "description": "Inclinado, abra os braços para trás.",
+   "muscle_group": "ombro",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Ombro posterior"
+  },
+  {
+   "id": "09d9f583-793e-4a18-b352-f0f3ccdf4afe",
+   "name": "Remada alta",
+   "description": "Puxe a barra até o queixo, cotovelos altos.",
+   "muscle_group": "ombro",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Ombro, trapézio"
+  },
+  {
+   "id": "82e81a8d-f6e8-466a-8653-39a1efa6a24e",
+   "name": "Encolhimento",
+   "description": "Eleve os ombros segurando peso.",
+   "muscle_group": "ombro",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Trapézio"
+  },
+  {
+   "id": "96dad4f1-0c16-49d1-acff-707f3fcb6724",
+   "name": "Rosca alternada",
+   "description": "Eleve um halter de cada vez.",
+   "muscle_group": "biceps",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Bíceps"
+  },
+  {
+   "id": "a584e212-49ce-4f24-ba68-1764f2f443bc",
+   "name": "Rosca scott",
+   "description": "No banco scott, flexione os cotovelos.",
+   "muscle_group": "biceps",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Bíceps"
+  },
+  {
+   "id": "6439b8da-5efd-45e8-b99c-c74d3551e9b2",
+   "name": "Abdominal supra",
+   "description": "Eleve o tronco contraindo o abdômen.",
+   "muscle_group": "abdomen",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Reto abdominal"
+  },
+  {
+   "id": "c000baa3-1a02-40dd-b537-980c59c98feb",
+   "name": "Rosca alternada",
+   "description": "Flexione um braço de cada vez com halteres.",
+   "muscle_group": "biceps",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Bíceps, braquial"
+  },
+  {
+   "id": "68d9a580-359a-4497-8cf9-0fd8a0b0bab4",
+   "name": "Rosca concentrada",
+   "description": "Sentado, cotovelo na coxa, eleve o halter.",
+   "muscle_group": "biceps",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Bíceps"
+  },
+  {
+   "id": "eaa403b8-3e65-4509-9f88-cb227b4788a1",
+   "name": "Rosca na polia",
+   "description": "Flexione os cotovelos puxando o cabo.",
+   "muscle_group": "biceps",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Bíceps"
+  },
+  {
+   "id": "e37e6a48-c89f-4902-89cd-96da7d4670b7",
+   "name": "Tríceps corda",
+   "description": "Empurre a corda para baixo abrindo no fim.",
+   "muscle_group": "triceps",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Tríceps"
+  },
+  {
+   "id": "02ef5220-41ac-48f3-806f-1bc98c3f1b41",
+   "name": "Tríceps francês",
+   "description": "Halter atrás da cabeça, estenda os cotovelos.",
+   "muscle_group": "triceps",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Tríceps"
+  },
+  {
+   "id": "927ffed1-1625-4ad6-9485-73a716710e10",
+   "name": "Tríceps coice",
+   "description": "Tronco inclinado, estenda o cotovelo para trás.",
+   "muscle_group": "triceps",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Tríceps"
+  },
+  {
+   "id": "0e98831e-564e-4385-8fcc-3dd706482dfa",
+   "name": "Mergulho no banco",
+   "description": "Mãos no banco, flexione e estenda os cotovelos.",
+   "muscle_group": "triceps",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Tríceps, peito"
+  },
+  {
+   "id": "9803bfaf-939a-4915-80d1-d56c81914c36",
+   "name": "Supino fechado",
+   "description": "Supino com pegada fechada.",
+   "muscle_group": "triceps",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Tríceps, peito"
+  },
+  {
+   "id": "40d727f2-990a-4c08-91c7-14f614658bd1",
+   "name": "Agachamento no smith",
+   "description": "Agache na barra guiada.",
+   "muscle_group": "pernas",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Quadríceps, glúteo"
+  },
+  {
+   "id": "8a9dc309-2f84-4277-8cfc-52adf63fbd98",
+   "name": "Mesa flexora",
+   "description": "Flexione os joelhos contra a resistência.",
+   "muscle_group": "pernas",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Posterior de coxa"
+  },
+  {
+   "id": "94459a8a-5bf8-4d84-bd85-73a4cca9dc7c",
+   "name": "Stiff",
+   "description": "Desça a barra com pernas semiflexionadas.",
+   "muscle_group": "pernas",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Posterior, glúteo"
+  },
+  {
+   "id": "5c62e9af-8a24-4d45-bc69-cfe903ff2a8f",
+   "name": "Afundo",
+   "description": "Passo à frente e desça o joelho de trás.",
+   "muscle_group": "pernas",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Quadríceps, glúteo"
+  },
+  {
+   "id": "cc1d3815-f0dd-4076-82e9-b27db387ad62",
+   "name": "Agachamento búlgaro",
+   "description": "Pé de trás no banco, agache com a perna da frente.",
+   "muscle_group": "pernas",
+   "difficulty": "avancado",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Quadríceps, glúteo"
+  },
+  {
+   "id": "d07e0808-4324-4c48-a560-bfe4a8f7f618",
+   "name": "Panturrilha em pé",
+   "description": "Eleve os calcanhares em pé.",
+   "muscle_group": "pernas",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Panturrilha"
+  },
+  {
+   "id": "288f0edd-fa50-459a-849d-e321f2a7ab15",
+   "name": "Panturrilha sentado",
+   "description": "Eleve os calcanhares sentado.",
+   "muscle_group": "pernas",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Panturrilha (sóleo)"
+  },
+  {
+   "id": "b5b89cf3-3670-48c3-9a99-915fbdf2b52e",
+   "name": "Cadeira abdutora",
+   "description": "Abra as pernas contra a resistência.",
+   "muscle_group": "pernas",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Glúteo, abdutores"
+  },
+  {
+   "id": "9c9ba2a6-510a-4147-a51f-8db7b7191f2c",
+   "name": "Cadeira adutora",
+   "description": "Feche as pernas contra a resistência.",
+   "muscle_group": "pernas",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Adutores"
+  },
+  {
+   "id": "0927a2a7-b9f7-471a-acac-1ed6888fafa5",
+   "name": "Abdominal infra",
+   "description": "Eleve as pernas/quadril deitado.",
+   "muscle_group": "abdomen",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Abdômen inferior"
+  },
+  {
+   "id": "32b63210-f813-4a7c-ac30-4b761759bac9",
+   "name": "Prancha",
+   "description": "Mantenha o corpo reto apoiado nos antebraços.",
+   "muscle_group": "abdomen",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Core"
+  },
+  {
+   "id": "53895395-88e2-4407-ad5b-7601cadbc716",
+   "name": "Prancha lateral",
+   "description": "De lado, sustente o corpo num antebraço.",
+   "muscle_group": "abdomen",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Oblíquos, core"
+  },
+  {
+   "id": "98047ff9-ff08-45f3-9c92-950968880c49",
+   "name": "Abdominal oblíquo",
+   "description": "Leve o cotovelo ao joelho oposto.",
+   "muscle_group": "abdomen",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Oblíquos"
+  },
+  {
+   "id": "a237d726-8fef-4c71-807b-d7b437112dee",
+   "name": "Abdominal na polia",
+   "description": "Ajoelhado, puxe a corda flexionando o tronco.",
+   "muscle_group": "abdomen",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Reto abdominal"
+  },
+  {
+   "id": "0486a50f-d460-4fa5-9d58-2428780b89e4",
+   "name": "Russian twist",
+   "description": "Sentado, gire o tronco de um lado ao outro.",
+   "muscle_group": "abdomen",
+   "difficulty": "intermediario",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T23:01:31.04624+00:00",
+   "muscles_worked": "Oblíquos"
+  },
+  {
+   "id": "4e34adde-5275-4f9f-857c-396db05fc8b4",
+   "name": "Elevação frontal",
+   "description": "Eleve o haltere à frente até a altura do ombro.",
+   "muscle_group": "ombro",
+   "difficulty": "iniciante",
+   "image_url": null,
+   "video_url": null,
+   "created_at": "2026-06-24T01:53:41.209425+00:00",
+   "muscles_worked": "Deltoide anterior"
+  }
+ ],
+ "meal_plans": [
+  {
+   "id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "user_id": "065f549b-46cf-4ee6-a6ba-048dab17ce15",
+   "name": "Dieta — Emagrecer",
+   "goal": "lose",
+   "created_at": "2026-06-29T16:03:37.872569+00:00"
+  }
+ ],
+ "meals": [
+  {
+   "id": "ad03c7fb-89f8-4be9-8097-d9905e76677f",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 0,
+   "meal_type": "cafe",
+   "order_index": 0
+  },
+  {
+   "id": "8dd635f5-9b0b-458e-8e91-c2adefab7556",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 0,
+   "meal_type": "almoco",
+   "order_index": 1
+  },
+  {
+   "id": "0f0cd41c-b25b-420b-bcb4-0b93da2e54b7",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 0,
+   "meal_type": "lanche",
+   "order_index": 2
+  },
+  {
+   "id": "e10b83db-2cce-46da-9dc5-77071076df03",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 0,
+   "meal_type": "jantar",
+   "order_index": 3
+  },
+  {
+   "id": "e881fa90-af85-4414-aa6e-9aa1953e34d3",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 1,
+   "meal_type": "cafe",
+   "order_index": 0
+  },
+  {
+   "id": "54f7c065-1664-48e8-a931-d1145e798cab",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 1,
+   "meal_type": "almoco",
+   "order_index": 1
+  },
+  {
+   "id": "700990ad-5c48-451b-b101-7c60b025718b",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 1,
+   "meal_type": "lanche",
+   "order_index": 2
+  },
+  {
+   "id": "8de2ff6c-8754-4e0e-b6dc-342f34138422",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 1,
+   "meal_type": "jantar",
+   "order_index": 3
+  },
+  {
+   "id": "055aefb2-5aec-4339-932d-4c4043faadde",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 2,
+   "meal_type": "cafe",
+   "order_index": 0
+  },
+  {
+   "id": "29d9da07-f97a-4398-bc2f-3288dca4c1d5",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 2,
+   "meal_type": "almoco",
+   "order_index": 1
+  },
+  {
+   "id": "dfb749c5-c52a-4269-a215-173002e8299f",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 2,
+   "meal_type": "lanche",
+   "order_index": 2
+  },
+  {
+   "id": "8c218d7c-6e41-4ce0-abde-e1e9563a6229",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 2,
+   "meal_type": "jantar",
+   "order_index": 3
+  },
+  {
+   "id": "a4c91f2b-80e8-4e10-a6f5-4f8a981db25a",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 3,
+   "meal_type": "cafe",
+   "order_index": 0
+  },
+  {
+   "id": "3745fdee-96ad-450c-8572-2782a314e546",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 3,
+   "meal_type": "almoco",
+   "order_index": 1
+  },
+  {
+   "id": "755832d2-154b-4866-9c92-72217329d606",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 3,
+   "meal_type": "lanche",
+   "order_index": 2
+  },
+  {
+   "id": "ba95be59-ef01-4cf0-876e-bca436f10efa",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 3,
+   "meal_type": "jantar",
+   "order_index": 3
+  },
+  {
+   "id": "7a01b8b4-9d9b-46df-8853-6c621d377025",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 4,
+   "meal_type": "cafe",
+   "order_index": 0
+  },
+  {
+   "id": "39edfa0d-f533-4489-a2ed-5de424adbd04",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 4,
+   "meal_type": "almoco",
+   "order_index": 1
+  },
+  {
+   "id": "00799d6e-52da-4975-b332-b6626762e0fd",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 4,
+   "meal_type": "lanche",
+   "order_index": 2
+  },
+  {
+   "id": "8ddf8e87-0a67-4311-a390-49da4ffc04fe",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 4,
+   "meal_type": "jantar",
+   "order_index": 3
+  },
+  {
+   "id": "78c34e8a-9710-44eb-8eda-38e54d8073d1",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 5,
+   "meal_type": "cafe",
+   "order_index": 0
+  },
+  {
+   "id": "152e59e0-8354-4dea-896c-87f292814a72",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 5,
+   "meal_type": "almoco",
+   "order_index": 1
+  },
+  {
+   "id": "b8a8094f-aba7-42bb-96da-ef16d9244335",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 5,
+   "meal_type": "lanche",
+   "order_index": 2
+  },
+  {
+   "id": "d404af98-2aa3-42d1-aef5-0df93bed5607",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 5,
+   "meal_type": "jantar",
+   "order_index": 3
+  },
+  {
+   "id": "e32e3112-3104-4298-960a-e7dfcc2efe3a",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 6,
+   "meal_type": "cafe",
+   "order_index": 0
+  },
+  {
+   "id": "b5e27c23-5e96-451c-ac76-ad40921bbc0f",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 6,
+   "meal_type": "almoco",
+   "order_index": 1
+  },
+  {
+   "id": "fd05562d-45b3-46db-af0f-ba9a71249572",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 6,
+   "meal_type": "lanche",
+   "order_index": 2
+  },
+  {
+   "id": "73fdc656-75d1-42f9-bed6-8bdc0cd86b10",
+   "meal_plan_id": "a735a429-3591-438b-a997-b52be3f7cebc",
+   "day_of_week": 6,
+   "meal_type": "jantar",
+   "order_index": 3
+  }
+ ],
+ "meal_items": [
+  {
+   "id": "0e6d00e5-20ad-4d3f-b00f-45267252bf51",
+   "meal_id": "ad03c7fb-89f8-4be9-8097-d9905e76677f",
+   "food_name": "Ovos mexidos",
+   "quantity": 2.3,
+   "unit": "unid",
+   "kcal": 207,
+   "protein_g": 16,
+   "carbs_g": 2,
+   "fat_g": 14
+  },
+  {
+   "id": "fbd5a151-b958-4552-87b8-0009402a1562",
+   "meal_id": "ad03c7fb-89f8-4be9-8097-d9905e76677f",
+   "food_name": "Pão integral",
+   "quantity": 2.3,
+   "unit": "fatias",
+   "kcal": 161,
+   "protein_g": 7,
+   "carbs_g": 28,
+   "fat_g": 2
+  },
+  {
+   "id": "710a6840-a227-4b28-b6e1-0820b7368790",
+   "meal_id": "8dd635f5-9b0b-458e-8e91-c2adefab7556",
+   "food_name": "Frango grelhado",
+   "quantity": 172.7,
+   "unit": "g",
+   "kcal": 276,
+   "protein_g": 52,
+   "carbs_g": 0,
+   "fat_g": 7
+  },
+  {
+   "id": "89aa355f-63c9-4d3e-8f0d-7a660b09d7e2",
+   "meal_id": "8dd635f5-9b0b-458e-8e91-c2adefab7556",
+   "food_name": "Arroz",
+   "quantity": 138.2,
+   "unit": "g",
+   "kcal": 180,
+   "protein_g": 3,
+   "carbs_g": 39,
+   "fat_g": 0
+  },
+  {
+   "id": "3c83d6d6-6390-444a-ba27-5f00865ad1c9",
+   "meal_id": "8dd635f5-9b0b-458e-8e91-c2adefab7556",
+   "food_name": "Feijão",
+   "quantity": 92.1,
+   "unit": "g",
+   "kcal": 86,
+   "protein_g": 6,
+   "carbs_g": 15,
+   "fat_g": 0
+  },
+  {
+   "id": "2790f5b6-4a37-4239-ac5d-b182f845d65e",
+   "meal_id": "8dd635f5-9b0b-458e-8e91-c2adefab7556",
+   "food_name": "Salada",
+   "quantity": 1.2,
+   "unit": "prato",
+   "kcal": 46,
+   "protein_g": 2,
+   "carbs_g": 7,
+   "fat_g": 1
+  },
+  {
+   "id": "dcf209e0-0dfb-4f86-b970-af5a8fa07a87",
+   "meal_id": "0f0cd41c-b25b-420b-bcb4-0b93da2e54b7",
+   "food_name": "Iogurte natural",
+   "quantity": 195.8,
+   "unit": "g",
+   "kcal": 115,
+   "protein_g": 12,
+   "carbs_g": 9,
+   "fat_g": 3
+  },
+  {
+   "id": "fd4d41ba-0e11-4372-9c44-6fa063aee860",
+   "meal_id": "0f0cd41c-b25b-420b-bcb4-0b93da2e54b7",
+   "food_name": "Banana",
+   "quantity": 1.2,
+   "unit": "unid",
+   "kcal": 121,
+   "protein_g": 1,
+   "carbs_g": 31,
+   "fat_g": 0
+  },
+  {
+   "id": "07a75ce8-5b64-418b-a8d0-c0b9cb6b233b",
+   "meal_id": "e10b83db-2cce-46da-9dc5-77071076df03",
+   "food_name": "Omelete (3 ovos)",
+   "quantity": 1.2,
+   "unit": "porção",
+   "kcal": 299,
+   "protein_g": 24,
+   "carbs_g": 2,
+   "fat_g": 21
+  },
+  {
+   "id": "a8168847-6361-4b3b-a63e-683a34b24a34",
+   "meal_id": "e10b83db-2cce-46da-9dc5-77071076df03",
+   "food_name": "Legumes refogados",
+   "quantity": 1.2,
+   "unit": "prato",
+   "kcal": 104,
+   "protein_g": 3,
+   "carbs_g": 14,
+   "fat_g": 3
+  },
+  {
+   "id": "5a2d98c4-9318-4c0f-acde-4dc994638c95",
+   "meal_id": "e881fa90-af85-4414-aa6e-9aa1953e34d3",
+   "food_name": "Tapioca com queijo",
+   "quantity": 1.2,
+   "unit": "unid",
+   "kcal": 253,
+   "protein_g": 10,
+   "carbs_g": 35,
+   "fat_g": 8
+  },
+  {
+   "id": "8ab23a7c-5647-443a-b64e-bbcf54546add",
+   "meal_id": "e881fa90-af85-4414-aa6e-9aa1953e34d3",
+   "food_name": "Café com leite",
+   "quantity": 1.2,
+   "unit": "xícara",
+   "kcal": 69,
+   "protein_g": 3,
+   "carbs_g": 7,
+   "fat_g": 2
+  },
+  {
+   "id": "13a213ae-a6c0-4038-8936-f6e21ef1e394",
+   "meal_id": "54f7c065-1664-48e8-a931-d1145e798cab",
+   "food_name": "Patinho moído",
+   "quantity": 172.7,
+   "unit": "g",
+   "kcal": 288,
+   "protein_g": 44,
+   "carbs_g": 0,
+   "fat_g": 13
+  },
+  {
+   "id": "7e2cafc5-1fc9-4da5-8759-1265d0c41672",
+   "meal_id": "54f7c065-1664-48e8-a931-d1145e798cab",
+   "food_name": "Batata-doce",
+   "quantity": 172.7,
+   "unit": "g",
+   "kcal": 150,
+   "protein_g": 2,
+   "carbs_g": 35,
+   "fat_g": 0
+  },
+  {
+   "id": "1df87302-a66b-4c11-b1a7-404d0916fa30",
+   "meal_id": "54f7c065-1664-48e8-a931-d1145e798cab",
+   "food_name": "Brócolis",
+   "quantity": 1.2,
+   "unit": "prato",
+   "kcal": 63,
+   "protein_g": 5,
+   "carbs_g": 9,
+   "fat_g": 1
+  },
+  {
+   "id": "08294805-8fc7-4855-8b34-7f688e5d04ca",
+   "meal_id": "700990ad-5c48-451b-b101-7c60b025718b",
+   "food_name": "Whey",
+   "quantity": 1.2,
+   "unit": "scoop",
+   "kcal": 138,
+   "protein_g": 28,
+   "carbs_g": 3,
+   "fat_g": 1
+  },
+  {
+   "id": "52618b9c-47ff-438e-a448-5dfe327e66bd",
+   "meal_id": "700990ad-5c48-451b-b101-7c60b025718b",
+   "food_name": "Maçã",
+   "quantity": 1.2,
+   "unit": "unid",
+   "kcal": 109,
+   "protein_g": 0,
+   "carbs_g": 29,
+   "fat_g": 0
+  },
+  {
+   "id": "f6690232-49dd-4038-86e5-ffb1cef6e627",
+   "meal_id": "8de2ff6c-8754-4e0e-b6dc-342f34138422",
+   "food_name": "Filé de tilápia",
+   "quantity": 172.7,
+   "unit": "g",
+   "kcal": 219,
+   "protein_g": 41,
+   "carbs_g": 0,
+   "fat_g": 5
+  },
+  {
+   "id": "d31fd5ac-e264-41f6-816f-78a88e409149",
+   "meal_id": "8de2ff6c-8754-4e0e-b6dc-342f34138422",
+   "food_name": "Arroz",
+   "quantity": 115.2,
+   "unit": "g",
+   "kcal": 150,
+   "protein_g": 3,
+   "carbs_g": 32,
+   "fat_g": 0
+  },
+  {
+   "id": "45faaa53-7712-4039-8925-d03f160a1aa4",
+   "meal_id": "055aefb2-5aec-4339-932d-4c4043faadde",
+   "food_name": "Aveia com leite",
+   "quantity": 46.1,
+   "unit": "g",
+   "kcal": 230,
+   "protein_g": 10,
+   "carbs_g": 35,
+   "fat_g": 6
+  },
+  {
+   "id": "7bce8b91-4f10-4ca0-959b-ed6c7b488785",
+   "meal_id": "055aefb2-5aec-4339-932d-4c4043faadde",
+   "food_name": "Morangos",
+   "quantity": 115.2,
+   "unit": "g",
+   "kcal": 37,
+   "protein_g": 1,
+   "carbs_g": 9,
+   "fat_g": 0
+  },
+  {
+   "id": "3e7126d2-2e98-4826-af14-7d6280732566",
+   "meal_id": "29d9da07-f97a-4398-bc2f-3288dca4c1d5",
+   "food_name": "Frango desfiado",
+   "quantity": 172.7,
+   "unit": "g",
+   "kcal": 276,
+   "protein_g": 52,
+   "carbs_g": 0,
+   "fat_g": 7
+  },
+  {
+   "id": "e7394bdb-a81b-458a-b0f0-a1bee307d4ab",
+   "meal_id": "29d9da07-f97a-4398-bc2f-3288dca4c1d5",
+   "food_name": "Macarrão integral",
+   "quantity": 138.2,
+   "unit": "g",
+   "kcal": 196,
+   "protein_g": 7,
+   "carbs_g": 39,
+   "fat_g": 1
+  },
+  {
+   "id": "74f35cdf-9b05-46e0-a941-5e8c43eefbbf",
+   "meal_id": "29d9da07-f97a-4398-bc2f-3288dca4c1d5",
+   "food_name": "Salada",
+   "quantity": 1.2,
+   "unit": "prato",
+   "kcal": 46,
+   "protein_g": 2,
+   "carbs_g": 7,
+   "fat_g": 1
+  },
+  {
+   "id": "769b2c0c-08db-4b96-97ef-74086862ee71",
+   "meal_id": "dfb749c5-c52a-4269-a215-173002e8299f",
+   "food_name": "Pão integral + pasta de amendoim",
+   "quantity": 1.2,
+   "unit": "porção",
+   "kcal": 265,
+   "protein_g": 10,
+   "carbs_g": 25,
+   "fat_g": 14
+  },
+  {
+   "id": "49a61779-7c09-436c-b609-3979e456ae62",
+   "meal_id": "8c218d7c-6e41-4ce0-abde-e1e9563a6229",
+   "food_name": "Carne magra",
+   "quantity": 149.7,
+   "unit": "g",
+   "kcal": 265,
+   "protein_g": 39,
+   "carbs_g": 0,
+   "fat_g": 12
+  },
+  {
+   "id": "eeae0f18-f630-4717-9fa6-06114e971919",
+   "meal_id": "8c218d7c-6e41-4ce0-abde-e1e9563a6229",
+   "food_name": "Purê de abóbora",
+   "quantity": 1.2,
+   "unit": "prato",
+   "kcal": 104,
+   "protein_g": 2,
+   "carbs_g": 18,
+   "fat_g": 2
+  },
+  {
+   "id": "f3ec4bcc-bc2d-4277-bc42-9a31b29e5059",
+   "meal_id": "a4c91f2b-80e8-4e10-a6f5-4f8a981db25a",
+   "food_name": "Crepioca",
+   "quantity": 1.2,
+   "unit": "unid",
+   "kcal": 242,
+   "protein_g": 18,
+   "carbs_g": 21,
+   "fat_g": 10
+  },
+  {
+   "id": "01fb3456-932a-4839-8d6a-20ec1df9f86f",
+   "meal_id": "a4c91f2b-80e8-4e10-a6f5-4f8a981db25a",
+   "food_name": "Suco de laranja",
+   "quantity": 230.3,
+   "unit": "ml",
+   "kcal": 104,
+   "protein_g": 1,
+   "carbs_g": 24,
+   "fat_g": 0
+  },
+  {
+   "id": "39026e7f-c022-4467-8fe3-8ef73c5a84d7",
+   "meal_id": "3745fdee-96ad-450c-8572-2782a314e546",
+   "food_name": "Salmão",
+   "quantity": 149.7,
+   "unit": "g",
+   "kcal": 322,
+   "protein_g": 35,
+   "carbs_g": 0,
+   "fat_g": 20
+  },
+  {
+   "id": "7fcb1950-0281-4075-b339-87726ccbb8bf",
+   "meal_id": "3745fdee-96ad-450c-8572-2782a314e546",
+   "food_name": "Arroz",
+   "quantity": 138.2,
+   "unit": "g",
+   "kcal": 180,
+   "protein_g": 3,
+   "carbs_g": 39,
+   "fat_g": 0
+  },
+  {
+   "id": "56573086-925c-43bb-8d06-d003fe908349",
+   "meal_id": "3745fdee-96ad-450c-8572-2782a314e546",
+   "food_name": "Salada",
+   "quantity": 1.2,
+   "unit": "prato",
+   "kcal": 46,
+   "protein_g": 2,
+   "carbs_g": 7,
+   "fat_g": 1
+  },
+  {
+   "id": "0000e21d-3bef-461e-9ae6-ff12c6b67585",
+   "meal_id": "755832d2-154b-4866-9c92-72217329d606",
+   "food_name": "Iogurte proteico",
+   "quantity": 1.2,
+   "unit": "unid",
+   "kcal": 115,
+   "protein_g": 17,
+   "carbs_g": 7,
+   "fat_g": 1
+  },
+  {
+   "id": "bf592919-e4e3-4a1b-97b8-00a93646e975",
+   "meal_id": "755832d2-154b-4866-9c92-72217329d606",
+   "food_name": "Castanhas",
+   "quantity": 23,
+   "unit": "g",
+   "kcal": 138,
+   "protein_g": 3,
+   "carbs_g": 5,
+   "fat_g": 13
+  },
+  {
+   "id": "bcc53e9e-fdfa-405f-b10a-733e2cba22c6",
+   "meal_id": "ba95be59-ef01-4cf0-876e-bca436f10efa",
+   "food_name": "Frango grelhado",
+   "quantity": 172.7,
+   "unit": "g",
+   "kcal": 276,
+   "protein_g": 52,
+   "carbs_g": 0,
+   "fat_g": 7
+  },
+  {
+   "id": "a7fde63c-59fc-49d0-86ac-fb0924d0d852",
+   "meal_id": "ba95be59-ef01-4cf0-876e-bca436f10efa",
+   "food_name": "Legumes",
+   "quantity": 1.2,
+   "unit": "prato",
+   "kcal": 92,
+   "protein_g": 3,
+   "carbs_g": 14,
+   "fat_g": 2
+  },
+  {
+   "id": "784f6b44-b843-4753-b1b8-eba9c3f2643d",
+   "meal_id": "7a01b8b4-9d9b-46df-8853-6c621d377025",
+   "food_name": "Ovos + pão",
+   "quantity": 1.2,
+   "unit": "porção",
+   "kcal": 345,
+   "protein_g": 21,
+   "carbs_g": 30,
+   "fat_g": 16
+  },
+  {
+   "id": "1d04c51a-5d4e-4e95-8fbf-effe9c03ce71",
+   "meal_id": "39edfa0d-f533-4489-a2ed-5de424adbd04",
+   "food_name": "Patinho",
+   "quantity": 172.7,
+   "unit": "g",
+   "kcal": 288,
+   "protein_g": 44,
+   "carbs_g": 0,
+   "fat_g": 13
+  },
+  {
+   "id": "26e9ad7f-dbe0-4502-9a97-3841987b4578",
+   "meal_id": "39edfa0d-f533-4489-a2ed-5de424adbd04",
+   "food_name": "Arroz e feijão",
+   "quantity": 1.2,
+   "unit": "prato",
+   "kcal": 265,
+   "protein_g": 9,
+   "carbs_g": 52,
+   "fat_g": 1
+  },
+  {
+   "id": "0107c54b-5b1e-4168-ae82-32b90409fcb4",
+   "meal_id": "39edfa0d-f533-4489-a2ed-5de424adbd04",
+   "food_name": "Salada",
+   "quantity": 1.2,
+   "unit": "prato",
+   "kcal": 46,
+   "protein_g": 2,
+   "carbs_g": 7,
+   "fat_g": 1
+  },
+  {
+   "id": "cde42004-e900-46c9-85ca-3e53433d8cb9",
+   "meal_id": "00799d6e-52da-4975-b332-b6626762e0fd",
+   "food_name": "Vitamina de banana",
+   "quantity": 1.2,
+   "unit": "copo",
+   "kcal": 253,
+   "protein_g": 12,
+   "carbs_g": 40,
+   "fat_g": 5
+  },
+  {
+   "id": "f64d1b60-b65a-40cc-b44c-7832dadfeeb7",
+   "meal_id": "8ddf8e87-0a67-4311-a390-49da4ffc04fe",
+   "food_name": "Wrap de frango",
+   "quantity": 1.2,
+   "unit": "unid",
+   "kcal": 368,
+   "protein_g": 32,
+   "carbs_g": 35,
+   "fat_g": 12
+  },
+  {
+   "id": "594a42c7-75eb-4248-afc2-909e3ddb1d02",
+   "meal_id": "78c34e8a-9710-44eb-8eda-38e54d8073d1",
+   "food_name": "Panqueca de banana",
+   "quantity": 2.3,
+   "unit": "unid",
+   "kcal": 299,
+   "protein_g": 14,
+   "carbs_g": 41,
+   "fat_g": 8
+  },
+  {
+   "id": "c5143c34-2c84-4ccf-a585-c045fe8626fd",
+   "meal_id": "152e59e0-8354-4dea-896c-87f292814a72",
+   "food_name": "Strogonoff de frango",
+   "quantity": 1.2,
+   "unit": "prato",
+   "kcal": 438,
+   "protein_g": 37,
+   "carbs_g": 21,
+   "fat_g": 21
+  },
+  {
+   "id": "7f2d1b76-0a72-4cf8-adf8-cc75c7d408a8",
+   "meal_id": "152e59e0-8354-4dea-896c-87f292814a72",
+   "food_name": "Arroz",
+   "quantity": 138.2,
+   "unit": "g",
+   "kcal": 180,
+   "protein_g": 3,
+   "carbs_g": 39,
+   "fat_g": 0
+  },
+  {
+   "id": "a6eb80ed-697d-4543-adff-4bcfc9a7e1be",
+   "meal_id": "b8a8094f-aba7-42bb-96da-ef16d9244335",
+   "food_name": "Iogurte + granola",
+   "quantity": 1.2,
+   "unit": "porção",
+   "kcal": 242,
+   "protein_g": 10,
+   "carbs_g": 35,
+   "fat_g": 7
+  },
+  {
+   "id": "5dc75661-e217-43b2-b720-4904a4034cfd",
+   "meal_id": "d404af98-2aa3-42d1-aef5-0df93bed5607",
+   "food_name": "Hambúrguer caseiro",
+   "quantity": 1.2,
+   "unit": "unid",
+   "kcal": 403,
+   "protein_g": 32,
+   "carbs_g": 25,
+   "fat_g": 18
+  },
+  {
+   "id": "2de8b8df-50bb-46c4-a20f-5d9b60cdc356",
+   "meal_id": "e32e3112-3104-4298-960a-e7dfcc2efe3a",
+   "food_name": "Ovos mexidos",
+   "quantity": 2.3,
+   "unit": "unid",
+   "kcal": 207,
+   "protein_g": 16,
+   "carbs_g": 2,
+   "fat_g": 14
+  },
+  {
+   "id": "57b2231a-0c79-4d97-9751-e17c9100ed30",
+   "meal_id": "e32e3112-3104-4298-960a-e7dfcc2efe3a",
+   "food_name": "Fruta",
+   "quantity": 1.2,
+   "unit": "unid",
+   "kcal": 104,
+   "protein_g": 1,
+   "carbs_g": 25,
+   "fat_g": 0
+  },
+  {
+   "id": "c909ae76-f0b4-4ca8-9d3b-066896840052",
+   "meal_id": "b5e27c23-5e96-451c-ac76-ad40921bbc0f",
+   "food_name": "Frango assado",
+   "quantity": 184.2,
+   "unit": "g",
+   "kcal": 311,
+   "protein_g": 55,
+   "carbs_g": 0,
+   "fat_g": 9
+  },
+  {
+   "id": "5a01de0d-d2a5-4cfb-b567-47ef6c7c7fce",
+   "meal_id": "b5e27c23-5e96-451c-ac76-ad40921bbc0f",
+   "food_name": "Batata",
+   "quantity": 172.7,
+   "unit": "g",
+   "kcal": 150,
+   "protein_g": 3,
+   "carbs_g": 32,
+   "fat_g": 0
+  },
+  {
+   "id": "8ae6ffbe-d9ef-463e-af15-a7663d2bb0ae",
+   "meal_id": "b5e27c23-5e96-451c-ac76-ad40921bbc0f",
+   "food_name": "Salada",
+   "quantity": 1.2,
+   "unit": "prato",
+   "kcal": 52,
+   "protein_g": 2,
+   "carbs_g": 8,
+   "fat_g": 1
+  },
+  {
+   "id": "23ce4cba-a3e3-44c5-b7d2-885aa5048bf7",
+   "meal_id": "fd05562d-45b3-46db-af0f-ba9a71249572",
+   "food_name": "Queijo + tomate",
+   "quantity": 1.2,
+   "unit": "porção",
+   "kcal": 173,
+   "protein_g": 13,
+   "carbs_g": 5,
+   "fat_g": 12
+  },
+  {
+   "id": "f5782932-ce7a-4c39-ad9e-8bc2206422f6",
+   "meal_id": "73fdc656-75d1-42f9-bed6-8bdc0cd86b10",
+   "food_name": "Sopa de legumes com frango",
+   "quantity": 1.2,
+   "unit": "prato",
+   "kcal": 276,
+   "protein_g": 25,
+   "carbs_g": 21,
+   "fat_g": 9
+  }
+ ],
+ "achievements": [
+  {
+   "id": "d39fe1d0-b320-4cb1-9da3-2f5fa2dfc4be",
+   "code": "first_workout",
+   "name": "Primeiro treino",
+   "description": "Concluiu seu primeiro treino",
+   "icon": "🎯",
+   "created_at": "2026-06-24T02:10:23.64534+00:00"
+  },
+  {
+   "id": "b429cebf-9631-43e5-bca4-a4279f501928",
+   "code": "streak_7",
+   "name": "7 dias seguidos",
+   "description": "Treinou 7 dias consecutivos",
+   "icon": "🔥",
+   "created_at": "2026-06-24T02:10:23.64534+00:00"
+  },
+  {
+   "id": "ac5d3a68-36de-41b3-abbc-2dc28c7d94b1",
+   "code": "streak_30",
+   "name": "30 dias seguidos",
+   "description": "Treinou 30 dias consecutivos",
+   "icon": "🏆",
+   "created_at": "2026-06-24T02:10:23.64534+00:00"
+  },
+  {
+   "id": "d7ecb4ac-d31a-41a1-8169-1d9b0fd73b5f",
+   "code": "workouts_100",
+   "name": "100 treinos",
+   "description": "Concluiu 100 treinos",
+   "icon": "💯",
+   "created_at": "2026-06-24T02:10:23.64534+00:00"
+  }
+ ],
+ "trainers": [
+  {
+   "id": "763bbd54-9122-4167-a9af-2c6a1c9ffc3d",
+   "user_id": "065f549b-46cf-4ee6-a6ba-048dab17ce15",
+   "name": "Victor Guilherme De Almeida Ribeiro",
+   "email": "victorguilhermevg3@gmail.com",
+   "code": "$%IYJMGRE",
+   "created_at": "2026-06-24T17:44:38.043115+00:00"
+  }
+ ],
+ "professionals": [
+  {
+   "id": "763bbd54-9122-4167-a9af-2c6a1c9ffc3d",
+   "user_id": "065f549b-46cf-4ee6-a6ba-048dab17ce15",
+   "name": "Victor Guilherme De Almeida Ribeiro",
+   "email": "victorguilhermevg3@gmail.com",
+   "code": "$%IYJMGRE",
+   "is_trainer": true,
+   "is_nutri": true,
+   "created_at": "2026-06-24T17:44:38.043115+00:00"
+  }
+ ],
+ "profiles_vinculos": []
+}
