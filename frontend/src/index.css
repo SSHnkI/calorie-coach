@@ -283,6 +283,21 @@
   .bater {
     animation: bater 0.42s cubic-bezier(0.3, 1.4, 0.5, 1) both;
   }
+
+  /* Botao armado respira: chama o toque sem piscar na cara do usuario. */
+  @keyframes pulsar {
+    0%,
+    100% {
+      box-shadow: var(--shadow-red-glow);
+    }
+    50% {
+      box-shadow: var(--shadow-red-glow-lg);
+    }
+  }
+
+  .pulsar {
+    animation: pulsar 1.9s ease-in-out infinite;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

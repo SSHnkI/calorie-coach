@@ -147,6 +147,11 @@ export function DashboardPage() {
   const exibido = useCountUp(totals.kcal)
   const bateuMeta = target > 0 && totals.kcal >= target
 
+  // Bater a meta merece mais que uma animacao: o telefone confirma no bolso.
+  useEffect(() => {
+    if (bateuMeta) navigator.vibrate?.([14, 60, 26])
+  }, [bateuMeta])
+
   return (
     <AppShell titleKey="dashboard" showNav={false}>
       <Tabs

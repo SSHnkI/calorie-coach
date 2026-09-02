@@ -64,6 +64,7 @@ export function Composer({ onEnviar, erro }: ComposerProps) {
     setPreparando(true)
     try {
       setFoto(await prepararFoto(file))
+      navigator.vibrate?.(8)
     } catch {
       setFoto(null)
     } finally {
@@ -77,6 +78,7 @@ export function Composer({ onEnviar, erro }: ComposerProps) {
     e.preventDefault()
     if (!texto.trim() && !foto) return
     onEnviar(texto, foto ?? undefined)
+    navigator.vibrate?.(12)
     setTexto('')
     setFoto(null)
     if (arquivoRef.current) arquivoRef.current.value = ''
@@ -133,7 +135,7 @@ export function Composer({ onEnviar, erro }: ComposerProps) {
             <img
               src={foto}
               alt="Foto da refeição escolhida"
-              className="h-12 w-12 rounded object-cover ring-1 ring-obliq-border"
+              className="bater h-12 w-12 rounded object-cover ring-1 ring-obliq-border"
             />
             <span className="font-mono text-[12px] text-obliq-dim">
               foto pronta, descreva se quiser ajudar
@@ -154,6 +156,18 @@ export function Composer({ onEnviar, erro }: ComposerProps) {
 
         <div className="flex items-center gap-2">
           <input
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            placeholder={foto ? 'algo a acrescentar?' : 'o que você comeu?'}
+            enterKeyHint="send"
+            autoComplete="off"
+            aria-label="O que você comeu"
+            className="h-12 min-w-0 flex-1 rounded-xl bg-obliq-surface px-4 text-base text-obliq-chalk ring-1 ring-obliq-border outline-none transition-all duration-200 placeholder:text-obliq-faint focus:ring-obliq-dim"
+          />
+
+          {/* Foto e voz moram juntos na direita: e onde o polegar cai sem
+              atravessar a tela. O da ponta e sempre o que conclui. */}
+          <input
             ref={arquivoRef}
             type="file"
             accept="image/*"
@@ -165,7 +179,7 @@ export function Composer({ onEnviar, erro }: ComposerProps) {
           <label
             htmlFor="foto-refeicao"
             aria-label="Fotografar refeição"
-            className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-xl text-obliq-dim ring-1 ring-obliq-border transition-colors duration-200 hover:text-obliq-chalk hover:ring-obliq-dim active:scale-95"
+            className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-xl text-obliq-dim ring-1 ring-obliq-border transition-all duration-200 hover:text-obliq-chalk hover:ring-obliq-dim active:scale-90"
           >
             {preparando ? (
               <span className="h-4 w-4 animate-pulse rounded-full bg-obliq-dim" />
@@ -174,21 +188,11 @@ export function Composer({ onEnviar, erro }: ComposerProps) {
             )}
           </label>
 
-          <input
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            placeholder={foto ? 'algo a acrescentar?' : 'o que você comeu?'}
-            enterKeyHint="send"
-            autoComplete="off"
-            aria-label="O que você comeu"
-            className="h-12 min-w-0 flex-1 rounded-xl bg-obliq-surface px-4 text-base text-obliq-chalk ring-1 ring-obliq-border outline-none transition-colors duration-200 placeholder:text-obliq-faint focus:ring-obliq-dim"
-          />
-
           {podeEnviar ? (
             <button
               type="submit"
               aria-label="Registrar"
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-obliq-red text-white transition-all duration-200 active:scale-95"
+              className="pulsar flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-gradient text-white shadow-red-glow transition-all duration-200 active:scale-90"
             >
               <Icon name="arrowRight" className="h-5 w-5" />
             </button>
@@ -197,7 +201,7 @@ export function Composer({ onEnviar, erro }: ComposerProps) {
               type="button"
               onClick={comecarFala}
               aria-label="Falar o que comeu"
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-obliq-red text-white transition-all duration-200 active:scale-95"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-gradient text-white transition-all duration-200 active:scale-90"
             >
               <Icon name="mic" className="h-5 w-5" />
             </button>
