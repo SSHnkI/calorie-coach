@@ -1,5 +1,6 @@
 import type { FoodEntry, UserProfile } from '../../types'
 import { metasPorRefeicao } from '../../lib/tdee'
+import { Icon } from '../ui/Icon'
 
 // Quatro janelas do dia. O que cria o impulso de registrar tudo nao e
 // enfeite: e ver um espaco vazio que voce sabe que deveria estar preenchido.
@@ -37,6 +38,7 @@ export function Refeicoes({
       kcal,
       alvo: metas[j.id],
       estourou: kcal > metas[j.id],
+      fechou: kcal >= metas[j.id] * 0.9 && kcal <= metas[j.id],
       agora: j.id === atual,
     }
   })
@@ -88,9 +90,16 @@ export function Refeicoes({
               >
                 {j.itens > 0 ? j.kcal : '·'}
               </span>
-              <span className="num mt-0.5 block text-[11px] leading-none text-obliq-faint">
-                /{j.alvo}
-              </span>
+              {j.fechou ? (
+                <Icon
+                  name="check"
+                  className="bater mx-auto mt-0.5 h-3 w-3 text-obliq-chalk"
+                />
+              ) : (
+                <span className="num mt-0.5 block text-[11px] leading-none text-obliq-faint">
+                  /{j.alvo}
+                </span>
+              )}
               <span className="mt-1 block font-mono text-[11px] text-obliq-faint">
                 {j.rotulo}
               </span>

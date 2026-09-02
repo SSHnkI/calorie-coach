@@ -147,6 +147,10 @@ export function DashboardPage() {
   const exibido = useCountUp(totals.kcal)
   const bateuMeta = target > 0 && totals.kcal >= target
 
+  // Marco do dia: um empurrao a cada faixa vencida, no lugar do numero seco.
+  const marco =
+    pct >= 100 ? 'meta batida' : pct >= 75 ? 'quase lá' : pct >= 50 ? 'metade' : ''
+
   // Bater a meta merece mais que uma animacao: o telefone confirma no bolso.
   useEffect(() => {
     if (bateuMeta) navigator.vibrate?.([14, 60, 26])
@@ -177,8 +181,13 @@ export function DashboardPage() {
               <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
                 {hoje}
               </span>
-              <span className="num text-[11px] text-obliq-faint">
-                {Math.round(pct)}%
+              <span className="text-[11px]">
+                {marco && (
+                  <span key={marco} className="bater mr-2 font-mono uppercase tracking-[0.14em] text-obliq-chalk">
+                    {marco}
+                  </span>
+                )}
+                <span className="num text-obliq-faint">{Math.round(pct)}%</span>
               </span>
             </div>
 
@@ -218,9 +227,9 @@ export function DashboardPage() {
 
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-obliq-border">
               <div
-                className={`h-full rounded-full transition-[width] duration-500 ease-out ${
+                className={`relative h-full overflow-hidden rounded-full transition-[width] duration-500 ease-out ${
                   totals.kcal > target ? 'bg-obliq-red' : 'bg-obliq-chalk'
-                }`}
+                } ${pct > 4 && pct < 100 ? 'brilho' : ''}`}
                 style={{ width: `${pct}%` }}
               />
             </div>

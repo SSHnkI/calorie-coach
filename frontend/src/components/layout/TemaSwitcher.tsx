@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { aplicarTema, temaSalvo, type Tema } from '../../lib/tema'
+import { Icon } from '../ui/Icon'
 
-// Sem sol e sem lua: duas letras, igual ao seletor de idioma ao lado.
+// Lua e sol, dois toques pequenos: um icone diz o tema mais rapido que
+// tres letras maiusculas.
 export function TemaSwitcher() {
   const [tema, setTema] = useState<Tema>(temaSalvo)
 
@@ -10,19 +12,28 @@ export function TemaSwitcher() {
   }, [tema])
 
   return (
-    <div className="inline-flex gap-1" role="group" aria-label="Tema">
-      {(['escuro', 'claro'] as Tema[]).map((t) => (
+    <div className="inline-flex gap-0.5" role="group" aria-label="Tema">
+      {([
+        { id: 'escuro' as Tema, icone: 'lua' as const, rotulo: 'Tema escuro' },
+        { id: 'claro' as Tema, icone: 'sol' as const, rotulo: 'Tema claro' },
+      ]).map((t) => (
         <button
-          key={t}
+          key={t.id}
           type="button"
-          onClick={() => setTema(t)}
-          aria-pressed={tema === t}
-          title={t === 'escuro' ? 'Tema escuro' : 'Tema claro'}
-          className={`rounded px-1.5 py-0.5 font-mono text-[10px] tracking-[0.1em] transition-colors duration-200 ${
-            tema === t ? 'text-obliq-chalk' : 'text-obliq-faint hover:text-obliq-dim'
+          onClick={() => {
+            setTema(t.id)
+            navigator.vibrate?.(6)
+          }}
+          aria-pressed={tema === t.id}
+          aria-label={t.rotulo}
+          title={t.rotulo}
+          className={`rounded-md p-1 transition-all duration-200 active:scale-90 ${
+            tema === t.id
+              ? 'bg-obliq-raised text-obliq-red ring-1 ring-obliq-red/40'
+              : 'text-obliq-faint hover:text-obliq-dim'
           }`}
         >
-          {t === 'escuro' ? 'ESC' : 'CLA'}
+          <Icon name={t.icone} className="h-3.5 w-3.5" />
         </button>
       ))}
     </div>

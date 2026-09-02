@@ -298,6 +298,30 @@
   .pulsar {
     animation: pulsar 1.9s ease-in-out infinite;
   }
+
+  /* Brilho correndo por dentro da barra: o dia em andamento fica vivo. */
+  @keyframes brilho {
+    from {
+      transform: translateX(-120%);
+    }
+    to {
+      transform: translateX(420%);
+    }
+  }
+
+  .brilho::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 28%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.5),
+      transparent
+    );
+    animation: brilho 2.6s ease-in-out infinite;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
