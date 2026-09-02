@@ -6,6 +6,7 @@ import {
   AI_CAP,
   fetchTodayIntake,
   fetchUsers,
+  generatePasswordLink,
   sendPasswordReset,
   type AppUser,
 } from '../lib/users'
@@ -41,6 +42,7 @@ function diasDesde(iso: string) {
 }
 
 type EstadoEnvio = 'idle' | 'confirmar' | 'enviando' | 'enviado' | 'erro'
+type EstadoLink = { estado: 'idle' | 'gerando' | 'pronto' | 'erro'; url?: string }
 type Filtro = 'todos' | 'ativos' | 'incompletos'
 type Ordem = 'recentes' | 'ativos' | 'email'
 
@@ -78,6 +80,8 @@ export function UsersPage() {
   const [ordem, setOrdem] = useState<Ordem>('recentes')
   const [aberto, setAberto] = useState<string | null>(null)
   const [envio, setEnvio] = useState<Record<string, EstadoEnvio>>({})
+  const [link, setLink] = useState<Record<string, EstadoLink>>({})
+  const [copiado, setCopiado] = useState<string | null>(null)
 
   const ehAdmin = user?.email === ADMIN_EMAIL
 
@@ -123,6 +127,26 @@ export function UsersPage() {
       setEnvio((e) => ({ ...e, [u.id]: 'enviado' }))
     } catch {
       setEnvio((e) => ({ ...e, [u.id]: 'erro' }))
+    }
+  }
+
+  const gerarLink = async (u: AppUser) => {
+    setLink((l) => ({ ...l, [u.id]: { estado: 'gerando' } }))
+    try {
+      const url = await generatePasswordLink(u.email)
+      setLink((l) => ({ ...l, [u.id]: { estado: 'pronto', url } }))
+    } catch {
+      setLink((l) => ({ ...l, [u.id]: { estado: 'erro' } }))
+    }
+  }
+
+  const copiar = async (id: string, url: string) => {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopiado(id)
+      setTimeout(() => setCopiado(null), 2000)
+    } catch {
+      setCopiado(null)
     }
   }
 
@@ -317,7 +341,53 @@ export function UsersPage() {
                       ))}
                     </dl>
 
-                    <div className="md:text-right">
+                    <div className="flex flex-col items-start gap-2 md:items-end">
+                      {(() => {
+                        const l = link[u.id] ?? { estado: 'idle' as const }
+                        if (l.estado === 'pronto' && l.url) {
+                          return (
+                            <div className="w-full md:max-w-xs">
+                              <p className="font-mono text-[11px] text-obliq-dim">
+                                link válido por 1 hora, uso único
+                              </p>
+                              <div className="mt-1.5 flex gap-2">
+                                <input
+                                  readOnly
+                                  value={l.url}
+                                  onFocus={(e) => e.currentTarget.select()}
+                                  aria-label={`Link de senha de ${u.email}`}
+                                  className="num min-w-0 flex-1 rounded bg-obliq-black px-2 py-1.5 text-[11px] text-obliq-chalk ring-1 ring-obliq-border outline-none focus:ring-obliq-dim"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => copiar(u.id, l.url!)}
+                                  className="shrink-0 rounded px-2 py-1.5 font-mono text-[11px] text-obliq-faint ring-1 ring-obliq-border transition-colors duration-200 hover:text-obliq-chalk hover:ring-obliq-dim"
+                                >
+                                  {copiado === u.id ? 'copiado' : 'copiar'}
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        }
+                        if (l.estado === 'erro') {
+                          return (
+                            <p className="font-mono text-[11px] text-obliq-red">
+                              não foi possível gerar o link
+                            </p>
+                          )
+                        }
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => gerarLink(u)}
+                            disabled={l.estado === 'gerando'}
+                            className="min-h-9 rounded px-2.5 py-1.5 font-mono text-[11px] text-obliq-faint ring-1 ring-obliq-border transition-colors duration-200 hover:text-obliq-chalk hover:ring-obliq-dim disabled:opacity-40"
+                          >
+                            {l.estado === 'gerando' ? 'gerando…' : 'gerar link de senha'}
+                          </button>
+                        )
+                      })()}
+
                       {estado === 'enviado' ? (
                         <p className="font-mono text-[11px] text-obliq-dim">
                           link enviado

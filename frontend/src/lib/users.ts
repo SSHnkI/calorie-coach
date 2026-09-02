@@ -63,3 +63,13 @@ export async function sendPasswordReset(email: string): Promise<void> {
   })
   if (error) throw error
 }
+
+// Gera o link de troca de senha sem passar por e-mail.
+// A funcao roda com chave de servico e so responde ao admin master.
+export async function generatePasswordLink(email: string): Promise<string> {
+  const { data, error } = await supabase.functions.invoke('admin-reset-link', {
+    body: { email, redirect_to: `${window.location.origin}/reset-password` },
+  })
+  if (error || !data?.link) throw new Error('nao_gerou')
+  return data.link as string
+}
