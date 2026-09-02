@@ -86,3 +86,25 @@ export async function setUserPassword(userId: string, password: string): Promise
   }
   if (!data?.ok) throw new Error('falhou')
 }
+
+// Quantos registros o usuario tem no total. Serve pra confirmar antes de apagar.
+export async function countUserEntries(userId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('food_log')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+  if (error) throw error
+  return count ?? 0
+}
+
+// Apaga o diario inteiro de um usuario. Irreversivel, sem lixeira.
+// Depende da policy admin_delete_food_log; sem ela o banco recusa em silencio.
+export async function deleteUserHistory(userId: string): Promise<number> {
+  const { data, error } = await supabase
+    .from('food_log')
+    .delete()
+    .eq('user_id', userId)
+    .select('id')
+  if (error) throw error
+  return data?.length ?? 0
+}

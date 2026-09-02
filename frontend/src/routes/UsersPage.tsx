@@ -11,6 +11,7 @@ import {
 } from '../lib/users'
 import { AppShell } from '../components/layout/AppShell'
 import { Icon } from '../components/ui/Icon'
+import { ApagarHistorico } from '../components/admin/ApagarHistorico'
 
 const OBJETIVO: Record<string, string> = {
   lose: 'perder peso',
@@ -300,7 +301,13 @@ export function UsersPage() {
                       ))}
                     </dl>
 
-                    <SenhaAdmin usuario={u} />
+                    <div className="flex flex-col gap-4 md:items-end">
+                      <SenhaAdmin usuario={u} />
+                      {/* Acao destrutiva separada do resto, com sua propria linha. */}
+                      <div className="border-t border-obliq-border pt-4 md:text-right">
+                        <ApagarHistorico usuario={u} />
+                      </div>
+                    </div>
                   </div>
                 )}
               </li>
