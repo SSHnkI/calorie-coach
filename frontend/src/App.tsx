@@ -1,8 +1,8 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
-import { AppProvider, useApp } from './context/AppContext'
+import { AppProvider } from './context/AppContext'
 import { I18nProvider } from './i18n/I18nContext'
-import { ProtectedRoute, GuestRoute } from './components/layout/ProtectedRoute'
+import { ProtectedRoute, GuestRoute, useDestino } from './components/layout/ProtectedRoute'
 import { LanguageBar } from './components/layout/LanguageBar'
 import { LandingPage } from './routes/LandingPage'
 import { AuthPage } from './routes/AuthPage'
@@ -39,17 +39,17 @@ function RecoveryRedirect() {
 
 // Quem ja tem sessao nao ve a landing: cai direto no app, como PWA instalado espera.
 function Entrada() {
-  const { isAuthenticated, user, loading } = useApp()
-  if (loading) return null
-  if (!isAuthenticated) return <LandingPage />
-  return <Navigate to={user?.onboarding_complete ? '/dashboard' : '/onboarding'} replace />
+  const destino = useDestino()
+  if (destino === 'espera') return null
+  if (destino === 'auth') return <LandingPage />
+  return <Navigate to={destino === 'app' ? '/dashboard' : '/onboarding'} replace />
 }
 
 function OnboardingGuard() {
-  const { isAuthenticated, user, loading } = useApp()
-  if (loading) return null
-  if (!isAuthenticated) return <Navigate to="/auth?mode=signup" replace />
-  if (user?.onboarding_complete) return <Navigate to="/dashboard" replace />
+  const destino = useDestino()
+  if (destino === 'espera') return null
+  if (destino === 'auth') return <Navigate to="/auth?mode=signup" replace />
+  if (destino === 'app') return <Navigate to="/dashboard" replace />
   return <OnboardingPage />
 }
 

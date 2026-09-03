@@ -34,6 +34,8 @@ type AppContextValue = {
   user: UserProfile | null
   foodLog: FoodEntry[]
   isAuthenticated: boolean
+  // O perfil ja foi buscado ao menos uma vez, com resultado ou com erro.
+  perfilPronto: boolean
   isPro: boolean
   loading: boolean
   login: (email: string, password: string) => Promise<AuthResult>
@@ -59,6 +61,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [foodLog, setFoodLog] = useState<FoodEntry[]>([])
   const [loading, setLoading] = useState(true)
+  const [perfilPronto, setPerfilPronto] = useState(false)
 
   const loadProfile = useCallback(async (userId: string) => {
     const { data, error } = await supabase
@@ -72,6 +75,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const loadAll = useCallback(async (userId: string) => {
     setUser(await loadProfile(userId))
+    setPerfilPronto(true)
   }, [loadProfile])
 
   // Ouve mudanças de sessão do Supabase Auth.
@@ -99,13 +103,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session)
-        setLoading(false)
         if (session?.user) {
           await loadAll(session.user.id)
         } else {
           setUser(null)
           setFoodLog([])
+          setPerfilPronto(false)
         }
+        setLoading(false)
       }
     )
 
@@ -244,6 +249,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       user,
       foodLog,
       isAuthenticated: !!session,
+      perfilPronto,
       isPro: user?.subscription_status === 'active',
       loading,
       login,
@@ -259,6 +265,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [
       session,
       user,
+      perfilPronto,
       foodLog,
       loading,
       login,
