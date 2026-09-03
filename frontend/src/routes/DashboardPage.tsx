@@ -11,6 +11,7 @@ import { Tabs } from '../components/ui/Tabs'
 import { Habito } from '../components/nutrition/Habito'
 import { Avisos } from '../components/layout/Avisos'
 import { Refeicoes } from '../components/nutrition/Refeicoes'
+import { Gasto } from '../components/nutrition/Gasto'
 import { Composer } from '../components/nutrition/Composer'
 import { useCountUp } from '../lib/useCountUp'
 import { NutritionHistory } from '../components/nutrition/NutritionHistory'
@@ -50,6 +51,7 @@ export function DashboardPage() {
   const [ganho, setGanho] = useState<string | null>(null)
   const [pendentes, setPendentes] = useState<{ id: string; texto: string; foto?: string }[]>([])
   const [dia, setDia] = useState(() => meiaNoite())
+  const [gasto, setGasto] = useState(0)
 
   const ehHoje = mesmoDia(dia, new Date())
 
@@ -76,6 +78,8 @@ export function DashboardPage() {
   }, [dia])
 
   useEffect(() => {
+    // Some com o numero do dia anterior enquanto o do novo nao chega.
+    setGasto(0)
     loadToday()
     // Voltar do background com o registro de ontem na tela e o jeito mais
     // rapido de o usuario desconfiar do app. Recarrega ao reaparecer.
@@ -103,8 +107,11 @@ export function DashboardPage() {
   )
 
   const target = user?.daily_kcal ?? 2000
-  const remaining = target - totals.kcal
-  const pct = target > 0 ? Math.min(100, (totals.kcal / target) * 100) : 0
+  // O que foi gasto entra na meta do dia. Os macros seguem a meta base: a
+  // proporcao entre proteina, carbo e gordura nao muda porque voce correu.
+  const metaDia = target + gasto
+  const remaining = metaDia - totals.kcal
+  const pct = metaDia > 0 ? Math.min(100, (totals.kcal / metaDia) * 100) : 0
   const macros = calculateMacroTargets(target)
   const maintenance = user
     ? calculateDailyKcal({
@@ -170,7 +177,7 @@ export function DashboardPage() {
 
   const rotuloDoDia = DIAS[dia.getDay()]
   const exibido = useCountUp(totals.kcal)
-  const bateuMeta = target > 0 && totals.kcal >= target
+  const bateuMeta = metaDia > 0 && totals.kcal >= metaDia
 
   // Marco do dia: um empurrao a cada faixa vencida, no lugar do numero seco.
   const marco =
@@ -242,7 +249,7 @@ export function DashboardPage() {
               >
                 {exibido}
                 <span className="num ml-2 align-baseline text-xl font-normal text-obliq-faint">
-                  / {target}
+                  / {metaDia}
                 </span>
               </p>
               <p className="text-right">
@@ -262,12 +269,16 @@ export function DashboardPage() {
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-obliq-border">
               <div
                 className={`relative h-full overflow-hidden rounded-full transition-[width] duration-500 ease-out ${
-                  totals.kcal > target ? 'bg-obliq-red' : 'bg-obliq-chalk'
+                  totals.kcal > metaDia ? 'bg-obliq-red' : 'bg-obliq-chalk'
                 } ${pct > 4 && pct < 100 ? 'brilho' : ''}`}
                 style={{ width: `${pct}%` }}
               />
             </div>
           </section>
+
+          <div className="mt-6">
+            <Gasto dia={dia} valor={gasto} onMudou={setGasto} />
+          </div>
 
           <div className="mt-6">
             <Refeicoes entries={entries} meta={target} perfil={user} />

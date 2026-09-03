@@ -24,6 +24,33 @@ export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
   const [gravando, setGravando] = useState(false)
   const [segundos, setSegundos] = useState(0)
 
+  // O teclado do iOS nao encolhe a janela, so a area visivel. Uma barra presa
+  // em bottom:0 fica atras dele, com uma faixa morta no meio. A VisualViewport
+  // diz quanto o teclado ocupa; a barra sobe exatamente isso e cola nele.
+  const [teclado, setTeclado] = useState(0)
+
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const medir = () => {
+      setTeclado(Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)))
+    }
+    vv.addEventListener('resize', medir)
+    vv.addEventListener('scroll', medir)
+    medir()
+    return () => {
+      vv.removeEventListener('resize', medir)
+      vv.removeEventListener('scroll', medir)
+    }
+  }, [])
+
+  // Com o teclado aberto, o indicador do iPhone esta coberto: reservar espaco
+  // pra ele so cria a sobra que aparecia embaixo da barra.
+  const estiloBarra = {
+    transform: teclado > 0 ? `translateY(-${teclado}px)` : undefined,
+    paddingBottom: teclado > 0 ? 0 : 'env(safe-area-inset-bottom)',
+  }
+
   // Contador de tempo da fala. So roda enquanto o microfone esta aberto.
   useEffect(() => {
     if (!gravando) return
@@ -94,7 +121,7 @@ export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
     return (
       <div
         className="fixed inset-x-0 bottom-0 z-40 border-t border-obliq-border bg-obliq-black/95 backdrop-blur-md"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        style={estiloBarra}
       >
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
           <button
@@ -130,7 +157,7 @@ export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
   return (
     <div
       className="fixed inset-x-0 bottom-0 z-40 border-t border-obliq-border bg-obliq-black/95 backdrop-blur-md"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      style={estiloBarra}
     >
       <form onSubmit={enviar} className="mx-auto max-w-3xl px-4 py-3">
         {diaAberto && (

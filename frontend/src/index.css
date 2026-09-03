@@ -176,6 +176,17 @@
   }
 
   /* numeros de dado: largura fixa pra tabela nao dancar */
+  /* Setinha de input number nao cabe numa linha de livro-caixa. */
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
   .num {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
