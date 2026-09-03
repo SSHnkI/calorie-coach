@@ -17,11 +17,20 @@ function segundaDaSemana(hoje: Date) {
   return d
 }
 
+type HabitoProps = {
+  meta: number
+  versao: number
+  // Dia em edicao. Tocar numa barra passada e como o usuario volta pra anotar
+  // o que esqueceu: a semana ja esta na tela, nao precisa de outro seletor.
+  selecionado: Date
+  onSelecionar: (dia: Date) => void
+}
+
 /**
  * Semana corrente, de segunda a domingo, com a altura de cada dia
  * proporcional a meta. E o unico lugar do app que mostra constancia.
  */
-export function Habito({ meta, versao }: { meta: number; versao: number }) {
+export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps) {
   const [itens, setItens] = useState<FoodEntry[] | null>(null)
 
   useEffect(() => {
@@ -48,11 +57,13 @@ export function Habito({ meta, versao }: { meta: number; versao: number }) {
       const kcal = soma[chave(d)] ?? 0
       return {
         rotulo,
+        data: d,
         kcal,
         pct: meta > 0 ? Math.min(100, (kcal / meta) * 100) : 0,
         registrou: kcal > 0,
         hoje: chave(d) === chave(hoje),
         futuro: d > hoje,
+        aberto: chave(d) === chave(selecionado),
       }
     })
 
@@ -67,7 +78,7 @@ export function Habito({ meta, versao }: { meta: number; versao: number }) {
     }
 
     return { dias, sequencia }
-  }, [itens, meta])
+  }, [itens, meta, selecionado])
 
   if (!itens) return <div className="h-14 animate-pulse rounded-lg bg-obliq-surface" />
 
@@ -95,32 +106,41 @@ export function Habito({ meta, versao }: { meta: number; versao: number }) {
       <ol className="mt-2 flex gap-1">
         {dias.map((d) => (
           <li key={d.rotulo} className="flex-1">
-            <div
+            <button
+              type="button"
+              disabled={d.futuro}
+              aria-pressed={d.aberto}
+              aria-label={`${d.rotulo}, ${d.kcal ? `${d.kcal} kcal` : 'sem registro'}`}
+              onClick={() => onSelecionar(d.data)}
               title={d.kcal ? `${d.kcal} kcal` : d.futuro ? 'ainda vem' : 'sem registro'}
-              className={`flex h-8 items-end overflow-hidden rounded ${
-                d.hoje ? 'ring-1 ring-obliq-red/50' : ''
-              } ${
-                d.registrou
-                  ? 'bg-obliq-raised'
-                  : d.futuro
-                    ? 'bg-obliq-surface/50'
-                    : 'bg-obliq-surface'
-              }`}
+              className={`block w-full rounded transition-colors duration-200 disabled:cursor-default ${
+                d.aberto ? 'ring-1 ring-obliq-chalk' : d.hoje ? 'ring-1 ring-obliq-red/50' : ''
+              } enabled:hover:ring-1 enabled:hover:ring-obliq-dim`}
             >
-              <div
-                className={`w-full rounded transition-[height] duration-700 ease-out ${
-                  d.kcal > meta && meta > 0 ? 'bg-obliq-red' : 'bg-obliq-dim'
+              <span
+                className={`flex h-8 items-end overflow-hidden rounded ${
+                  d.registrou
+                    ? 'bg-obliq-raised'
+                    : d.futuro
+                      ? 'bg-obliq-surface/50'
+                      : 'bg-obliq-surface'
                 }`}
-                style={{ height: `${Math.max(d.registrou ? 12 : 0, d.pct)}%` }}
-              />
-            </div>
-            <span
-              className={`mt-0.5 block text-center font-mono text-[10px] ${
-                d.hoje ? 'text-obliq-chalk' : 'text-obliq-faint'
-              }`}
-            >
-              {d.rotulo}
-            </span>
+              >
+                <span
+                  className={`w-full rounded transition-[height] duration-700 ease-out ${
+                    d.kcal > meta && meta > 0 ? 'bg-obliq-red' : 'bg-obliq-dim'
+                  }`}
+                  style={{ height: `${Math.max(d.registrou ? 12 : 0, d.pct)}%` }}
+                />
+              </span>
+              <span
+                className={`mt-0.5 block text-center font-mono text-[10px] ${
+                  d.aberto || d.hoje ? 'text-obliq-chalk' : 'text-obliq-faint'
+                }`}
+              >
+                {d.rotulo}
+              </span>
+            </button>
           </li>
         ))}
       </ol>

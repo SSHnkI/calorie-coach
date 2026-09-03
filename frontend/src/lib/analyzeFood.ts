@@ -22,12 +22,15 @@ export async function analyzeFood(
   input: string,
   image?: string,
   audio?: string,
+  // Registro retroativo. Sem isto, a refeicao cai na hora da chamada.
+  quando?: Date,
 ): Promise<AnalyzeResult> {
   const { data, error } = await supabase.functions.invoke('analyze-food', {
     body: {
       food_input: input,
       ...(image ? { image } : {}),
       ...(audio ? { audio } : {}),
+      ...(quando ? { logged_at: quando.toISOString() } : {}),
     },
   })
 

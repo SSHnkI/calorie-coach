@@ -241,7 +241,7 @@ Deno.serve(async (req) => {
       return json({ error: 'profile_not_found' }, 404)
     }
 
-    const { food_input, image, audio, log = true } = await req.json()
+    const { food_input, image, audio, log = true, logged_at } = await req.json()
     if (!food_input?.trim() && !image && !audio) {
       return json({ error: 'food_input required' }, 400)
     }
@@ -257,6 +257,22 @@ Deno.serve(async (req) => {
     }
     if (audio && audio.length > 8_000_000) {
       return json({ error: 'audio grande demais' }, 413)
+    }
+
+    // Registro retroativo: quem esqueceu de anotar precisa poder anotar depois.
+    // A data vem do cliente, entao e conferida aqui: nada no futuro e nada
+    // alem da janela que o proprio historico mostra.
+    const JANELA_DIAS = 30
+    let quando: string | null = null
+    if (logged_at !== undefined) {
+      const d = new Date(logged_at)
+      if (Number.isNaN(d.getTime())) return json({ error: 'logged_at invalido' }, 400)
+      const agora = Date.now()
+      if (d.getTime() > agora + 5 * 60_000) return json({ error: 'logged_at no futuro' }, 400)
+      if (d.getTime() < agora - JANELA_DIAS * 86_400_000) {
+        return json({ error: 'logged_at fora da janela' }, 400)
+      }
+      quando = d.toISOString()
     }
 
     const today = new Date().toISOString().split('T')[0]
@@ -288,6 +304,7 @@ Deno.serve(async (req) => {
           carbs_g: n.carbs_g,
           fat_g: n.fat_g,
           confidence: n.confidence,
+          ...(quando ? { logged_at: quando } : {}),
         })),
       )
     }

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { useI18n } from '../i18n/I18nContext'
 import { analyzeFood } from '../lib/analyzeFood'
-import { deleteFood, fetchTodayFood, updateFoodKcal } from '../lib/foodLog'
+import { deleteFood, fetchFoodByDay, updateFoodKcal } from '../lib/foodLog'
 import { calculateDailyKcal, calculateMacroTargets } from '../lib/tdee'
 import type { FoodEntry } from '../types'
 import { AppShell } from '../components/layout/AppShell'
@@ -18,6 +18,25 @@ import { NutritionStats } from '../components/nutrition/NutritionStats'
 
 const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
 
+function meiaNoite(d = new Date()) {
+  const x = new Date(d)
+  x.setHours(0, 0, 0, 0)
+  return x
+}
+
+function mesmoDia(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+}
+
+// Hora de um registro retroativo: o dia escolhido, na hora de agora. Mantem a
+// ordem natural conforme a pessoa vai lembrando dos itens daquele dia.
+function horaNoDia(dia: Date) {
+  const agora = new Date()
+  const x = new Date(dia)
+  x.setHours(agora.getHours(), agora.getMinutes(), agora.getSeconds(), 0)
+  return x
+}
+
 export function DashboardPage() {
   const { t } = useI18n()
   const { user } = useApp()
@@ -30,9 +49,12 @@ export function DashboardPage() {
   const [versao, setVersao] = useState(0)
   const [ganho, setGanho] = useState<string | null>(null)
   const [pendentes, setPendentes] = useState<{ id: string; texto: string; foto?: string }[]>([])
+  const [dia, setDia] = useState(() => meiaNoite())
+
+  const ehHoje = mesmoDia(dia, new Date())
 
   const loadToday = useCallback((marcarNovo = false) => {
-    fetchTodayFood()
+    fetchFoodByDay(dia)
       .then((novos) => {
         setEntries((antigos) => {
           if (marcarNovo) {
@@ -51,7 +73,7 @@ export function DashboardPage() {
         if (marcarNovo) setVersao((v) => v + 1)
       })
       .catch(() => {})
-  }, [])
+  }, [dia])
 
   useEffect(() => {
     loadToday()
@@ -60,6 +82,8 @@ export function DashboardPage() {
     const aoVoltar = () => {
       if (document.visibilityState === 'visible') loadToday()
     }
+    // ponytail: sem re-sincronizar o dia aberto na virada da meia-noite.
+    // Quem deixa o app aberto atravessando a meia-noite ve o dia certo ao voltar.
     document.addEventListener('visibilitychange', aoVoltar)
     return () => document.removeEventListener('visibilitychange', aoVoltar)
   }, [loadToday])
@@ -101,7 +125,7 @@ export function DashboardPage() {
     setPendentes((p) => [{ id, texto: rotulo, foto }, ...p])
     setError('')
 
-    analyzeFood(texto, foto, fala)
+    analyzeFood(texto, foto, fala, ehHoje ? undefined : horaNoDia(dia))
       .then((result) => {
         if (!result.ok) {
           setError(
@@ -144,7 +168,7 @@ export function DashboardPage() {
     }
   }
 
-  const hoje = DIAS[new Date().getDay()]
+  const rotuloDoDia = DIAS[dia.getDay()]
   const exibido = useCountUp(totals.kcal)
   const bateuMeta = target > 0 && totals.kcal >= target
 
@@ -154,8 +178,8 @@ export function DashboardPage() {
 
   // Bater a meta merece mais que uma animacao: o telefone confirma no bolso.
   useEffect(() => {
-    if (bateuMeta) navigator.vibrate?.([14, 60, 26])
-  }, [bateuMeta])
+    if (bateuMeta && ehHoje) navigator.vibrate?.([14, 60, 26])
+  }, [bateuMeta, ehHoje])
 
   return (
     <AppShell>
@@ -180,7 +204,16 @@ export function DashboardPage() {
           <section className="mt-6">
             <div className="flex items-baseline justify-between">
               <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
-                {hoje}
+                {rotuloDoDia}
+                {!ehHoje && (
+                  <button
+                    type="button"
+                    onClick={() => setDia(meiaNoite())}
+                    className="ml-3 normal-case tracking-normal text-obliq-chalk underline decoration-obliq-line underline-offset-4"
+                  >
+                    voltar para hoje
+                  </button>
+                )}
               </span>
               <span className="text-[11px]">
                 {marco && (
@@ -241,7 +274,7 @@ export function DashboardPage() {
           </div>
 
           <div className="mt-6">
-            <Habito meta={target} versao={versao} />
+            <Habito meta={target} versao={versao} selecionado={dia} onSelecionar={setDia} />
           </div>
 
           <div className="mt-6">
@@ -378,7 +411,11 @@ export function DashboardPage() {
         </>
       )}
 
-      <Composer onEnviar={handleAnalyze} erro={error} />
+      <Composer
+        onEnviar={handleAnalyze}
+        erro={error}
+        diaAberto={ehHoje ? undefined : `${rotuloDoDia}, ${dia.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`}
+      />
     </AppShell>
   )
 }
