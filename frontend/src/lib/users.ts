@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import type { FoodEntry } from '../types'
 
 // Quem pode ler a lista e decidido pelo RLS (policy admin_select_profiles),
 // nao por esta constante. Ela so controla o que a interface mostra.
@@ -105,4 +106,23 @@ export async function deleteUser(userId: string): Promise<void> {
     body: { user_id: userId },
   })
   if (error || !data?.ok) throw new Error('falhou')
+}
+
+// Diario de UM usuario nos ultimos dias, para o painel do admin.
+// Nao mora em foodLog.ts de proposito: la tudo e preso ao proprio id, e o que
+// permite ler o diario alheio aqui e a policy de admin, nao o app.
+export async function fetchUserWeek(userId: string, dias = 7): Promise<FoodEntry[]> {
+  const desde = new Date()
+  desde.setHours(0, 0, 0, 0)
+  desde.setDate(desde.getDate() - (dias - 1))
+
+  const { data, error } = await supabase
+    .from('food_log')
+    .select('id, name, quantity, unit, kcal, protein_g, carbs_g, fat_g, confidence, logged_at')
+    .eq('user_id', userId)
+    .gte('logged_at', desde.toISOString())
+    .order('logged_at', { ascending: false })
+
+  if (error) throw error
+  return (data ?? []) as FoodEntry[]
 }

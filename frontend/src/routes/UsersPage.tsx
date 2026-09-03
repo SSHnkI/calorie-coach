@@ -12,6 +12,7 @@ import {
 import { AppShell } from '../components/layout/AppShell'
 import { Icon } from '../components/ui/Icon'
 import { ApagarHistorico } from '../components/admin/ApagarHistorico'
+import { HistoricoSemanal } from '../components/admin/HistoricoSemanal'
 
 const OBJETIVO: Record<string, string> = {
   lose: 'perder peso',
@@ -282,7 +283,8 @@ export function UsersPage() {
                 </button>
 
                 {on && (
-                  <div className="rise grid gap-6 pb-6 md:grid-cols-[1fr_auto]">
+                  <div className="rise grid gap-6 pb-6">
+                   <div className="grid gap-6 md:grid-cols-[1fr_auto]">
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-2 font-mono text-[12px] sm:grid-cols-3">
                       {[
                         ['entrou', `${dataCurta(u.created_at)} · ${diasDesde(u.created_at)}d`],
@@ -316,6 +318,9 @@ export function UsersPage() {
                         />
                       </div>
                     </div>
+                   </div>
+
+                    <HistoricoSemanal usuario={u} />
                   </div>
                 )}
               </li>
