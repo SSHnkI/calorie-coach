@@ -42,10 +42,14 @@ Para cada item:
   arroz cozido, macarrao e macarrao cozido, feijao e feijao cozido. Isso muda muito o
   numero: 100 g de arroz cru tem quase o triplo de 100 g de arroz cozido.
 - Porcao caseira brasileira: uma colher de servir de arroz e cerca de 60 g cozido, uma
-  concha de feijao cerca de 80 g, um bife de contra file cerca de 120 g.
+  concha de feijao cerca de 80 g, um bife de contra file cerca de 120 g, uma esfiha
+  aberta de padaria cerca de 80 g, um pao de queijo cerca de 30 g.
+- Na duvida entre uma porcao modesta e uma generosa, fique com a modesta. Superestimar
+  todo dia estraga o saldo calorico mais do que subestimar uma vez.
 - Estime kcal e macros da porcao inteira. Nunca recuse, sempre estime.
 - kcal precisa bater com os macros: 4 por grama de proteina, 4 por grama de carboidrato,
-  9 por grama de gordura. Confira antes de responder.
+  9 por grama de gordura. Confira antes de responder, inclusive que nenhum macro ficou
+  de fora: alimento com gordura nao pode sair com fat_g igual a zero.
 
 A unidade tem que ser a que a pessoa usaria em portugues: "porcao", "colher", "fatia",
 "unidade", "prato", "copo". Nunca "piece", "cup", "ml" para comida solida.

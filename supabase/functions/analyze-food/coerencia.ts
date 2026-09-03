@@ -31,19 +31,29 @@ export const MAX_KCAL_POR_GRAMA = 9
 // em arredondamento e em fibra, que nao entra na conta de Atwater.
 export const TOLERANCIA = 0.25
 
-export type Ajuste = 'nenhum' | 'macros' | 'densidade'
+export type Ajuste = 'nenhum' | 'macros' | 'densidade' | 'suspeito'
 
 export type Resultado = { kcal: number; ajuste: Ajuste; confiavel: boolean }
 
 /**
  * Concilia o kcal declarado com os macros e com o peso da porcao.
  *
- * Duas travas, nesta ordem:
- * 1. os macros mandam. Se 4P + 4C + 9G discorda do kcal declarado alem da
- *    tolerancia, o modelo se contradisse e a soma dos macros e a versao mais
- *    defensavel: ela sustenta as tres barras de macro da tela.
- * 2. densidade. Depois de conciliar, kcal por grama nao pode passar do limite
- *    fisico. Passou, corta no limite.
+ * A regra corrige em UMA direcao so, e a auditoria dos itens ja gravados foi o
+ * que ensinou isso. Sobrescrever sempre pelo valor dos macros dava 1 acerto, 1
+ * erro e 1 empate:
+ *
+ *   cafe            declarado 50, macros  1, referencia  10  -> macros acertam
+ *   creme de ricota declarado 34, macros 16, referencia  35  -> o declarado acertava
+ *
+ * O que separa os dois casos e a direcao. Macro e PISO de energia: 30 g de
+ * gordura nao cabem em 100 kcal, e isso e fisica, nao estimativa. Entao:
+ *
+ * 1. macros somando MAIS que o declarado: o declarado e impossivel, sobe pro
+ *    piso. Indiscutivel.
+ * 2. macros somando MENOS: pode ser macro faltando, como a gordura que sumiu do
+ *    creme de ricota. Nao sobrescreve, so marca como suspeito, e a tela mostra
+ *    "estimado" no item.
+ * 3. densidade acima do limite fisico: corta no limite, em qualquer direcao.
  */
 export function coerir(m: Macros): Resultado {
   const declarado = Math.max(0, n(m.kcal))
@@ -57,8 +67,14 @@ export function coerir(m: Macros): Resultado {
   if (porMacros > 0) {
     const base = Math.max(declarado, porMacros)
     if (Math.abs(declarado - porMacros) / base > TOLERANCIA) {
-      kcal = porMacros
-      ajuste = 'macros'
+      if (porMacros > declarado) {
+        // Piso de energia violado: o declarado nao cabe nos proprios macros.
+        kcal = porMacros
+        ajuste = 'macros'
+      } else {
+        // Provavel macro faltando. Nao mexe no numero, mas nao finge confianca.
+        ajuste = 'suspeito'
+      }
     }
   }
 

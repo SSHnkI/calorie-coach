@@ -11,11 +11,19 @@ test('kcal coerente com os macros passa intacto', () => {
   assert.equal(r.confiavel, true)
 })
 
-test('kcal inflado contra os macros e puxado de volta para a soma', () => {
-  // o defeito real: arroz de 150 g virando 700 kcal por causa do Open Food Facts,
-  // enquanto os proprios macros do item somam 189
-  const r = coerir({ kcal: 700, protein_g: 4, carbs_g: 42, fat_g: 0.4, grams_total: 150 })
-  assert.equal(r.kcal, 188) // 4*4 + 4*42 + 9*0.4 = 187.6
+test('declarado alto demais para os macros vira suspeito, sem sobrescrever', () => {
+  // creme de ricota real do diario: 34 kcal declarado, macros somando 16 porque a
+  // gordura ficou de fora. A referencia era 35: o declarado e que estava certo.
+  const r = coerir({ kcal: 34, protein_g: 3, carbs_g: 1, fat_g: 0, grams_total: 20 })
+  assert.equal(r.kcal, 34, 'nao pode sobrescrever: macro faltando e mais provavel')
+  assert.equal(r.ajuste, 'suspeito')
+  assert.equal(r.confiavel, false)
+})
+
+test('declarado que nao cabe nos proprios macros sobe para o piso de energia', () => {
+  // 30 g de gordura nao cabem em 100 kcal. Isso e fisica, nao estimativa.
+  const r = coerir({ kcal: 100, protein_g: 10, carbs_g: 10, fat_g: 30, grams_total: 120 })
+  assert.equal(r.kcal, 350) // 4*10 + 4*10 + 9*30
   assert.equal(r.ajuste, 'macros')
   assert.equal(r.confiavel, false)
 })
@@ -59,14 +67,29 @@ test('numero sujo do modelo nao explode a conta', () => {
   assert.ok(Number.isFinite(r.kcal))
 })
 
-test('o prato do usuario, com o defeito e sem ele', () => {
-  const comDefeito = [
-    { kcal: 700, protein_g: 4, carbs_g: 42, fat_g: 0.4, grams_total: 150 }, // arroz inflado
-    { kcal: 340, protein_g: 16, carbs_g: 30, fat_g: 16, grams_total: 200 }, // lasanha
-    { kcal: 264, protein_g: 32, carbs_g: 0, fat_g: 15, grams_total: 120 }, // bife
+test('item inflado e sinalizado, nao silenciosamente reescrito', () => {
+  // Arroz de 150 g com 700 kcal, enquanto os proprios macros somam 188. Antes o
+  // codigo baixava para 188. A auditoria mostrou que sobrescrever para baixo e
+  // um cara ou coroa: no creme de ricota o declarado e que estava certo.
+  //
+  // Entao aqui a promessa e outra e mais honesta: o numero fica, mas o item
+  // perde a confianca e a tela mostra "estimado" nele.
+  const r = coerir({ kcal: 700, protein_g: 4, carbs_g: 42, fat_g: 0.4, grams_total: 150 })
+  assert.equal(r.kcal, 700)
+  assert.equal(r.ajuste, 'suspeito')
+  assert.equal(r.confiavel, false)
+})
+
+test('o que de fato protege contra inflacao e a fonte, nao a trava', () => {
+  // Registro de porcoes coerentes passa inteiro: nenhuma trava tem como pegar
+  // superestimativa de PORCAO, que e coerente por dentro. Isso e trabalho do
+  // prompt, e por isso ele ganhou porcoes caseiras brasileiras de referencia.
+  const prato = [
+    { kcal: 195, protein_g: 4, carbs_g: 42, fat_g: 0.4, grams_total: 150 },
+    { kcal: 380, protein_g: 15, carbs_g: 40, fat_g: 15, grams_total: 220 },
+    { kcal: 300, protein_g: 30, carbs_g: 0, fat_g: 20, grams_total: 130 },
   ]
-  const antes = comDefeito.reduce((s, i) => s + i.kcal, 0)
-  const depois = comDefeito.reduce((s, i) => s + coerir(i).kcal, 0)
-  assert.equal(antes, 1304)
-  assert.ok(depois < 800, `esperava menos de 800, deu ${depois}`)
+  for (const item of prato) {
+    assert.equal(coerir(item).ajuste, 'nenhum', JSON.stringify(item))
+  }
 })
