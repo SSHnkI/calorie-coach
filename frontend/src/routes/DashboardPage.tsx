@@ -5,6 +5,7 @@ import { analyzeFood } from '../lib/analyzeFood'
 import { deleteFood, fetchFoodByDay, updateFoodKcal } from '../lib/foodLog'
 import { calculateDailyKcal, calculateMacroTargets } from '../lib/tdee'
 import { horaNoDia } from '../lib/horaDoRegistro'
+import { formatQuantidade } from '../lib/format'
 import { comemora, desfechoDoDia, type Objetivo } from '../lib/recompensa'
 import type { FoodEntry } from '../types'
 import { AppShell } from '../components/layout/AppShell'
@@ -415,9 +416,7 @@ export function DashboardPage() {
                     </div>
 
                     <div className="mt-1 flex gap-3 font-mono text-[12px] text-obliq-faint">
-                      <span>
-                        {item.quantity} {item.unit}
-                      </span>
+                      <span>{formatQuantidade(item.quantity, item.unit, item.kcal)}</span>
                       <span>P {item.protein_g}</span>
                       <span>C {item.carbs_g}</span>
                       <span>G {item.fat_g}</span>
