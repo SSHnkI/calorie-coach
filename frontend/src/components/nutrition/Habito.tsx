@@ -1,6 +1,24 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { fetchFoodHistory } from '../../lib/foodLog'
+import { marcoDaSequencia, marcoNovo } from '../../lib/recompensa'
 import type { FoodEntry } from '../../types'
+
+// Onde fica o ultimo marco comemorado. Por dispositivo, nao por conta: perder a
+// festa por trocar de telefone e barato, repetir a festa toda vez que a tela
+// recarrega estraga a festa.
+const CHAVE_MARCO = 'obliq:marco-sequencia'
+
+// null significa que este dispositivo nunca guardou nada. Nesse caso a primeira
+// carga nao comemora: quem ja tinha 7 dias antes de abrir o app hoje nao acabou
+// de conquistar nada agora.
+function lerMarco(): number | null {
+  try {
+    const bruto = localStorage.getItem(CHAVE_MARCO)
+    return bruto === null ? null : Number(bruto) || 0
+  } catch {
+    return null
+  }
+}
 
 const ROTULOS = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom']
 
@@ -32,6 +50,11 @@ type HabitoProps = {
  */
 export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps) {
   const [itens, setItens] = useState<FoodEntry[] | null>(null)
+  // Marco recem cruzado, e o reforco menor de quem so manteve a corrente.
+  const [festa, setFesta] = useState<number | null>(null)
+  const [manteve, setManteve] = useState(false)
+  const marcoGuardado = useRef<number | null>(lerMarco())
+  const sequenciaAnterior = useRef<number | null>(null)
 
   useEffect(() => {
     fetchFoodHistory(30)
@@ -80,6 +103,41 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
     return { dias, sequencia }
   }, [itens, meta, selecionado])
 
+  // Comemoracao da corrente. Dispara na virada do marco, uma vez por marco, e
+  // nunca na primeira carga de um dispositivo que ainda nao conhecia a pessoa.
+  useEffect(() => {
+    if (itens === null) return
+
+    // Em const, nao lendo o ref direto: o TypeScript nao estreita propriedade
+    // mutavel de objeto dentro do ternario.
+    const guardado = marcoGuardado.current
+    const { marco, guardar } = marcoNovo(
+      sequencia,
+      guardado === null ? (marcoDaSequencia(sequencia) ?? 0) : guardado,
+    )
+    marcoGuardado.current = guardar
+    try {
+      localStorage.setItem(CHAVE_MARCO, String(guardar))
+    } catch {
+      // navegador sem armazenamento: perde o controle de repeticao, nao quebra
+    }
+
+    const cresceu = sequenciaAnterior.current !== null && sequencia > sequenciaAnterior.current
+    sequenciaAnterior.current = sequencia
+
+    if (marco) {
+      setFesta(marco)
+      navigator.vibrate?.([12, 50, 12, 50, 28])
+      const t = setTimeout(() => setFesta(null), 2800)
+      return () => clearTimeout(t)
+    }
+    if (cresceu) {
+      setManteve(true)
+      const t = setTimeout(() => setManteve(false), 2200)
+      return () => clearTimeout(t)
+    }
+  }, [sequencia, itens])
+
   if (!itens) return <div className="h-14 animate-pulse rounded-lg bg-obliq-surface" />
 
   return (
@@ -88,17 +146,27 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
         <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
           semana
         </span>
-        <span className="num text-xs">
+        <span
+          key={festa ?? 'normal'}
+          className={`num flex items-baseline gap-1.5 ${festa ? 'bater' : ''}`}
+        >
           {sequencia > 0 ? (
             <>
-              {sequencia}
-              <span className="text-obliq-faint">
-                {' '}
+              <span
+                className={`text-lg font-medium leading-none ${
+                  festa ? 'text-obliq-red' : 'text-obliq-chalk'
+                }`}
+              >
+                {sequencia}
+              </span>
+              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
                 {sequencia === 1 ? 'dia' : 'dias seguidos'}
               </span>
             </>
           ) : (
-            <span className="text-obliq-faint">comece hoje</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+              comece hoje
+            </span>
           )}
         </span>
       </div>
@@ -144,6 +212,16 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
           </li>
         ))}
       </ol>
+
+      {(festa || manteve) && (
+        <p
+          key={festa ? `marco-${festa}` : 'manteve'}
+          role="status"
+          className="rise mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-red"
+        >
+          {festa ? `${festa} dias seguidos` : 'corrente mantida'}
+        </p>
+      )}
     </section>
   )
 }

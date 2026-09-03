@@ -39,12 +39,14 @@ calorie-coach/
 │   │   ├── components/
 │   │   │   ├── layout/             # AppShell, Logo, ProtectedRoute, Avisos, TemaSwitcher, LanguageBar
 │   │   │   ├── ui/                 # Button, Card, Input, Tabs, Icon
-│   │   │   ├── nutrition/          # Composer, Refeicoes, Habito, NutritionHistory, NutritionStats
-│   │   │   └── admin/              # ApagarHistorico
+│   │   │   ├── nutrition/          # Composer, Refeicoes, Habito, Gasto, NutritionHistory, NutritionStats
+│   │   │   └── admin/              # ApagarHistorico, HistoricoSemanal
 │   │   ├── lib/
 │   │   │   ├── supabase.ts         # client
 │   │   │   ├── analyzeFood.ts      # chama a edge function analyze-food
 │   │   │   ├── foodLog.ts          # CRUD do log de refeições
+│   │   │   ├── gasto.ts            # gasto extra do dia, digitado a mão
+│   │   │   ├── recompensa.ts       # marcos de sequência e desfecho do dia
 │   │   │   ├── users.ts            # funções do painel admin
 │   │   │   ├── tdee.ts             # meta de kcal do dia
 │   │   │   ├── push.ts             # inscrição de web push
@@ -90,7 +92,7 @@ npx tsc --noEmit  # checar tipos sem buildar (sem output = zero erros)
 
 ## Banco de Dados (Supabase PostgreSQL)
 
-Cinco tabelas, todas com RLS ligado.
+Seis tabelas, todas com RLS ligado.
 
 **`profiles`** — `id` = `auth.users.id`. NÃO existe coluna `user_id`.
 
@@ -113,6 +115,14 @@ created_at          timestamptz
 id, user_id, logged_at, name, quantity, unit,
 kcal, protein_g, carbs_g, fat_g, confidence
 ```
+
+**`gasto_diario`** — gasto extra digitado à mão, uma linha por usuário por dia.
+
+```sql
+user_id, dia date, kcal int, atualizado_em     -- PK (user_id, dia)
+```
+
+Zero apaga a linha em vez de gravar zero: dia sem gasto é dia sem linha.
 
 **`push_subs`**, **`push_log`**, **`push_cfg`** — ver a seção de Web Push.
 
@@ -265,10 +275,28 @@ não chegam de forma confiável.
 
 ---
 
+## Onde a Recompensa Aponta
+
+`lib/recompensa.ts` decide o que o app comemora, e existe porque a versão antiga
+comemorava a coisa errada: a festa disparava quando o consumo alcançava a meta,
+ou seja, quando quem quer emagrecer deveria parar de comer.
+
+- objetivo `gain`: a meta é alvo, e alcançar comemora
+- objetivo `lose` e `maintain`: o momento bom é **fechar o dia dentro da meta**,
+  contado como fechado em dia passado ou depois das 20h
+- a sequência de dias registrados tem marcos em 3, 7, 14, 30, 60, 100, 200 e 365,
+  cada um comemorado uma vez; o último comemorado fica no `localStorage`
+
+---
+
 ## Verificação Rápida
 
 ```bash
 cd frontend
-npx tsc --noEmit   # sem output = ok
-npm run build      # deve completar sem erros
+npm run build      # tsc -b + vite build, deve completar sem erros
+npm run lint       # 3 avisos de fast refresh em dev são esperados
+node --test src/lib/recompensa.test.ts src/components/layout/destinoDaRota.test.ts
 ```
+
+`npx tsc --noEmit` sozinho não cobre tudo que `npm run build` cobre: use o build
+como o teste de tipo de verdade.

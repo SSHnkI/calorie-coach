@@ -4,6 +4,7 @@ import { useI18n } from '../i18n/I18nContext'
 import { analyzeFood } from '../lib/analyzeFood'
 import { deleteFood, fetchFoodByDay, updateFoodKcal } from '../lib/foodLog'
 import { calculateDailyKcal, calculateMacroTargets } from '../lib/tdee'
+import { comemora, desfechoDoDia, type Objetivo } from '../lib/recompensa'
 import type { FoodEntry } from '../types'
 import { AppShell } from '../components/layout/AppShell'
 import { Icon } from '../components/ui/Icon'
@@ -177,16 +178,29 @@ export function DashboardPage() {
 
   const rotuloDoDia = DIAS[dia.getDay()]
   const exibido = useCountUp(totals.kcal)
-  const bateuMeta = metaDia > 0 && totals.kcal >= metaDia
+  // Depois desta hora quase ninguem come mais: o dia conta como fechado.
+  const FIM_DO_DIA = 20
+  const diaFechado = !ehHoje || new Date().getHours() >= FIM_DO_DIA
 
-  // Marco do dia: um empurrao a cada faixa vencida, no lugar do numero seco.
-  const marco =
-    pct >= 100 ? 'meta batida' : pct >= 75 ? 'quase lá' : pct >= 50 ? 'metade' : ''
+  const desfecho = desfechoDoDia({
+    objetivo: (user?.goal ?? 'maintain') as Objetivo,
+    kcal: totals.kcal,
+    meta: metaDia,
+    fechado: diaFechado,
+  })
+  const bomDesfecho = comemora(desfecho)
 
-  // Bater a meta merece mais que uma animacao: o telefone confirma no bolso.
+  const selo =
+    desfecho === 'dentro'
+      ? 'dia fechado dentro da meta'
+      : desfecho === 'atingiu'
+        ? 'meta batida'
+        : ''
+
+  // O bom desfecho merece mais que uma animacao: o telefone confirma no bolso.
   useEffect(() => {
-    if (bateuMeta && ehHoje) navigator.vibrate?.([14, 60, 26])
-  }, [bateuMeta, ehHoje])
+    if (bomDesfecho && ehHoje) navigator.vibrate?.([14, 60, 26])
+  }, [bomDesfecho, ehHoje])
 
   return (
     <AppShell>
@@ -223,9 +237,12 @@ export function DashboardPage() {
                 )}
               </span>
               <span className="text-[11px]">
-                {marco && (
-                  <span key={marco} className="bater mr-2 font-mono uppercase tracking-[0.14em] text-obliq-chalk">
-                    {marco}
+                {selo && (
+                  <span
+                    key={selo}
+                    className="bater mr-2 font-mono uppercase tracking-[0.14em] text-obliq-chalk"
+                  >
+                    {selo}
                   </span>
                 )}
                 <span className="num text-obliq-faint">{Math.round(pct)}%</span>
@@ -242,9 +259,9 @@ export function DashboardPage() {
                 </span>
               )}
               <p
-                key={bateuMeta ? 'meta' : 'andando'}
+                key={bomDesfecho ? 'desfecho' : 'andando'}
                 className={`num text-[clamp(3.5rem,16vw,5.5rem)] font-medium leading-none text-obliq-red ${
-                  bateuMeta ? 'bater' : ''
+                  bomDesfecho ? 'bater' : ''
                 }`}
               >
                 {exibido}
