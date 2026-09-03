@@ -45,7 +45,8 @@ calorie-coach/
 │   │   │   ├── supabase.ts         # client
 │   │   │   ├── analyzeFood.ts      # chama a edge function analyze-food
 │   │   │   ├── foodLog.ts          # CRUD do log de refeições
-│   │   │   ├── gasto.ts            # gasto extra do dia, digitado a mão
+│   │   │   ├── barraDoTeclado.ts   # onde a barra fixa para, com o teclado aberto
+│   │   │   ├── gasto.ts            # gasto extra do dia, digitado à mão
 │   │   │   ├── recompensa.ts       # marcos de sequência e desfecho do dia
 │   │   │   ├── users.ts            # funções do painel admin
 │   │   │   ├── tdee.ts             # meta de kcal do dia
@@ -275,6 +276,23 @@ não chegam de forma confiável.
 
 ---
 
+## Teclado e a Barra Fixa
+
+`lib/barraDoTeclado.ts`. O composer é `position: fixed; bottom: 0`, e com o
+teclado do iOS aberto ele saía do lugar. Duas tentativas erradas antes da certa:
+
+1. sem nada, a barra ficava atrás do teclado
+2. subindo a altura do teclado (`innerHeight - visualViewport.height`), a barra
+   ia parar no meio da tela, porque **o iOS já empurra elementos fixos sozinho**
+   e o quanto ele empurra muda entre Safari, PWA instalado e versão do sistema
+
+A versão que vale não adivinha: mede o `getBoundingClientRect().bottom` da barra,
+compara com `visualViewport.height + offsetTop`, e corrige a diferença. Funciona
+igual em navegador que empurra, que não empurra e que empurra demais. O
+deslocamento pode ser negativo de propósito, para a barra descer de volta.
+
+---
+
 ## Onde a Recompensa Aponta
 
 `lib/recompensa.ts` decide o que o app comemora, e existe porque a versão antiga
@@ -295,7 +313,7 @@ ou seja, quando quem quer emagrecer deveria parar de comer.
 cd frontend
 npm run build      # tsc -b + vite build, deve completar sem erros
 npm run lint       # 3 avisos de fast refresh em dev são esperados
-node --test src/lib/recompensa.test.ts src/components/layout/destinoDaRota.test.ts
+node --test src/lib/*.test.ts src/components/layout/*.test.ts
 ```
 
 `npx tsc --noEmit` sozinho não cobre tudo que `npm run build` cobre: use o build
