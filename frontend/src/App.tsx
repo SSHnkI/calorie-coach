@@ -11,6 +11,10 @@ import { DashboardPage } from './routes/DashboardPage'
 import { ResetPasswordPage } from './routes/ResetPasswordPage'
 import { supabase } from './lib/supabase'
 
+// Temporario, ate o teclado do iOS estar resolvido. Rota solta de proposito:
+// nao entra em menu nenhum e nao pede login.
+const DiagPage = lazy(() => import('./routes/DiagPage').then((m) => ({ default: m.DiagPage })))
+
 // ponytail: painel de usuarios so carrega para quem abre /usuarios.
 const UsersPage = lazy(() => import('./routes/UsersPage').then((m) => ({ default: m.UsersPage })))
 
@@ -62,6 +66,7 @@ export default function App() {
           <RecoveryRedirect />
           <Routes>
             <Route path="/" element={<Entrada />} />
+            <Route path="/diag" element={<Suspense fallback={null}><DiagPage /></Suspense>} />
 
             <Route element={<GuestRoute />}>
               <Route path="/auth" element={<AuthPage />} />

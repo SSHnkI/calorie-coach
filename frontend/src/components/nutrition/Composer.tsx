@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type CSSProperties, type FormEvent, useEffect, useRef, useState } from 'react'
 import { prepararFoto } from '../../lib/imagem'
 import { gravar, type Gravador } from '../../lib/audio'
 import { Icon } from '../ui/Icon'
@@ -24,26 +24,48 @@ export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
   const [gravando, setGravando] = useState(false)
   const [segundos, setSegundos] = useState(0)
 
-  // Posicao da barra com o teclado aberto: nao mexer.
+  // Onde a barra para, com o teclado aberto.
   //
-  // O Safari ja desloca o layout para manter o campo focado visivel, e o campo
-  // mora dentro desta barra, entao ela sobe junto de graca. Duas tentativas de
-  // reposicionar por cima disso (somar a altura do teclado, depois medir e
-  // corrigir) so brigaram com o navegador: na primeira a barra parou no meio da
-  // tela, na segunda ficou oscilando entre alta demais e fora da tela.
+  // O erro das tentativas anteriores foi ancorar por `bottom`. `bottom` e
+  // justamente o que o iOS mexe quando o teclado abre, entao qualquer ajuste
+  // nosso somava ao ajuste dele. `top` do layout viewport nao se mexe.
   //
-  // O que sobrava de errado era so a faixa morta embaixo, que e o espaco
-  // reservado pro indicador do iPhone. Com o teclado aberto esse indicador esta
-  // coberto, entao o espaco nao serve pra nada. E so isso que este estado faz.
+  // Entao: top = onde a area visivel termina, e translateY(-100%) puxa a barra
+  // pela propria altura. O fundo dela cai exatamente na borda de cima do
+  // teclado, sem depender de quanto o navegador ja empurrou.
   //
-  // ponytail: foco em vez de VisualViewport de proposito. Um booleano vindo do
-  // proprio campo nao tem como deslocar nada, e a matematica de viewport no iOS
-  // mistura espaco de coordenadas entre layout e visual sem aviso.
-  const [digitando, setDigitando] = useState(false)
+  // ponytail: a ancora vem so da VisualViewport, nunca da posicao medida da
+  // barra. Foi o laco de realimentacao que fez a tentativa anterior oscilar.
+  const [ancora, setAncora] = useState<number | null>(null)
 
-  const estiloBarra = {
-    paddingBottom: digitando ? 0 : 'env(safe-area-inset-bottom)',
-  }
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+
+    // Folga generosa: a barra de URL do Safari encolhendo tira ~60px da area
+    // visivel e nao e teclado. Teclado de celular nunca e tao curto.
+    const MINIMO_DE_TECLADO = 120
+
+    const medir = () => {
+      const escondido = window.innerHeight - vv.height
+      setAncora(escondido > MINIMO_DE_TECLADO ? Math.round(vv.offsetTop + vv.height) : null)
+    }
+
+    vv.addEventListener('resize', medir)
+    vv.addEventListener('scroll', medir)
+    medir()
+    return () => {
+      vv.removeEventListener('resize', medir)
+      vv.removeEventListener('scroll', medir)
+    }
+  }, [])
+
+  // Sem teclado, a barra volta a ser um rodape comum: bottom: 0 e o espaco do
+  // indicador do iPhone reservado. Com o teclado, o indicador esta coberto.
+  const estiloBarra: CSSProperties =
+    ancora === null
+      ? { paddingBottom: 'env(safe-area-inset-bottom)' }
+      : { top: `${ancora}px`, bottom: 'auto', transform: 'translateY(-100%)', paddingBottom: 0 }
 
   // Contador de tempo da fala. So roda enquanto o microfone esta aberto.
   useEffect(() => {
@@ -187,8 +209,6 @@ export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
           <input
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
-            onFocus={() => setDigitando(true)}
-            onBlur={() => setDigitando(false)}
             placeholder={foto ? 'algo a acrescentar?' : 'o que você comeu?'}
             enterKeyHint="send"
             autoComplete="off"
