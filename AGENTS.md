@@ -297,6 +297,31 @@ de viewport, e um booleano não tem como deslocar nada.
 
 ---
 
+## Fidelidade do Cálculo de Calorias
+
+**Não voltar a plugar o Open Food Facts.** Ele era usado para "refinar" a estimativa do
+modelo, e era a maior fonte de erro do app. É um banco de **produtos embalados**
+pesquisado por texto livre:
+
+| busca | o que o OFF devolvia | valor real |
+|---|---|---|
+| `white rice` | Tortitas de arroz con chocolate blanco, 467 kcal/100g | 130 (arroz cozido) |
+| `rice` | 1900 kcal/100g, acima do limite físico | 130 |
+
+O código aceitava qualquer número maior que zero e ainda marcava o item como confiança
+**alta**, justamente quando era menos confiável. Um prato comum saía 1,5x inflado.
+
+Hoje o modelo é a única fonte, com duas travas em `analyze-food/coerencia.ts`:
+
+1. **os macros mandam.** Se `4P + 4C + 9G` discorda do kcal declarado em mais de 25%, o
+   modelo se contradisse e vale a soma dos macros, que é o que sustenta as barras da tela
+2. **densidade.** kcal por grama não passa de 9, que é gordura pura
+
+Item ajustado por qualquer uma das travas cai para confiança `low`, e a tela mostra
+"estimado" nele. É o sinal visível de que o número é fraco.
+
+---
+
 ## Onde a Recompensa Aponta
 
 `lib/recompensa.ts` decide o que o app comemora, e existe porque a versão antiga

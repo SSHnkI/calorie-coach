@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { coerir } from './coerencia.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,7 +22,6 @@ type Item = {
   quantity: number
   unit: string
   grams_total: number
-  search_term: string
   kcal: number
   protein_g: number
   carbs_g: number
@@ -37,12 +37,21 @@ So junte no mesmo item o que e inseparavel, como "pao de queijo" ou "vitamina de
 Para cada item:
 - Se a quantidade nao for dita, assuma uma porcao caseira tipica.
 - grams_total: peso total em gramas (ou ml para liquidos) daquela porcao.
-- search_term: nome curto e generico em ingles, para buscar em base nutricional. Sem marca, sem quantidade. Ex: "white rice", "chicken breast", "coca cola".
 - name: nome em portugues, como o usuario reconheceria.
+- Considere o alimento COMO SE COME, pronto no prato, nunca o ingrediente cru. Arroz e
+  arroz cozido, macarrao e macarrao cozido, feijao e feijao cozido. Isso muda muito o
+  numero: 100 g de arroz cru tem quase o triplo de 100 g de arroz cozido.
+- Porcao caseira brasileira: uma colher de servir de arroz e cerca de 60 g cozido, uma
+  concha de feijao cerca de 80 g, um bife de contra file cerca de 120 g.
 - Estime kcal e macros da porcao inteira. Nunca recuse, sempre estime.
+- kcal precisa bater com os macros: 4 por grama de proteina, 4 por grama de carboidrato,
+  9 por grama de gordura. Confira antes de responder.
+
+A unidade tem que ser a que a pessoa usaria em portugues: "porcao", "colher", "fatia",
+"unidade", "prato", "copo". Nunca "piece", "cup", "ml" para comida solida.
 
 Responda SOMENTE com JSON neste formato:
-{"items":[{"name":string,"quantity":number,"unit":string,"grams_total":number,"search_term":string,"kcal":number,"protein_g":number,"carbs_g":number,"fat_g":number,"confidence":"high"|"medium"|"low"}]}`
+{"items":[{"name":string,"quantity":number,"unit":string,"grams_total":number,"kcal":number,"protein_g":number,"carbs_g":number,"fat_g":number,"confidence":"high"|"medium"|"low"}]}`
 
 const EXTRA_FOTO = `
 A entrada inclui uma foto. Identifique cada alimento visivel e estime a porcao pelo
@@ -159,59 +168,17 @@ async function askGroq(foodInput: string, key: string, image?: string): Promise<
   throw new Error(`groq_indisponivel: ${ultimoErro}`)
 }
 
-// Busca valores reais no Open Food Facts. Gratuito, sem chave.
-async function lookupOFF(term: string): Promise<null | {
-  kcal100: number
-  protein100: number
-  carbs100: number
-  fat100: number
-}> {
-  const url =
-    'https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&action=process&json=1&page_size=10' +
-    `&fields=product_name,nutriments&search_terms=${encodeURIComponent(term)}`
-
-  const res = await fetch(url, {
-    headers: { 'User-Agent': 'Obliq/1.0 (calorie tracker)' },
-    signal: AbortSignal.timeout(3500),
-  })
-  if (!res.ok) return null
-
-  const data = await res.json()
-  for (const p of data?.products ?? []) {
-    const n = p?.nutriments ?? {}
-    const kcal = Number(n['energy-kcal_100g'])
-    if (!Number.isFinite(kcal) || kcal <= 0) continue
-    return {
-      kcal100: kcal,
-      protein100: Number(n.proteins_100g) || 0,
-      carbs100: Number(n.carbohydrates_100g) || 0,
-      fat100: Number(n.fat_100g) || 0,
-    }
-  }
-  return null
-}
-
-// Troca a estimativa da IA pelo valor de base sempre que houver correspondencia.
-async function refinar(item: Item, veioDeFoto: boolean): Promise<Item & { source: string }> {
-  const gramas = Number(item.grams_total)
-  if (!item.search_term || !Number.isFinite(gramas) || gramas <= 0) {
-    return { ...item, source: 'ai' }
-  }
-  try {
-    const off = await lookupOFF(item.search_term)
-    if (!off) return { ...item, source: 'ai' }
-    const f = gramas / 100
-    return {
-      ...item,
-      kcal: Math.round(off.kcal100 * f),
-      protein_g: Math.round(off.protein100 * f),
-      carbs_g: Math.round(off.carbs100 * f),
-      fat_g: Math.round(off.fat100 * f),
-      confidence: veioDeFoto ? 'medium' : 'high',
-      source: 'openfoodfacts',
-    }
-  } catch {
-    return { ...item, source: 'ai' }
+// Aplica a checagem de coerencia em cima do que o modelo devolveu. Ver
+// coerencia.ts para o porque de nao haver mais consulta a base externa.
+function conferir(item: Item): Item & { ajuste: string } {
+  const { kcal, ajuste, confiavel } = coerir(item)
+  return {
+    ...item,
+    kcal,
+    // Contradicao interna derruba a confianca declarada pelo modelo: ele errou
+    // uma conta que ele mesmo forneceu os numeros para fazer.
+    confidence: confiavel ? item.confidence : 'low',
+    ajuste,
   }
 }
 
@@ -290,7 +257,11 @@ Deno.serve(async (req) => {
     }
 
     const brutos = await askGroq(texto, groqKey, image)
-    const itens = await Promise.all(brutos.map((i) => refinar(i, !!image)))
+    const itens = brutos.map(conferir)
+    const ajustados = itens.filter((i) => i.ajuste !== 'nenhum')
+    if (ajustados.length) {
+      console.log('coerencia ajustou:', ajustados.map((i) => `${i.name}:${i.ajuste}`).join(', '))
+    }
 
     if (log) {
       await supabase.from('food_log').insert(
