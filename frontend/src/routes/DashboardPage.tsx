@@ -4,6 +4,7 @@ import { useI18n } from '../i18n/I18nContext'
 import { analyzeFood } from '../lib/analyzeFood'
 import { deleteFood, fetchFoodByDay, updateFoodKcal } from '../lib/foodLog'
 import { calculateDailyKcal, calculateMacroTargets } from '../lib/tdee'
+import { horaNoDia } from '../lib/horaDoRegistro'
 import { comemora, desfechoDoDia, type Objetivo } from '../lib/recompensa'
 import type { FoodEntry } from '../types'
 import { AppShell } from '../components/layout/AppShell'
@@ -28,15 +29,6 @@ function meiaNoite(d = new Date()) {
 
 function mesmoDia(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
-}
-
-// Hora de um registro retroativo: o dia escolhido, na hora de agora. Mantem a
-// ordem natural conforme a pessoa vai lembrando dos itens daquele dia.
-function horaNoDia(dia: Date) {
-  const agora = new Date()
-  const x = new Date(dia)
-  x.setHours(agora.getHours(), agora.getMinutes(), agora.getSeconds(), 0)
-  return x
 }
 
 export function DashboardPage() {
@@ -133,7 +125,7 @@ export function DashboardPage() {
     setPendentes((p) => [{ id, texto: rotulo, foto }, ...p])
     setError('')
 
-    analyzeFood(texto, foto, fala, ehHoje ? undefined : horaNoDia(dia))
+    analyzeFood(texto, foto, fala, ehHoje ? undefined : horaNoDia(dia, entries))
       .then((result) => {
         if (!result.ok) {
           setError(
