@@ -1,7 +1,6 @@
-import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { prepararFoto } from '../../lib/imagem'
 import { gravar, type Gravador } from '../../lib/audio'
-import { proximoDeslocamento } from '../../lib/barraDoTeclado'
 import { Icon } from '../ui/Icon'
 
 type ComposerProps = {
@@ -25,60 +24,25 @@ export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
   const [gravando, setGravando] = useState(false)
   const [segundos, setSegundos] = useState(0)
 
-  // A barra se mede em vez de adivinhar a altura do teclado. Ver
-  // lib/barraDoTeclado.ts: o iOS ja empurra elementos fixos sozinho, e o quanto
-  // varia, entao a unica conta confiavel e a diferenca medida na tela.
-  const barraRef = useRef<HTMLDivElement>(null)
-  const [subir, setSubir] = useState(0)
-  // Sinal separado, e so pro padding: nenhuma posicao depende dele, entao uma
-  // leitura imprecisa aqui nao tem como deslocar a barra.
-  const [tecladoAberto, setTecladoAberto] = useState(false)
-  const quadro = useRef(0)
+  // Posicao da barra com o teclado aberto: nao mexer.
+  //
+  // O Safari ja desloca o layout para manter o campo focado visivel, e o campo
+  // mora dentro desta barra, entao ela sobe junto de graca. Duas tentativas de
+  // reposicionar por cima disso (somar a altura do teclado, depois medir e
+  // corrigir) so brigaram com o navegador: na primeira a barra parou no meio da
+  // tela, na segunda ficou oscilando entre alta demais e fora da tela.
+  //
+  // O que sobrava de errado era so a faixa morta embaixo, que e o espaco
+  // reservado pro indicador do iPhone. Com o teclado aberto esse indicador esta
+  // coberto, entao o espaco nao serve pra nada. E so isso que este estado faz.
+  //
+  // ponytail: foco em vez de VisualViewport de proposito. Um booleano vindo do
+  // proprio campo nao tem como deslocar nada, e a matematica de viewport no iOS
+  // mistura espaco de coordenadas entre layout e visual sem aviso.
+  const [digitando, setDigitando] = useState(false)
 
-  const medir = useCallback(() => {
-    const vv = window.visualViewport
-    const el = barraRef.current
-    if (!vv || !el) return
-    cancelAnimationFrame(quadro.current)
-    quadro.current = requestAnimationFrame(() => {
-      const atual = barraRef.current
-      if (!atual) return
-      setTecladoAberto(vv.height + vv.offsetTop < window.innerHeight - 1)
-      setSubir((antes) =>
-        proximoDeslocamento({
-          fundoDaBarra: atual.getBoundingClientRect().bottom,
-          alturaVisivel: vv.height,
-          deslocamentoVisual: vv.offsetTop,
-          atual: antes,
-        }),
-      )
-    })
-  }, [])
-
-  useEffect(() => {
-    const vv = window.visualViewport
-    if (!vv) return
-    vv.addEventListener('resize', medir)
-    vv.addEventListener('scroll', medir)
-    medir()
-    return () => {
-      cancelAnimationFrame(quadro.current)
-      vv.removeEventListener('resize', medir)
-      vv.removeEventListener('scroll', medir)
-    }
-  }, [medir])
-
-  // Confere de novo depois de aplicar: a medicao anterior foi feita na posicao
-  // antiga, e e aqui que a conta fecha (ou para, quando ja esta no lugar).
-  useEffect(() => {
-    medir()
-  }, [subir, tecladoAberto, gravando, foto, diaAberto, medir])
-
-  // Com o teclado aberto, o indicador do iPhone esta coberto: reservar espaco
-  // pra ele so cria a sobra que aparecia embaixo da barra.
   const estiloBarra = {
-    transform: subir !== 0 ? `translateY(${-subir}px)` : undefined,
-    paddingBottom: tecladoAberto ? 0 : 'env(safe-area-inset-bottom)',
+    paddingBottom: digitando ? 0 : 'env(safe-area-inset-bottom)',
   }
 
   // Contador de tempo da fala. So roda enquanto o microfone esta aberto.
@@ -150,7 +114,6 @@ export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
   if (gravando) {
     return (
       <div
-        ref={barraRef}
         className="fixed inset-x-0 bottom-0 z-40 border-t border-obliq-border bg-obliq-black/95 backdrop-blur-md"
         style={estiloBarra}
       >
@@ -187,7 +150,6 @@ export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
 
   return (
     <div
-      ref={barraRef}
       className="fixed inset-x-0 bottom-0 z-40 border-t border-obliq-border bg-obliq-black/95 backdrop-blur-md"
       style={estiloBarra}
     >
@@ -225,6 +187,8 @@ export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
           <input
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
+            onFocus={() => setDigitando(true)}
+            onBlur={() => setDigitando(false)}
             placeholder={foto ? 'algo a acrescentar?' : 'o que você comeu?'}
             enterKeyHint="send"
             autoComplete="off"

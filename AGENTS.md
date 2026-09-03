@@ -45,7 +45,6 @@ calorie-coach/
 │   │   │   ├── supabase.ts         # client
 │   │   │   ├── analyzeFood.ts      # chama a edge function analyze-food
 │   │   │   ├── foodLog.ts          # CRUD do log de refeições
-│   │   │   ├── barraDoTeclado.ts   # onde a barra fixa para, com o teclado aberto
 │   │   │   ├── gasto.ts            # gasto extra do dia, digitado à mão
 │   │   │   ├── recompensa.ts       # marcos de sequência e desfecho do dia
 │   │   │   ├── users.ts            # funções do painel admin
@@ -278,18 +277,23 @@ não chegam de forma confiável.
 
 ## Teclado e a Barra Fixa
 
-`lib/barraDoTeclado.ts`. O composer é `position: fixed; bottom: 0`, e com o
-teclado do iOS aberto ele saía do lugar. Duas tentativas erradas antes da certa:
+**Não reposicionar a barra do composer quando o teclado abre.** O Safari já
+desloca o layout para manter o campo focado visível, e o campo mora dentro da
+barra, então ela sobe junto sozinha.
 
-1. sem nada, a barra ficava atrás do teclado
-2. subindo a altura do teclado (`innerHeight - visualViewport.height`), a barra
-   ia parar no meio da tela, porque **o iOS já empurra elementos fixos sozinho**
-   e o quanto ele empurra muda entre Safari, PWA instalado e versão do sistema
+Duas tentativas de ajudar o navegador, ambas piores que não fazer nada:
 
-A versão que vale não adivinha: mede o `getBoundingClientRect().bottom` da barra,
-compara com `visualViewport.height + offsetTop`, e corrige a diferença. Funciona
-igual em navegador que empurra, que não empurra e que empurra demais. O
-deslocamento pode ser negativo de propósito, para a barra descer de volta.
+1. somar a altura do teclado (`innerHeight - visualViewport.height`) e subir a
+   barra: virou deslocamento em dobro e ela parou no meio da tela
+2. medir `getBoundingClientRect().bottom` e corrigir contra
+   `visualViewport.height + offsetTop`: no Safari real ficou oscilando entre
+   alta demais e fora da tela, porque o iOS mistura espaço de coordenadas de
+   layout e visual sem avisar
+
+O que de fato estava errado era só a faixa morta embaixo da barra: o espaço
+reservado para o indicador do iPhone, que com o teclado aberto está coberto.
+Hoje isso é um booleano vindo do `onFocus`/`onBlur` do campo, sem nenhuma conta
+de viewport, e um booleano não tem como deslocar nada.
 
 ---
 
