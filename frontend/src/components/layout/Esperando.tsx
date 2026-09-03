@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react'
 
-// A rede de seguranca contra tela branca.
+// A tela de carregamento, e a rede de seguranca contra tela branca.
 //
-// Os guards de rota precisam de um estado "ainda nao sei". Antes esse estado era
-// `return null`, e quando alguma coisa travava atras dele o app ficava em branco
-// para sempre, sem nem um botao para sair. Foi o que aconteceu no PWA: a sessao
-// voltava, a busca do perfil pendurava na rede dormindo, e a espera nunca
-// terminava.
+// Os guards de rota tem um estado "ainda nao sei", e ele NUNCA pode ser
+// `return null`. Foi assim que o PWA ficou em branco: a sessao voltava do
+// background, a busca do perfil pendurava na rede ainda dormindo, e a espera
+// nao terminava mais. So a barra utilitaria aparecia.
 //
-// Aqui a espera tem prazo. Fica quieta no comeco, para nao piscar um spinner em
-// carga rapida, mostra que esta carregando, e se passar do limite assume que
-// travou e devolve o controle para a pessoa. Qualquer causa futura de travamento
-// cai neste mesmo funil, entao a tela branca deixa de ser um final possivel.
+// Aqui a espera tem prazo. Fica quieta no comeco, para nao piscar carregamento
+// numa carga rapida, mostra a marca enquanto carrega, e se passar do limite
+// assume que travou e devolve o controle para a pessoa. Qualquer causa futura
+// de travamento cai neste mesmo funil, entao a tela branca deixa de ser um
+// final possivel.
+//
+// A irma desta tela mora no index.html: um splash em HTML puro que cobre a
+// janela anterior, entre abrir o app e o React montar.
 const ANTES_DE_APARECER = 500
 // Maior que os 8s do pior caso da busca do perfil (4s x 2 tentativas), senao a
 // tela declara falha enquanto a segunda tentativa ainda esta viva.
@@ -38,15 +41,24 @@ export function Esperando() {
       <div
         role="status"
         aria-label="Carregando"
-        className="flex min-h-dvh items-center justify-center bg-obliq-black"
+        className="flex min-h-dvh flex-col items-center justify-center gap-5 bg-obliq-black"
       >
-        <span className="h-2 w-2 animate-pulse rounded-full bg-obliq-red" />
+        <span className="font-display text-3xl font-extrabold tracking-[-0.05em] text-obliq-chalk">
+          OBL<span className="text-obliq-red">IQ</span>
+        </span>
+        {/* Barra que corre, nao spinner: diz que algo avanca sem fingir progresso. */}
+        <span className="h-0.5 w-20 overflow-hidden rounded-full bg-obliq-border">
+          <span className="correr block h-full w-2/5 rounded-full bg-obliq-red" />
+        </span>
       </div>
     )
   }
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-5 bg-obliq-black px-8 text-center">
+      <span className="font-display text-3xl font-extrabold tracking-[-0.05em] text-obliq-chalk">
+        OBL<span className="text-obliq-red">IQ</span>
+      </span>
       <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-obliq-faint">
         não carregou
       </p>

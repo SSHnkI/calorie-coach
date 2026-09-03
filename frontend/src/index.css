@@ -187,6 +187,16 @@
     appearance: textfield;
   }
 
+  /* Barra da tela de carregamento. Gemea do #partida no index.html. */
+  @keyframes correr {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(250%); }
+  }
+
+  .correr {
+    animation: correr 1.1s ease-in-out infinite;
+  }
+
   .num {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
