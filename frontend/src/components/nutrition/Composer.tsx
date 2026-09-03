@@ -1,6 +1,7 @@
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { prepararFoto } from '../../lib/imagem'
 import { gravar, type Gravador } from '../../lib/audio'
+import { proximoDeslocamento } from '../../lib/barraDoTeclado'
 import { Icon } from '../ui/Icon'
 
 type ComposerProps = {
@@ -24,31 +25,60 @@ export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
   const [gravando, setGravando] = useState(false)
   const [segundos, setSegundos] = useState(0)
 
-  // O teclado do iOS nao encolhe a janela, so a area visivel. Uma barra presa
-  // em bottom:0 fica atras dele, com uma faixa morta no meio. A VisualViewport
-  // diz quanto o teclado ocupa; a barra sobe exatamente isso e cola nele.
-  const [teclado, setTeclado] = useState(0)
+  // A barra se mede em vez de adivinhar a altura do teclado. Ver
+  // lib/barraDoTeclado.ts: o iOS ja empurra elementos fixos sozinho, e o quanto
+  // varia, entao a unica conta confiavel e a diferenca medida na tela.
+  const barraRef = useRef<HTMLDivElement>(null)
+  const [subir, setSubir] = useState(0)
+  // Sinal separado, e so pro padding: nenhuma posicao depende dele, entao uma
+  // leitura imprecisa aqui nao tem como deslocar a barra.
+  const [tecladoAberto, setTecladoAberto] = useState(false)
+  const quadro = useRef(0)
+
+  const medir = useCallback(() => {
+    const vv = window.visualViewport
+    const el = barraRef.current
+    if (!vv || !el) return
+    cancelAnimationFrame(quadro.current)
+    quadro.current = requestAnimationFrame(() => {
+      const atual = barraRef.current
+      if (!atual) return
+      setTecladoAberto(vv.height + vv.offsetTop < window.innerHeight - 1)
+      setSubir((antes) =>
+        proximoDeslocamento({
+          fundoDaBarra: atual.getBoundingClientRect().bottom,
+          alturaVisivel: vv.height,
+          deslocamentoVisual: vv.offsetTop,
+          atual: antes,
+        }),
+      )
+    })
+  }, [])
 
   useEffect(() => {
     const vv = window.visualViewport
     if (!vv) return
-    const medir = () => {
-      setTeclado(Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)))
-    }
     vv.addEventListener('resize', medir)
     vv.addEventListener('scroll', medir)
     medir()
     return () => {
+      cancelAnimationFrame(quadro.current)
       vv.removeEventListener('resize', medir)
       vv.removeEventListener('scroll', medir)
     }
-  }, [])
+  }, [medir])
+
+  // Confere de novo depois de aplicar: a medicao anterior foi feita na posicao
+  // antiga, e e aqui que a conta fecha (ou para, quando ja esta no lugar).
+  useEffect(() => {
+    medir()
+  }, [subir, tecladoAberto, gravando, foto, diaAberto, medir])
 
   // Com o teclado aberto, o indicador do iPhone esta coberto: reservar espaco
   // pra ele so cria a sobra que aparecia embaixo da barra.
   const estiloBarra = {
-    transform: teclado > 0 ? `translateY(-${teclado}px)` : undefined,
-    paddingBottom: teclado > 0 ? 0 : 'env(safe-area-inset-bottom)',
+    transform: subir !== 0 ? `translateY(${-subir}px)` : undefined,
+    paddingBottom: tecladoAberto ? 0 : 'env(safe-area-inset-bottom)',
   }
 
   // Contador de tempo da fala. So roda enquanto o microfone esta aberto.
@@ -120,6 +150,7 @@ export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
   if (gravando) {
     return (
       <div
+        ref={barraRef}
         className="fixed inset-x-0 bottom-0 z-40 border-t border-obliq-border bg-obliq-black/95 backdrop-blur-md"
         style={estiloBarra}
       >
@@ -156,6 +187,7 @@ export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
 
   return (
     <div
+      ref={barraRef}
       className="fixed inset-x-0 bottom-0 z-40 border-t border-obliq-border bg-obliq-black/95 backdrop-blur-md"
       style={estiloBarra}
     >
