@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-route
 import { AppProvider } from './context/AppContext'
 import { I18nProvider } from './i18n/I18nContext'
 import { ProtectedRoute, GuestRoute, useDestino } from './components/layout/ProtectedRoute'
+import { Esperando } from './components/layout/Esperando'
 import { LanguageBar } from './components/layout/LanguageBar'
 import { LandingPage } from './routes/LandingPage'
 import { AuthPage } from './routes/AuthPage'
@@ -44,14 +45,14 @@ function RecoveryRedirect() {
 // Quem ja tem sessao nao ve a landing: cai direto no app, como PWA instalado espera.
 function Entrada() {
   const destino = useDestino()
-  if (destino === 'espera') return null
+  if (destino === 'espera') return <Esperando />
   if (destino === 'auth') return <LandingPage />
   return <Navigate to={destino === 'app' ? '/dashboard' : '/onboarding'} replace />
 }
 
 function OnboardingGuard() {
   const destino = useDestino()
-  if (destino === 'espera') return null
+  if (destino === 'espera') return <Esperando />
   if (destino === 'auth') return <Navigate to="/auth?mode=signup" replace />
   if (destino === 'app') return <Navigate to="/dashboard" replace />
   return <OnboardingPage />

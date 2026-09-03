@@ -63,20 +63,54 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [perfilPronto, setPerfilPronto] = useState(false)
 
-  const loadProfile = useCallback(async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    if (error || !data) return null
-    return data as UserProfile
-  }, [])
+  // Teto de tempo da busca do perfil. Sem ele a consulta pendura indefinidamente
+  // quando o PWA volta do background com a rede ainda dormindo, e foi assim que
+  // o app ficou em branco: a espera nunca terminava.
+  // 4s x 2 tentativas = 8s no pior caso, e o Esperando so desiste aos 9s: a
+  // segunda tentativa sempre tem chance de terminar antes de a tela dar errado.
+  const TEMPO_LIMITE = 4000
+  const TENTATIVAS = 2
 
-  const loadAll = useCallback(async (userId: string) => {
-    setUser(await loadProfile(userId))
-    setPerfilPronto(true)
-  }, [loadProfile])
+  // Devolve `faltando` para separar duas coisas que antes eram o mesmo `null`:
+  // perfil que nao existe, que e cadastro novo e vai pro onboarding, de perfil
+  // que nao deu para buscar, em que o certo e admitir que nao sabemos.
+  const loadProfile = useCallback(
+    async (userId: string): Promise<{ perfil: UserProfile | null; faltando: boolean }> => {
+      for (let tentativa = 0; tentativa < TENTATIVAS; tentativa++) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .abortSignal(AbortSignal.timeout(TEMPO_LIMITE))
+            .maybeSingle()
+
+          if (data) return { perfil: data as UserProfile, faltando: false }
+          if (!error) return { perfil: null, faltando: true }
+        } catch {
+          // estourou o tempo ou a rede caiu: tenta de novo
+        }
+      }
+      return { perfil: null, faltando: false }
+    },
+    [],
+  )
+
+  const loadAll = useCallback(
+    async (userId: string) => {
+      const { perfil, faltando } = await loadProfile(userId)
+      if (perfil || faltando) {
+        setUser(perfil)
+        setPerfilPronto(true)
+        return
+      }
+      // Falha dura. perfilPronto continua falso de proposito: nao da para
+      // mandar a pessoa pro onboarding sem saber se ela ja tem perfil, e o
+      // componente Esperando transforma essa espera num botao de tentar de novo.
+      setPerfilPronto(false)
+    },
+    [loadProfile],
+  )
 
   // Ouve mudanças de sessão do Supabase Auth.
   // PWA voltando do background: getSession() pode ficar pendurada tentando
@@ -226,8 +260,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const refreshUser = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session?.user) return
-    const profile = await loadProfile(session.user.id)
-    setUser(profile)
+    const { perfil, faltando } = await loadProfile(session.user.id)
+    // Recarga de tela: falha aqui nao pode apagar o perfil que ja esta na mao.
+    if (perfil || faltando) setUser(perfil)
   }, [loadProfile])
 
   const totals = useMemo(

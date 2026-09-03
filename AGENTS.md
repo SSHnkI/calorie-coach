@@ -275,6 +275,27 @@ não chegam de forma confiável.
 
 ---
 
+## Nenhuma Tela Pode Ficar em Branco
+
+Os guards de rota tem um estado "ainda nao sei", e ele **nunca** pode ser
+`return null`. Foi assim que o PWA ficou em branco: a sessao voltava do
+background, a busca do perfil pendurava na rede ainda dormindo, e a espera nao
+terminava mais. So a barra de idioma aparecia.
+
+Duas camadas hoje:
+
+1. **A causa.** `loadProfile` tem teto de 4s por tentativa e duas tentativas, e
+   separa "perfil nao existe" (cadastro novo, vai pro onboarding) de "nao deu
+   para buscar" (nao sabemos, e admitir isso e o certo).
+2. **A rede.** `components/layout/Esperando.tsx` substitui todo `return null` de
+   guard. Fica quieto 0,5s, mostra que carrega, e aos 9s assume que travou e
+   oferece "tentar de novo". Os 9s sao maiores que os 8s do pior caso da busca,
+   de proposito.
+
+A camada 2 vale para qualquer causa futura, inclusive as que ninguem previu.
+
+---
+
 ## Teclado e a Barra Fixa
 
 **Não reposicionar a barra do composer quando o teclado abre.** O Safari já
