@@ -26,9 +26,7 @@ function ler(barra: HTMLElement | null): Leitura {
     'safe-bottom': getComputedStyle(document.documentElement)
       .getPropertyValue('--probe-safe-bottom')
       .trim(),
-    dvh: Math.round(
-      Number(getComputedStyle(document.documentElement).getPropertyValue('--probe-dvh').replace('px', '')) || 0,
-    ),
+    dvh: Math.round(document.getElementById('sonda-dvh')?.getBoundingClientRect().height ?? 0),
     ua: navigator.userAgent.slice(-42),
   }
 }
@@ -37,9 +35,19 @@ export function DiagPage() {
   const barraRef = useRef<HTMLDivElement>(null)
   const [leitura, setLeitura] = useState<Leitura>({})
   const [foco, setFoco] = useState(false)
+  // A barra desta pagina usa a MESMA ancora do composer, para o erro medido
+  // aqui valer como prova do que acontece la.
+  const [ancora, setAncora] = useState<number | null>(null)
 
   useEffect(() => {
-    const atualizar = () => setLeitura(ler(barraRef.current))
+    const atualizar = () => {
+      const vv = window.visualViewport
+      if (vv) {
+        const escondido = window.innerHeight - vv.height
+        setAncora(escondido > 120 ? Math.round(vv.offsetTop + vv.height) : null)
+      }
+      setLeitura(ler(barraRef.current))
+    }
     atualizar()
     const t = setInterval(atualizar, 250)
     const vv = window.visualViewport
@@ -56,7 +64,11 @@ export function DiagPage() {
 
   // Sondas em CSS puro, para saber o que o navegador acha que sao dvh e a area
   // segura. Lidas pelo getComputedStyle acima.
-  const sondas = `:root { --probe-dvh: 100dvh; --probe-safe-bottom: env(safe-area-inset-bottom, 0px); }`
+  const sondas = `:root { --probe-safe-bottom: env(safe-area-inset-bottom, 0px); }`
+
+  const alturaVisivel = typeof leitura['vv.height'] === 'number' ? (leitura['vv.height'] as number) : null
+  const fundo = typeof leitura['barra.bottom'] === 'number' ? (leitura['barra.bottom'] as number) : null
+  const erro = ancora !== null && alturaVisivel !== null && fundo !== null ? fundo - alturaVisivel : null
 
   return (
     <div className="min-h-[200vh] bg-obliq-black p-4 text-obliq-chalk">
@@ -71,6 +83,20 @@ export function DiagPage() {
         2. tire o print com o teclado aberto
         <br />
         3. role um pouco e tire outro
+      </p>
+
+      <div id="sonda-dvh" className="pointer-events-none absolute h-dvh w-px opacity-0" aria-hidden="true" />
+
+      {/* O veredito, grande: com a ancora certa, o fundo da barra tem que cair
+          exatamente em vv.height. Qualquer outra coisa e o erro em pixels. */}
+      <p className="mt-4 font-mono text-[19px]">
+        erro:{' '}
+        <span className={erro === null ? 'text-obliq-faint' : erro === 0 ? 'text-obliq-dim' : 'text-obliq-red'}>
+          {erro === null ? 'sem teclado' : `${erro > 0 ? '+' : ''}${erro} px`}
+        </span>
+      </p>
+      <p className="font-mono text-[13px] text-obliq-faint">
+        ancora: {ancora ?? 'nenhuma'} · alvo: barra.bottom = vv.height
       </p>
 
       <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-1 font-mono text-[15px]">
@@ -93,6 +119,11 @@ export function DiagPage() {
       <div
         ref={barraRef}
         className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-obliq-red bg-obliq-surface p-3"
+        style={
+          ancora === null
+            ? undefined
+            : { top: `${ancora}px`, bottom: 'auto', transform: 'translateY(-100%)' }
+        }
       >
         <input
           onFocus={() => setFoco(true)}
