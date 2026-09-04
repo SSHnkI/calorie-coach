@@ -26,6 +26,8 @@ type Item = {
   protein_g: number
   carbs_g: number
   fat_g: number
+  // Etanol puro. So bebida alcoolica traz, e sem ele a energia dela some.
+  alcohol_g?: number
   confidence: 'high' | 'medium' | 'low'
 }
 
@@ -65,11 +67,36 @@ Para cada item:
   9 por grama de gordura. Confira antes de responder, inclusive que nenhum macro ficou
   de fora: alimento com gordura nao pode sair com fat_g igual a zero.
 
+BEBIDA CONTA, e e onde o app mais errava. Cerveja, refrigerante, suco, vitamina, leite,
+cafe com acucar, whisky, cachaca, vinho, chope e drink sao itens como qualquer outro.
+- unidade de bebida: "copo", "lata", "long neck", "taca", "dose", "garrafa", "caneca".
+- grams_total de liquido vai em ml.
+- ALCOOL: etanol tem 7 kcal por grama e NAO aparece em proteina, carboidrato nem gordura.
+  Quando a bebida tem alcool, preencha alcohol_g com os gramas de etanol puro da porcao
+  inteira: ml x teor alcoolico x 0,79. Sem esse campo a bebida entra no diario como se
+  nao tivesse energia nenhuma.
+- destilado puro tem os tres macros zerados. Isso e correto, nao e falta de dado.
+
+Referencia de bebida:
+  "dose de whisky"   -> quantity 1, unit "dose",  grams_total 50,  alcohol_g 16, kcal 110
+  "lata de cerveja"  -> quantity 1, unit "lata",  grams_total 350, alcohol_g 12, carbs_g 11, kcal 145
+  "taca de vinho"    -> quantity 1, unit "taca",  grams_total 150, alcohol_g 15, carbs_g 4,  kcal 125
+  "caipirinha"       -> quantity 1, unit "copo",  grams_total 250, alcohol_g 25, carbs_g 25, kcal 280
+  "lata de refri"    -> quantity 1, unit "lata",  grams_total 350, carbs_g 37, kcal 148
+
+NUNCA devolva a lista vazia e nunca se recuse a responder. Marca, prato regional, gorduroso,
+doce, suplemento, bebida alcoolica, remedio com acucar: tudo estima. Se nao reconhecer o
+nome exato, use o alimento mais parecido que voce conhece e marque confidence "low". Item
+estimado por semelhanca e util; item ausente vira zero caloria no diario da pessoa, e zero
+e sempre a resposta mais errada possivel.
+
 A unidade sempre em portugues. Nunca "piece", "cup", "portion", "serving", "unit", nem
 "ml" para comida solida.
 
 Responda SOMENTE com JSON neste formato:
-{"items":[{"name":string,"quantity":number,"unit":string,"grams_total":number,"kcal":number,"protein_g":number,"carbs_g":number,"fat_g":number,"confidence":"high"|"medium"|"low"}]}`
+{"items":[{"name":string,"quantity":number,"unit":string,"grams_total":number,"kcal":number,"protein_g":number,"carbs_g":number,"fat_g":number,"alcohol_g":number,"confidence":"high"|"medium"|"low"}]}
+
+alcohol_g e 0 em tudo que nao for bebida alcoolica.`
 
 const EXTRA_FOTO = `
 A entrada inclui uma foto. Identifique cada alimento visivel e estime a porcao pelo
@@ -164,17 +191,30 @@ async function askGroq(foodInput: string, key: string, image?: string): Promise<
     })
 
     if (res.ok) {
-      const data = await res.json()
-      const raw = data?.choices?.[0]?.message?.content
-      if (!raw) throw new Error('groq_empty')
-      const parsed = JSON.parse(raw)
-      // Modelo as vezes devolve um objeto solto em vez da lista.
-      const itens: Item[] = Array.isArray(parsed?.items)
-        ? parsed.items
-        : parsed?.name
-          ? [parsed]
-          : []
-      if (!itens.length) throw new Error('sem_itens')
+      // Resposta vazia, JSON quebrado ou recusa do modelo NAO encerram a
+      // chamada: cai pro proximo modelo da lista. Era isto que fazia "whisky"
+      // nao ser reconhecido. O primeiro modelo tratava a bebida como fora do
+      // escopo, devolvia lista vazia, e o erro subia como se nenhum modelo
+      // estivesse disponivel, mesmo com tres ainda por tentar.
+      let itens: Item[] = []
+      try {
+        const data = await res.json()
+        const raw = data?.choices?.[0]?.message?.content
+        const parsed = raw ? JSON.parse(raw) : null
+        // Modelo as vezes devolve um objeto solto em vez da lista.
+        itens = Array.isArray(parsed?.items) ? parsed.items : parsed?.name ? [parsed] : []
+      } catch (e) {
+        ultimoErro = `${model} devolveu resposta ilegivel: ${e}`
+        console.warn('groq:', ultimoErro)
+        continue
+      }
+
+      if (!itens.length) {
+        ultimoErro = `${model} devolveu lista vazia`
+        console.warn('groq:', ultimoErro)
+        continue
+      }
+
       console.log('modelo usado:', model, 'itens:', itens.length)
       return itens.slice(0, MAX_ITENS)
     }

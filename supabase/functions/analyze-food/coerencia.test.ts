@@ -93,3 +93,26 @@ test('o que de fato protege contra inflacao e a fonte, nao a trava', () => {
     assert.equal(coerir(item).ajuste, 'nenhum', JSON.stringify(item))
   }
 })
+
+test('bebida destilada nao some da conta de energia', () => {
+  // Uma dose de whisky: nenhum dos tres macros, e ainda assim ~110 kcal. Sem o
+  // alcool na conta, kcalDosMacros dava 0 e a conciliacao nao tinha o que
+  // conferir. Com ele, o declarado e conferido de verdade.
+  const dose = { kcal: 110, protein_g: 0, carbs_g: 0, fat_g: 0, alcohol_g: 16, grams_total: 50 }
+  assert.equal(kcalDosMacros(dose), 112)
+  assert.equal(coerir(dose).ajuste, 'nenhum')
+  assert.equal(coerir(dose).kcal, 110)
+})
+
+test('destilado com kcal chutado pra baixo sobe pro piso do alcool', () => {
+  // O erro classico: o modelo zera os macros e chuta 30 kcal numa dose inteira.
+  const r = coerir({ kcal: 30, protein_g: 0, carbs_g: 0, fat_g: 0, alcohol_g: 16, grams_total: 50 })
+  assert.equal(r.kcal, 112)
+  assert.equal(r.ajuste, 'macros')
+})
+
+test('agua e cafe puro continuam podendo ser zero', () => {
+  const r = coerir({ kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, alcohol_g: 0, grams_total: 200 })
+  assert.equal(r.kcal, 0)
+  assert.equal(r.ajuste, 'nenhum')
+})

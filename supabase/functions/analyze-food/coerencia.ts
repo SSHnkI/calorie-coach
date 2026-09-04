@@ -16,11 +16,21 @@ export type Macros = {
   carbs_g: number
   fat_g: number
   grams_total?: number
+  /** Gramas de etanol puro. Bebida alcoolica sem isto some da conta de energia. */
+  alcohol_g?: number
 }
 
-/** Atwater: 4 kcal por grama de proteina e carboidrato, 9 por grama de gordura. */
+/**
+ * Atwater: 4 kcal por grama de proteina e carboidrato, 9 por grama de gordura,
+ * 7 por grama de alcool.
+ *
+ * O alcool entrou porque ele nao e macro nenhum dos tres: uma dose de whisky tem
+ * proteina, carboidrato e gordura zerados e ainda assim ~110 kcal. Sem esta
+ * parcela a conciliacao via os tres macros dava zero, e a unica saida era nao
+ * conciliar bebida destilada nenhuma.
+ */
 export function kcalDosMacros(m: Macros): number {
-  return 4 * n(m.protein_g) + 4 * n(m.carbs_g) + 9 * n(m.fat_g)
+  return 4 * n(m.protein_g) + 4 * n(m.carbs_g) + 9 * n(m.fat_g) + 7 * n(m.alcohol_g)
 }
 
 // Gordura pura, o alimento mais denso que existe, da 9 kcal por grama. Nada
