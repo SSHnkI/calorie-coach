@@ -4,7 +4,8 @@ import { useI18n } from '../i18n/I18nContext'
 import { analyzeFood } from '../lib/analyzeFood'
 import { deleteFood, fetchFoodByDay, updateFoodKcal } from '../lib/foodLog'
 import { calculateDailyKcal, calculateMacroTargets } from '../lib/tdee'
-import { horaNoDia } from '../lib/horaDoRegistro'
+import { horaNoPeriodo } from '../lib/horaDoRegistro'
+import { PERIODOS, periodoAgora, periodoDe, type PeriodoId } from '../lib/periodos'
 import { formatQuantidade } from '../lib/format'
 import { comemora, desfechoDoDia, type Objetivo } from '../lib/recompensa'
 import type { FoodEntry } from '../types'
@@ -46,6 +47,9 @@ export function DashboardPage() {
   const [pendentes, setPendentes] = useState<{ id: string; texto: string; foto?: string }[]>([])
   const [dia, setDia] = useState(() => meiaNoite())
   const [gasto, setGasto] = useState(0)
+  // Em qual janela do dia entra o proximo registro. Comeca na janela de agora e
+  // a pessoa troca tocando na caixa da refeicao.
+  const [periodo, setPeriodo] = useState<PeriodoId>(() => periodoAgora())
 
   const ehHoje = mesmoDia(dia, new Date())
 
@@ -78,13 +82,16 @@ export function DashboardPage() {
     // Voltar do background com o registro de ontem na tela e o jeito mais
     // rapido de o usuario desconfiar do app. Recarrega ao reaparecer.
     const aoVoltar = () => {
-      if (document.visibilityState === 'visible') loadToday()
+      if (document.visibilityState !== 'visible') return
+      loadToday()
+      // Ficou a tarde inteira aberto: a janela sugerida acompanha o relogio.
+      if (mesmoDia(dia, new Date())) setPeriodo(periodoAgora())
     }
     // ponytail: sem re-sincronizar o dia aberto na virada da meia-noite.
     // Quem deixa o app aberto atravessando a meia-noite ve o dia certo ao voltar.
     document.addEventListener('visibilitychange', aoVoltar)
     return () => document.removeEventListener('visibilitychange', aoVoltar)
-  }, [loadToday])
+  }, [loadToday, dia])
 
   const totals = useMemo(
     () =>
@@ -97,6 +104,17 @@ export function DashboardPage() {
         }),
         { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
       ),
+    [entries],
+  )
+
+  // O diario do dia, quebrado nas janelas. Grupo vazio nao vira secao: linha
+  // fechada sem nada dentro so ocupa espaco.
+  const grupos = useMemo(
+    () =>
+      PERIODOS.map((j) => {
+        const itens = entries.filter((e) => periodoDe(new Date(e.logged_at)) === j.id)
+        return { ...j, itens, kcal: itens.reduce((s, e) => s + e.kcal, 0) }
+      }).filter((g) => g.itens.length > 0),
     [entries],
   )
 
@@ -126,7 +144,12 @@ export function DashboardPage() {
     setPendentes((p) => [{ id, texto: rotulo, foto }, ...p])
     setError('')
 
-    analyzeFood(texto, foto, fala, ehHoje ? undefined : horaNoDia(dia, entries))
+    // Sem carimbo, o servidor usa a hora de agora. So carimbamos quando o
+    // destino nao e este instante: dia passado, ou outra janela do dia.
+    const naJanelaDeAgora = ehHoje && periodo === periodoAgora()
+    const quando = naJanelaDeAgora ? undefined : horaNoPeriodo(dia, periodo, entries)
+
+    analyzeFood(texto, foto, fala, quando)
       .then((result) => {
         if (!result.ok) {
           setError(
@@ -170,6 +193,15 @@ export function DashboardPage() {
   }
 
   const rotuloDoDia = DIAS[dia.getDay()]
+  const rotuloPeriodo = PERIODOS.find((p) => p.id === periodo)?.rotulo ?? ''
+  const dataCurta = dia.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+  // So avisa quando o registro nao cai aqui e agora.
+  const destinoDoRegistro =
+    ehHoje && periodo === periodoAgora()
+      ? undefined
+      : ehHoje
+        ? rotuloPeriodo
+        : `${rotuloDoDia}, ${dataCurta}, ${rotuloPeriodo}`
   const exibido = useCountUp(totals.kcal)
   // Depois desta hora quase ninguem come mais: o dia conta como fechado.
   const FIM_DO_DIA = 20
@@ -291,7 +323,13 @@ export function DashboardPage() {
           </div>
 
           <div className="mt-6">
-            <Refeicoes entries={entries} meta={target} perfil={user} />
+            <Refeicoes
+              entries={entries}
+              meta={target}
+              perfil={user}
+              selecionado={periodo}
+              onSelecionar={setPeriodo}
+            />
           </div>
 
           <div className="mt-6">
@@ -352,9 +390,9 @@ export function DashboardPage() {
                 </p>
               </div>
             ) : (
-              <ul className="mt-3 divide-y divide-obliq-border border-y border-obliq-border">
+              <div className="mt-3 divide-y divide-obliq-border border-y border-obliq-border">
                 {pendentes.map((p) => (
-                  <li key={p.id} className="rise flex items-center gap-3 py-2.5">
+                  <div key={p.id} className="rise flex items-center gap-3 py-2.5">
                     {p.foto && (
                       <img
                         src={p.foto}
@@ -367,74 +405,97 @@ export function DashboardPage() {
                     <span className="num shrink-0 animate-pulse text-[12px] text-obliq-faint">
                       calculando
                     </span>
-                  </li>
+                  </div>
                 ))}
-                {entries.map((item, i) => (
-                  <li
-                    key={item.id}
-                    className={`rise py-2.5 ${item.id === novoId ? 'fisgada' : ''}`}
-                    style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
-                  >
-                    <div className="flex items-baseline">
-                      <span className="text-obliq-chalk">{item.name}</span>
+
+                {/* Uma secao por janela do dia. `details` e do navegador: abre e
+                    fecha sozinho, sem estado nosso pra manter em sincronia.
+                    Abre a janela que esta recebendo registro; as outras ficam
+                    recolhidas, e o dia inteiro cabe na tela. */}
+                {grupos.map((g) => (
+                  <details key={g.id} open={g.id === periodo} className="group">
+                    <summary className="flex cursor-pointer list-none items-baseline gap-2 py-2.5 [&::-webkit-details-marker]:hidden">
+                      <Icon
+                        name="chevron"
+                        className="h-3.5 w-3.5 shrink-0 self-center text-obliq-faint transition-transform duration-200 group-open:rotate-180"
+                      />
+                      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+                        {g.rotulo}
+                      </span>
+                      <span className="num text-[11px] text-obliq-dim">
+                        {g.itens.length} {g.itens.length === 1 ? 'item' : 'itens'}
+                      </span>
                       <span className="leader" aria-hidden="true" />
+                      <span className="num shrink-0 text-obliq-chalk">{g.kcal}</span>
+                    </summary>
 
-                      {editing === item.id ? (
-                        <input
-                          autoFocus
-                          type="number"
-                          inputMode="numeric"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          onBlur={() => commitEdit(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') commitEdit(item)
-                            if (e.key === 'Escape') setEditing(null)
-                          }}
-                          aria-label={`Calorias de ${item.name}`}
-                          className="num w-20 shrink-0 rounded bg-obliq-raised px-2 py-0.5 text-right text-obliq-chalk ring-1 ring-obliq-dim outline-none"
-                        />
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => startEdit(item)}
-                          title="Editar calorias"
-                          className="num shrink-0 rounded px-1 text-obliq-chalk transition-colors hover:text-obliq-red"
+                    <ul className="divide-y divide-obliq-border border-t border-obliq-border pl-5">
+                      {g.itens.map((item, i) => (
+                        <li
+                          key={item.id}
+                          className={`rise py-2.5 ${item.id === novoId ? 'fisgada' : ''}`}
+                          style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
                         >
-                          {item.kcal}
-                        </button>
-                      )}
+                          <div className="flex items-baseline">
+                            <span className="text-obliq-chalk">{item.name}</span>
+                            <span className="leader" aria-hidden="true" />
 
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(item.id)}
-                        aria-label={`Excluir ${item.name}`}
-                        className="ml-2 shrink-0 p-1 text-obliq-faint transition-colors hover:text-obliq-red"
-                      >
-                        <Icon name="trash" className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                            {editing === item.id ? (
+                              <input
+                                autoFocus
+                                type="number"
+                                inputMode="numeric"
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                onBlur={() => commitEdit(item)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') commitEdit(item)
+                                  if (e.key === 'Escape') setEditing(null)
+                                }}
+                                aria-label={`Calorias de ${item.name}`}
+                                className="num w-20 shrink-0 rounded bg-obliq-raised px-2 py-0.5 text-right text-obliq-chalk ring-1 ring-obliq-dim outline-none"
+                              />
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => startEdit(item)}
+                                title="Editar calorias"
+                                className="num shrink-0 rounded px-1 text-obliq-chalk transition-colors hover:text-obliq-red"
+                              >
+                                {item.kcal}
+                              </button>
+                            )}
 
-                    <div className="mt-1 flex gap-3 font-mono text-[12px] text-obliq-faint">
-                      <span>{formatQuantidade(item.quantity, item.unit, item.kcal)}</span>
-                      <span>P {item.protein_g}</span>
-                      <span>C {item.carbs_g}</span>
-                      <span>G {item.fat_g}</span>
-                      {item.confidence === 'low' && <span>{t.common.estimated}</span>}
-                    </div>
-                  </li>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(item.id)}
+                              aria-label={`Excluir ${item.name}`}
+                              className="ml-2 shrink-0 p-1 text-obliq-faint transition-colors hover:text-obliq-red"
+                            >
+                              <Icon name="trash" className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="mt-1 flex gap-3 font-mono text-[12px] text-obliq-faint">
+                            <span>{formatQuantidade(item.quantity, item.unit, item.kcal)}</span>
+                            <span>P {item.protein_g}</span>
+                            <span>C {item.carbs_g}</span>
+                            <span>G {item.fat_g}</span>
+                            {item.confidence === 'low' && <span>{t.common.estimated}</span>}
+                          </div>
+                        </li>
+
+                      ))}
+                    </ul>
+                  </details>
                 ))}
-              </ul>
+              </div>
             )}
           </section>
         </>
       )}
 
-      <Composer
-        onEnviar={handleAnalyze}
-        erro={error}
-        diaAberto={ehHoje ? undefined : `${rotuloDoDia}, ${dia.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`}
-      />
+      <Composer onEnviar={handleAnalyze} erro={error} destino={destinoDoRegistro} />
     </AppShell>
   )
 }

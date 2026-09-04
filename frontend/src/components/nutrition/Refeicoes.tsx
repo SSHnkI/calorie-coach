@@ -1,36 +1,33 @@
 import type { FoodEntry, UserProfile } from '../../types'
 import { metasPorRefeicao } from '../../lib/tdee'
+import { PERIODOS, horaContinua, periodoDe, type PeriodoId } from '../../lib/periodos'
 import { Icon } from '../ui/Icon'
 
-// Quatro janelas do dia. O que cria o impulso de registrar tudo nao e
+// As quatro janelas do dia. O que cria o impulso de registrar tudo nao e
 // enfeite: e ver um espaco vazio que voce sabe que deveria estar preenchido.
-const JANELAS = [
-  { id: 'manha', rotulo: 'manhã', de: 4, ate: 10 },
-  { id: 'almoco', rotulo: 'almoço', de: 10, ate: 15 },
-  { id: 'tarde', rotulo: 'tarde', de: 15, ate: 19 },
-  { id: 'noite', rotulo: 'noite', de: 19, ate: 28 },
-] as const
-
-function janelaDe(hora: number) {
-  const h = hora < 4 ? hora + 24 : hora
-  return JANELAS.find((j) => h >= j.de && h < j.ate)?.id ?? 'noite'
-}
+// A lista mora em lib/periodos.ts, porque a hora carimbada no registro e o
+// agrupamento do diario tem que ler exatamente a mesma coisa.
 
 export function Refeicoes({
   entries,
   meta,
   perfil,
+  selecionado,
+  onSelecionar,
 }: {
   entries: FoodEntry[]
   meta: number
   perfil: UserProfile | null
+  // Qual janela recebe o proximo registro. Sem isso a pessoa nao consegue
+  // anotar o cafe da manha depois do almoco.
+  selecionado: PeriodoId
+  onSelecionar: (p: PeriodoId) => void
 }) {
   const agora = new Date().getHours()
-  const atual = janelaDe(agora)
-  const metas = metasPorRefeicao(JANELAS, meta, perfil)
+  const metas = metasPorRefeicao(PERIODOS, meta, perfil)
 
-  const porJanela = JANELAS.map((j) => {
-    const itens = entries.filter((e) => janelaDe(new Date(e.logged_at).getHours()) === j.id)
+  const porJanela = PERIODOS.map((j) => {
+    const itens = entries.filter((e) => periodoDe(new Date(e.logged_at)) === j.id)
     const kcal = itens.reduce((s, e) => s + e.kcal, 0)
     return {
       ...j,
@@ -39,12 +36,12 @@ export function Refeicoes({
       alvo: metas[j.id],
       estourou: kcal > metas[j.id],
       fechou: kcal >= metas[j.id] * 0.9 && kcal <= metas[j.id],
-      agora: j.id === atual,
+      alvoDoRegistro: j.id === selecionado,
     }
   })
 
   const preenchidas = porJanela.filter((j) => j.itens > 0).length
-  const passadas = porJanela.filter((j) => j.ate <= (agora < 4 ? agora + 24 : agora))
+  const passadas = porJanela.filter((j) => j.ate <= horaContinua(agora))
   const esquecidas = passadas.filter((j) => j.itens === 0).length
 
   return (
@@ -70,12 +67,16 @@ export function Refeicoes({
       <ol className="mt-2 grid grid-cols-4 gap-1.5">
         {porJanela.map((j) => (
           <li key={j.id}>
-            <div
-              className={`rounded-lg px-1 py-2 text-center transition-colors duration-300 ${
-                j.itens > 0
-                  ? 'bg-obliq-raised ring-1 ring-obliq-border'
-                  : j.agora
-                    ? 'bg-obliq-surface ring-1 ring-obliq-red/50'
+            <button
+              type="button"
+              onClick={() => onSelecionar(j.id)}
+              aria-pressed={j.alvoDoRegistro}
+              aria-label={`Registrar na ${j.rotulo}`}
+              className={`w-full rounded-lg px-1 py-2 text-center transition-colors duration-300 ${
+                j.alvoDoRegistro
+                  ? 'bg-obliq-raised ring-2 ring-obliq-red'
+                  : j.itens > 0
+                    ? 'bg-obliq-raised ring-1 ring-obliq-border'
                     : 'bg-obliq-surface ring-1 ring-obliq-border ring-dashed'
               }`}
             >
@@ -100,14 +101,17 @@ export function Refeicoes({
                   /{j.alvo}
                 </span>
               )}
-              <span className="mt-1 block font-mono text-[11px] text-obliq-faint">
+              <span
+                className={`mt-1 block font-mono text-[11px] ${
+                  j.alvoDoRegistro ? 'text-obliq-chalk' : 'text-obliq-faint'
+                }`}
+              >
                 {j.rotulo}
               </span>
-            </div>
+            </button>
           </li>
         ))}
       </ol>
-
     </section>
   )
 }

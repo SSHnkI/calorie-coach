@@ -6,16 +6,17 @@ import { Icon } from '../ui/Icon'
 type ComposerProps = {
   onEnviar: (texto: string, foto?: string, fala?: string) => void
   erro?: string
-  // Preenchido quando o registro vai para um dia passado. Sem esse aviso a
-  // barra fica identica a de hoje e a pessoa lanca no dia errado sem perceber.
-  diaAberto?: string
+  // Preenchido quando o registro NAO vai para este instante: dia passado, ou
+  // outra janela do dia. Sem esse aviso a barra fica identica a de agora e a
+  // pessoa lanca no lugar errado sem perceber.
+  destino?: string
 }
 
 /**
  * Barra de registro fixa no rodape. No celular, registrar comida e a acao
  * que se repete o dia todo: ela mora onde o polegar alcanca, nao no meio da pagina.
  */
-export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
+export function Composer({ onEnviar, erro, destino }: ComposerProps) {
   const [texto, setTexto] = useState('')
   const [foto, setFoto] = useState<string | null>(null)
   const [preparando, setPreparando] = useState(false)
@@ -176,9 +177,9 @@ export function Composer({ onEnviar, erro, diaAberto }: ComposerProps) {
       style={estiloBarra}
     >
       <form onSubmit={enviar} className="mx-auto max-w-3xl px-4 py-3">
-        {diaAberto && (
+        {destino && (
           <p className="mb-2 font-mono text-[12px] text-obliq-faint">
-            registrando em <span className="text-obliq-chalk">{diaAberto}</span>
+            registrando em <span className="text-obliq-chalk">{destino}</span>
           </p>
         )}
         {foto && (
