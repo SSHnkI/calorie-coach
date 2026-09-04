@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -78,13 +79,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     async (userId: string): Promise<{ perfil: UserProfile | null; faltando: boolean }> => {
       for (let tentativa = 0; tentativa < TENTATIVAS; tentativa++) {
         try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', userId)
-            .abortSignal(AbortSignal.timeout(TEMPO_LIMITE))
-            .maybeSingle()
+          // Duas travas, porque sao dois jeitos diferentes de pendurar:
+          // abortSignal corta o fetch que nao volta; o Promise.race corta a
+          // espera ANTES do fetch, quando o supabase-js esta preso no lock de
+          // auth pra pegar o token. O abortSignal sozinho nao alcanca essa.
+          const resposta = await Promise.race([
+            supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', userId)
+              .abortSignal(AbortSignal.timeout(TEMPO_LIMITE))
+              .maybeSingle(),
+            new Promise<null>((r) => setTimeout(() => r(null), TEMPO_LIMITE)),
+          ])
+          if (!resposta) continue
 
+          const { data, error } = resposta
           if (data) return { perfil: data as UserProfile, faltando: false }
           if (!error) return { perfil: null, faltando: true }
         } catch {
@@ -96,7 +106,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [],
   )
 
-  const loadAll = useCallback(
+  // Abrir o app dispara getSession() e o evento INITIAL_SESSION quase juntos, e
+  // os dois querem o perfil. Sem isto sao duas buscas iguais na abertura fria,
+  // que e justamente o momento mais lento.
+  const buscando = useRef<{ uid: string; promessa: Promise<void> } | null>(null)
+
+  const carregarPerfil = useCallback(
     async (userId: string) => {
       const { perfil, faltando } = await loadProfile(userId)
       if (perfil || faltando) {
@@ -112,6 +127,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [loadProfile],
   )
 
+  const loadAll = useCallback(
+    (userId: string) => {
+      // Guarda o uid junto: trocar de conta durante uma busca em voo nao pode
+      // aproveitar a busca da conta anterior.
+      if (buscando.current?.uid !== userId) {
+        const promessa = carregarPerfil(userId).finally(() => {
+          if (buscando.current?.uid === userId) buscando.current = null
+        })
+        buscando.current = { uid: userId, promessa }
+      }
+      return buscando.current.promessa
+    },
+    [carregarPerfil],
+  )
+
   // Ouve mudanças de sessão do Supabase Auth.
   // PWA voltando do background: getSession() pode ficar pendurada tentando
   // renovar o token com a rede ainda dormindo. Sem teto de tempo, loading
@@ -124,29 +154,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     supabase.auth
       .getSession()
-      .then(async ({ data: { session } }) => {
+      .then(({ data: { session } }) => {
         if (!vivo) return
         setSession(session)
-        if (session?.user) await loadAll(session.user.id)
+        if (session?.user) loadAll(session.user.id)
       })
       .catch(() => {})
       .finally(() => {
         if (vivo) setLoading(false)
       })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session)
-        if (session?.user) {
-          await loadAll(session.user.id)
-        } else {
-          setUser(null)
-          setFoodLog([])
-          setPerfilPronto(false)
-        }
-        setLoading(false)
+    // NAO chame supabase aqui dentro, e nao deixe este callback async.
+    //
+    // O supabase-js segura um lock de auth enquanto entrega o evento, e toda
+    // query pede esse mesmo lock pra montar o token. Esperar a query aqui e
+    // esperar por um lock que so sai quando este callback termina: o app trava
+    // em si mesmo. Era esse o PWA que abria, ficava parado ate o "tentar de
+    // novo" aparecer, e andava na hora quando a pessoa apertava (o reload larga
+    // o lock). O teto de tempo do loadProfile nao salvava, porque a espera
+    // acontecia antes de existir fetch pra abortar.
+    //
+    // Aqui so mexe em estado. A busca do perfil sai da fila do lock com o
+    // setTimeout, e roda em seguida, ja com o lock liberado.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      setLoading(false)
+      if (session?.user) {
+        const uid = session.user.id
+        setTimeout(() => loadAll(uid), 0)
+      } else {
+        setUser(null)
+        setFoodLog([])
+        setPerfilPronto(false)
       }
-    )
+    })
 
     // Voltar pro app é o momento em que os dados estão mais velhos.
     const aoVoltar = () => {
