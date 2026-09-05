@@ -1,24 +1,13 @@
 import type { FoodEntry } from '../../types'
 import { metasPorRefeicao } from '../../lib/tdee'
 import { PERIODOS, horaContinua, periodoDe, type PeriodoId } from '../../lib/periodos'
+import { bordaDoConsumo } from '../../lib/semaforo'
 import { Icon } from '../ui/Icon'
 
 // As quatro janelas do dia. O que cria o impulso de registrar tudo nao e
 // enfeite: e ver um espaco vazio que voce sabe que deveria estar preenchido.
 // A lista mora em lib/periodos.ts, porque a hora carimbada no registro e o
 // agrupamento do diario tem que ler exatamente a mesma coisa.
-
-// Semaforo do topo da coluna. Uma borda de 2px e tudo: a coluna continua preta,
-// e a cor diz de longe se ainda cabe comida naquela refeicao.
-const FOLGA = 0.85
-
-function corDaBorda(kcal: number, alvo: number, temItem: boolean): string {
-  if (!temItem) return 'border-t-obliq-border'
-  const parte = alvo > 0 ? kcal / alvo : 0
-  if (parte > 1) return 'border-t-obliq-red'
-  if (parte > FOLGA) return 'border-t-obliq-amber'
-  return 'border-t-obliq-green'
-}
 
 export function Refeicoes({
   entries,
@@ -82,10 +71,9 @@ export function Refeicoes({
               onClick={() => onSelecionar(j.id)}
               aria-pressed={j.alvoDoRegistro}
               aria-label={`Registrar na ${j.rotulo}, ${j.kcal} de ${j.alvo} kcal`}
-              className={`w-full rounded-lg border-t-2 px-1 py-2 text-center transition-colors duration-300 ${corDaBorda(
+              className={`w-full rounded-lg border-t-2 px-1 py-2 text-center transition-colors duration-300 ${bordaDoConsumo(
                 j.kcal,
                 j.alvo,
-                j.itens > 0,
               )} ${
                 j.estourou
                   ? 'bg-obliq-red/10 ring-1 ring-obliq-red/40'

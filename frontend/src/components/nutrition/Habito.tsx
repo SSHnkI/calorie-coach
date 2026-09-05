@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { fetchFoodHistory } from '../../lib/foodLog'
 import { marcoDaSequencia, marcoNovo } from '../../lib/recompensa'
+import { bordaDoConsumo } from '../../lib/semaforo'
 import type { FoodEntry } from '../../types'
 
 // Onde fica o ultimo marco comemorado. Por dispositivo, nao por conta: perder a
@@ -185,8 +186,13 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
                 d.aberto ? 'ring-1 ring-obliq-chalk' : d.hoje ? 'ring-1 ring-obliq-red/50' : ''
               } enabled:hover:ring-1 enabled:hover:ring-obliq-dim`}
             >
+              {/* Mesma borda de 2px da coluna da refeicao, mesma regra: o dia
+                  e uma refeicao maior. Dia que ainda vem nao ganha cor, porque
+                  nao ha o que julgar nele. */}
               <span
-                className={`flex h-8 items-end overflow-hidden rounded ${
+                className={`flex h-8 items-end overflow-hidden rounded border-t-2 ${
+                  d.futuro ? 'border-t-transparent' : bordaDoConsumo(d.kcal, meta)
+                } ${
                   d.registrou
                     ? 'bg-obliq-raised'
                     : d.futuro
