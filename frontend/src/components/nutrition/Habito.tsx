@@ -185,9 +185,9 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
                 d.aberto ? 'ring-1 ring-obliq-chalk' : d.hoje ? 'ring-1 ring-obliq-red/50' : ''
               } enabled:hover:ring-1 enabled:hover:ring-obliq-dim`}
             >
-              {/* Mesmo semaforo da coluna da refeicao, mesma regra: o dia e uma
-                  refeicao maior. O corpo da barra continua cinza, e quem leva a
-                  cor e a linha de 2px no topo dela, que anda com o consumo.
+              {/* Mesma barra da coluna da refeicao, mesma regra: o dia e uma
+                  refeicao maior. Corpo escuro que cresce com o consumo, ponta
+                  arredondada com a cor, e barra inteira vermelha quando estoura.
                   Encostar no teto da caixa quer dizer teto, nao meta. */}
               <span
                 className={`flex h-8 items-end overflow-hidden rounded ${
@@ -199,16 +199,22 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
                 }`}
               >
                 <span
-                  className="relative w-full rounded transition-[height] duration-700 ease-out"
+                  className={`relative w-full overflow-hidden rounded-md transition-[height] duration-700 ease-out ${
+                    !d.registrou
+                      ? ''
+                      : d.kcal > meta && meta > 0
+                        ? corDoConsumo(d.kcal, meta)
+                        : 'bg-obliq-dim'
+                  }`}
                   style={{ height: `${preenchimento(d.kcal, meta, 12)}%` }}
                 >
-                  {d.registrou && (
-                    <>
-                      <span className="absolute inset-0 rounded-b bg-obliq-dim" />
-                      <span
-                        className={`absolute inset-x-0 top-0 h-0.5 ${corDoConsumo(d.kcal, meta)}`}
-                      />
-                    </>
+                  {d.registrou && !(d.kcal > meta && meta > 0) && (
+                    <span
+                      className={`absolute inset-x-0 top-0 h-1.5 rounded-t-md ${corDoConsumo(
+                        d.kcal,
+                        meta,
+                      )}`}
+                    />
                   )}
                 </span>
               </span>
