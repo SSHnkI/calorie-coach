@@ -10,11 +10,17 @@
 // manha comeu de noite, nao de manha. A soma das quatro janelas tem que dar 24,
 // senao metasPorRefeicao distribui a meta do dia errado.
 
+// `fatia` e quanto da meta do dia cabe naquela refeicao, e ela existe porque a
+// versao anterior repartia a meta pelo GASTO por hora da janela. Isso parecia
+// tecnico e era absurdo na pratica: o almoco dura duas horas e saia com 220 kcal,
+// enquanto a noite, que dura onze, levava quase metade do dia. Ninguem come por
+// relogio de metabolismo, come por refeicao. As fatias abaixo sao a divisao
+// caseira brasileira, e somam 1.
 export const PERIODOS = [
-  { id: 'manha', rotulo: 'manhã', de: 5, ate: 12 },
-  { id: 'almoco', rotulo: 'almoço', de: 12, ate: 14 },
-  { id: 'tarde', rotulo: 'tarde', de: 14, ate: 18 },
-  { id: 'noite', rotulo: 'noite', de: 18, ate: 29 },
+  { id: 'manha', rotulo: 'manhã', de: 5, ate: 12, fatia: 0.25 },
+  { id: 'almoco', rotulo: 'almoço', de: 12, ate: 14, fatia: 0.35 },
+  { id: 'tarde', rotulo: 'tarde', de: 14, ate: 18, fatia: 0.15 },
+  { id: 'noite', rotulo: 'noite', de: 18, ate: 29, fatia: 0.25 },
 ] as const
 
 export type Periodo = (typeof PERIODOS)[number]

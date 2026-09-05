@@ -13,7 +13,6 @@ import { AppShell } from '../components/layout/AppShell'
 import { Icon } from '../components/ui/Icon'
 import { Tabs } from '../components/ui/Tabs'
 import { Habito } from '../components/nutrition/Habito'
-import { Avisos } from '../components/layout/Avisos'
 import { Refeicoes } from '../components/nutrition/Refeicoes'
 import { Gasto } from '../components/nutrition/Gasto'
 import { Composer } from '../components/nutrition/Composer'
@@ -22,6 +21,8 @@ import { NutritionHistory } from '../components/nutrition/NutritionHistory'
 import { NutritionStats } from '../components/nutrition/NutritionStats'
 
 const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
+
+const MACROS_ABERTOS = 'obliq:macros-abertos'
 
 function meiaNoite(d = new Date()) {
   const x = new Date(d)
@@ -50,6 +51,15 @@ export function DashboardPage() {
   // Em qual janela do dia entra o proximo registro. Comeca na janela de agora e
   // a pessoa troca tocando na caixa da refeicao.
   const [periodo, setPeriodo] = useState<PeriodoId>(() => periodoAgora())
+  // Retrair os macros e preferencia, nao estado de tela: se voltasse aberto a
+  // cada abertura, retrair nao teria servido pra nada.
+  const [macrosAbertos, setMacrosAbertos] = useState(() => {
+    try {
+      return localStorage.getItem(MACROS_ABERTOS) !== 'nao'
+    } catch {
+      return true
+    }
+  })
 
   const ehHoje = mesmoDia(dia, new Date())
 
@@ -192,6 +202,12 @@ export function DashboardPage() {
     }
   }
 
+  const linhasMacro = [
+    { l: t.dashboard.protein, cur: totals.protein_g, tgt: macros.protein_g },
+    { l: t.dashboard.carbs, cur: totals.carbs_g, tgt: macros.carbs_g },
+    { l: t.dashboard.fat, cur: totals.fat_g, tgt: macros.fat_g },
+  ]
+
   const rotuloDoDia = DIAS[dia.getDay()]
   const rotuloPeriodo = PERIODOS.find((p) => p.id === periodo)?.rotulo ?? ''
   const dataCurta = dia.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
@@ -326,7 +342,6 @@ export function DashboardPage() {
             <Refeicoes
               entries={entries}
               meta={target}
-              perfil={user}
               selecionado={periodo}
               onSelecionar={setPeriodo}
             />
@@ -336,21 +351,48 @@ export function DashboardPage() {
             <Habito meta={target} versao={versao} selecionado={dia} onSelecionar={setDia} />
           </div>
 
-          <div className="mt-6">
-            <Avisos />
-          </div>
+          {/* Macros: retraivel, porque quem so quer saber das calorias olha isso
+              uma vez e nunca mais. Retraido nao some, encolhe: as tres barras
+              continuam na linha do titulo, sem numero nenhum. */}
+          <details
+            open={macrosAbertos}
+            onToggle={(e) => {
+              const aberto = e.currentTarget.open
+              setMacrosAbertos(aberto)
+              try {
+                localStorage.setItem(MACROS_ABERTOS, aberto ? 'sim' : 'nao')
+              } catch {
+                // janela anonima: a preferencia vale so nesta sessao
+              }
+            }}
+            className="group mt-6"
+          >
+            <summary className="flex cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
+              <Icon
+                name="chevron"
+                className="h-3.5 w-3.5 shrink-0 text-obliq-faint transition-transform duration-200 group-open:rotate-180"
+              />
+              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
+                {t.dashboard.macros}
+              </span>
 
-          {/* Macros em tres colunas: mesma informacao, um terco da altura. */}
-          <section className="mt-6">
-            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
-              {t.dashboard.macros}
-            </span>
+              <span className="ml-auto flex items-center gap-2 group-open:hidden">
+                {linhasMacro.map((m) => (
+                  <span key={m.l} className="flex items-center gap-1">
+                    <span className="font-mono text-[11px] text-obliq-faint">{m.l[0]}</span>
+                    <span className="block h-1 w-8 overflow-hidden rounded-full bg-obliq-border">
+                      <span
+                        className="block h-full rounded-full bg-obliq-dim"
+                        style={{ width: `${Math.min(100, (m.cur / (m.tgt || 1)) * 100)}%` }}
+                      />
+                    </span>
+                  </span>
+                ))}
+              </span>
+            </summary>
+
             <dl className="mt-2 grid grid-cols-3 gap-3">
-              {[
-                { l: t.dashboard.protein, cur: totals.protein_g, tgt: macros.protein_g },
-                { l: t.dashboard.carbs, cur: totals.carbs_g, tgt: macros.carbs_g },
-                { l: t.dashboard.fat, cur: totals.fat_g, tgt: macros.fat_g },
-              ].map((m) => (
+              {linhasMacro.map((m) => (
                 <div key={m.l}>
                   <dt className="text-[12px] text-obliq-dim">{m.l}</dt>
                   <dd className="num mt-0.5 text-sm font-medium">
@@ -366,7 +408,7 @@ export function DashboardPage() {
                 </div>
               ))}
             </dl>
-          </section>
+          </details>
 
           <div className="mt-6">
             <NutritionStats

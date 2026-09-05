@@ -49,6 +49,11 @@
   --color-obliq-dim: var(--tx-medio);
   --color-obliq-faint: var(--tx-fraco);
 
+  /* Semaforo das refeicoes. Fixas nos dois temas, como o vermelho da marca:
+     elas nao decoram, informam, e mudar de tema nao muda o que o numero diz. */
+  --color-obliq-green: #12a150;
+  --color-obliq-amber: #cc8800;
+
   --color-obliq-red: #e8000d;
   --color-obliq-red-deep: #9e0009;
   --color-obliq-white: #ffffff;
