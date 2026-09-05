@@ -16,6 +16,7 @@ type IconName =
   | 'stop'
   | 'sol'
   | 'lua'
+  | 'sino'
 
 type IconProps = {
   name: IconName
@@ -39,6 +40,7 @@ const paths: Record<IconName, string> = {
   camera:
     'M4 8h3l1.5-2h7L17 8h3v11H4V8Zm8 9a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z',
   menu: 'M5 8h14M5 16h14',
+  sino: 'M12 4a5 5 0 0 0-5 5v3.5L5.5 15h13L17 12.5V9a5 5 0 0 0-5-5ZM10 18a2 2 0 0 0 4 0',
   mic: 'M12 4a2.5 2.5 0 0 1 2.5 2.5v5a2.5 2.5 0 0 1-5 0v-5A2.5 2.5 0 0 1 12 4Zm-6 7a6 6 0 0 0 12 0M12 17v3',
   stop: 'M7 7h10v10H7z',
   sol: 'M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4m0-12.8-1.4 1.4m-10 10-1.4 1.4',

@@ -4,6 +4,7 @@ import { aplicarTema, temaSalvo, type Tema } from '../../lib/tema'
 import { useApp } from '../../context/AppContext'
 import { ADMIN_EMAIL } from '../../lib/users'
 import { Icon } from '../ui/Icon'
+import { SinoAvisos } from './Avisos'
 
 /**
  * Barra utilitaria: um botao so, e tudo o resto dentro do menu.
@@ -51,17 +52,22 @@ export function LanguageBar() {
       style={{ top: 'calc(0.5rem + env(safe-area-inset-top))' }}
       className="fixed right-3 z-50 flex flex-col items-end gap-1"
     >
-      <button
-        type="button"
-        onClick={() => setAberto((a) => !a)}
-        aria-expanded={aberto}
-        aria-label="Menu"
-        className={`rounded-lg bg-obliq-black/85 p-2 backdrop-blur-sm transition-colors duration-200 ${
-          aberto ? 'text-obliq-chalk' : 'text-obliq-faint hover:text-obliq-dim'
-        }`}
-      >
-        <Icon name="menu" className="h-4 w-4" />
-      </button>
+      <div className="flex items-center gap-0.5">
+        {/* O sino so pra quem tem conta: aviso e coisa de diario, nao de visita. */}
+        {isAuthenticated && <SinoAvisos />}
+
+        <button
+          type="button"
+          onClick={() => setAberto((a) => !a)}
+          aria-expanded={aberto}
+          aria-label="Menu"
+          className={`rounded-lg bg-obliq-black/85 p-2 backdrop-blur-sm transition-colors duration-200 ${
+            aberto ? 'text-obliq-chalk' : 'text-obliq-faint hover:text-obliq-dim'
+          }`}
+        >
+          <Icon name="menu" className="h-4 w-4" />
+        </button>
+      </div>
 
       {aberto && (
         <nav className="rise w-44 overflow-hidden rounded-lg bg-obliq-surface py-1 shadow-lift ring-1 ring-obliq-border">

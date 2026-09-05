@@ -3,11 +3,17 @@ import { ativarPush, desligarPush, estadoPush, type EstadoPush } from '../../lib
 import { Icon } from '../ui/Icon'
 
 /**
- * Uma linha so: liga ou desliga os lembretes no aparelho. Sem tela de
- * preferencias, sem lista de horarios. Quem liga recebe: meio-dia sem
- * registro, saldo as 20h, meta batida na hora e resumo no domingo.
+ * O sino: liga e desliga os lembretes no aparelho, num toque.
+ *
+ * Era uma secao no meio do painel, com titulo, explicacao e botao, disputando
+ * espaco com o diario do dia todo santo dia. Mas ligar aviso e coisa que se faz
+ * uma vez. Virou sino no cabecalho, do lado do menu: pequeno, sempre no mesmo
+ * lugar, e o estado dele ja e a resposta (aceso e porque esta ligado).
+ *
+ * Quem liga recebe: meio-dia sem registro, saldo as 20h, meta batida na hora e
+ * resumo no domingo.
  */
-export function Avisos() {
+export function SinoAvisos() {
   const [estado, setEstado] = useState<EstadoPush | 'erro' | null>(null)
   const [ocupado, setOcupado] = useState(false)
 
@@ -15,11 +21,14 @@ export function Avisos() {
     estadoPush().then(setEstado)
   }, [])
 
+  // Aparelho que nao faz push nao ganha botao que nao faz nada.
   if (estado === null || estado === 'sem-suporte') return null
 
   const ligado = estado === 'ligado'
+  const negado = estado === 'negado'
 
   const alternar = async () => {
+    if (negado) return
     setOcupado(true)
     navigator.vibrate?.(8)
     try {
@@ -34,44 +43,32 @@ export function Avisos() {
     }
   }
 
-  return (
-    <section>
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
-            avisos
-          </span>
-          <p className="mt-0.5 text-[12px] text-obliq-dim">
-            {estado === 'negado'
-              ? 'Bloqueado no aparelho. Libere as notificações do Obliq nos ajustes.'
-              : ligado
-                ? 'Saldo do dia às 20h, meta batida na hora e resumo no domingo.'
-                : 'Lembretes de registro, saldo do dia e resumo da semana.'}
-          </p>
-          {estado === 'erro' && (
-            <p role="alert" className="mt-1 text-[12px] text-obliq-red">
-              Não deu pra ligar agora. Tente de novo.
-            </p>
-          )}
-        </div>
+  const descricao = negado
+    ? 'Avisos bloqueados no aparelho. Libere as notificações do Obliq nos ajustes.'
+    : ligado
+      ? 'Avisos ligados. Toque para desligar.'
+      : 'Ligar avisos: lembrete de registro, saldo do dia e resumo de domingo.'
 
-        {estado !== 'negado' && (
-          <button
-            type="button"
-            onClick={alternar}
-            disabled={ocupado}
-            aria-pressed={ligado}
-            className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 font-mono text-[11px] uppercase tracking-[0.1em] transition-all duration-200 active:scale-95 disabled:opacity-50 ${
-              ligado
-                ? 'text-obliq-red ring-1 ring-obliq-red/40'
-                : 'bg-red-gradient text-white shadow-red-glow'
-            }`}
-          >
-            {ligado && <Icon name="check" className="h-3 w-3" />}
-            {ocupado ? '...' : ligado ? 'ligado' : 'ativar'}
-          </button>
-        )}
-      </div>
-    </section>
+  return (
+    <button
+      type="button"
+      onClick={alternar}
+      disabled={ocupado || negado}
+      aria-pressed={ligado}
+      aria-label={descricao}
+      title={descricao}
+      className={`relative rounded-lg bg-obliq-black/85 p-2 backdrop-blur-sm transition-colors duration-200 disabled:opacity-40 ${
+        ligado ? 'text-obliq-red' : 'text-obliq-faint hover:text-obliq-dim'
+      } ${estado === 'erro' ? 'text-obliq-red' : ''}`}
+    >
+      <Icon name="sino" className="h-4 w-4" />
+      {/* Desligado nao e neutro, e uma escolha: o corte diz isso sem texto. */}
+      {!ligado && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 m-auto h-[1.5px] w-4 rotate-45 rounded-full bg-current opacity-70"
+        />
+      )}
+    </button>
   )
 }

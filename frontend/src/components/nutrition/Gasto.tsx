@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { chaveDoDia, fetchGasto, salvarGasto } from '../../lib/gasto'
-import { Icon } from '../ui/Icon'
 
 type GastoProps = {
   dia: Date
@@ -9,9 +8,12 @@ type GastoProps = {
 }
 
 /**
- * Gasto extra do dia, digitado a mao. Fica em uma linha so, no idioma de
- * livro-caixa do resto da tela: rotulo a esquerda, numero a direita, pontilhado
- * ligando os dois. Vazio nao vira cartao nem tela de estado vazio, vira um traco.
+ * Gasto extra do dia, digitado a mao: o que voce queimou em exercicio e volta
+ * pra meta como kcal a mais pra comer.
+ *
+ * Ocupa uma linha so. Tinha titulo de secao em cima e explicacao embaixo, tres
+ * blocos pra um campo que a maioria dos dias fica vazio. O que o rodape dizia
+ * agora esta no proprio rotulo, que e onde a pessoa olha.
  */
 export function Gasto({ dia, valor, onMudou }: GastoProps) {
   const [editando, setEditando] = useState(false)
@@ -67,19 +69,13 @@ export function Gasto({ dia, valor, onMudou }: GastoProps) {
 
   return (
     <section>
-      <div className="flex items-baseline justify-between">
+      <div className="flex items-baseline border-y border-obliq-border py-2">
         <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-obliq-faint">
-          gasto do dia
+          gasto
         </span>
-        {erro && (
-          <span role="alert" className="font-mono text-[11px] text-obliq-red">
-            não salvou
-          </span>
-        )}
-      </div>
-
-      <div className="mt-2 flex items-baseline border-y border-obliq-border py-2.5">
-        <span className="text-obliq-dim">exercício e atividade</span>
+        <span className="ml-2 truncate text-[12px] text-obliq-dim">
+          treino, caminhada, esporte
+        </span>
         <span className="leader" aria-hidden="true" />
 
         {editando ? (
@@ -99,37 +95,37 @@ export function Gasto({ dia, valor, onMudou }: GastoProps) {
                 if (e.key === 'Enter') gravar()
                 if (e.key === 'Escape') setEditando(false)
               }}
-              aria-label="Calorias gastas no dia"
-              className="num w-24 rounded bg-obliq-raised px-2 py-0.5 text-right text-obliq-chalk ring-1 ring-obliq-dim outline-none"
+              aria-label="Calorias gastas em exercício hoje"
+              className="num w-20 rounded bg-obliq-raised px-2 py-0.5 text-right text-obliq-chalk ring-1 ring-obliq-dim outline-none"
             />
           </span>
         ) : (
           <button
             type="button"
             onClick={abrir}
-            title="Digitar o gasto do dia"
-            className={`num flex shrink-0 items-baseline gap-1.5 rounded px-1 transition-colors hover:text-obliq-red ${
+            title="Somar à meta do dia as calorias que você gastou em exercício"
+            className={`num flex shrink-0 items-baseline gap-1 rounded px-1 transition-colors hover:text-obliq-red ${
               valor > 0 ? 'text-obliq-chalk' : 'text-obliq-line'
             } ${salvando ? 'opacity-50' : ''}`}
           >
             {valor > 0 ? (
               <>
-                <span>{valor}</span>
+                {/* O mais nao e enfeite: diz que isso ABRE espaco na meta. */}
+                <span>+{valor}</span>
                 <span className="font-mono text-[12px] text-obliq-faint">kcal</span>
               </>
             ) : (
-              <span className="font-mono text-[12px]">anotar</span>
+              <span className="font-mono text-[12px]">+ kcal gasta</span>
             )}
-            <Icon name="chevron" className="h-3 w-3 -rotate-90 self-center opacity-50" />
           </button>
         )}
       </div>
 
-      <p className="mt-2 font-mono text-[11px] leading-relaxed text-obliq-faint">
-        {valor > 0
-          ? 'somado à meta do dia'
-          : 'o que o relógio marcou, ou sua estimativa do treino'}
-      </p>
+      {erro && (
+        <p role="alert" className="mt-1 font-mono text-[11px] text-obliq-red">
+          não salvou
+        </p>
+      )}
     </section>
   )
 }
