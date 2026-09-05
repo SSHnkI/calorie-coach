@@ -186,9 +186,9 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
               } enabled:hover:ring-1 enabled:hover:ring-obliq-dim`}
             >
               {/* Mesma barra da coluna da refeicao, mesma regra: o dia e uma
-                  refeicao maior. Corpo escuro que cresce com o consumo, traco de
-                  2px flutuando logo acima do topo dele, e barra inteira vermelha
-                  quando estoura. Encostar no teto quer dizer teto, nao meta. */}
+                  refeicao maior. Corpo que cresce com o consumo, traco de 2px
+                  assentado no topo dele, e barra inteira vermelha quando estoura.
+                  Encostar no teto quer dizer teto, nao meta. */}
               <span
                 className={`relative flex h-8 items-end overflow-hidden rounded ${
                   d.registrou
@@ -199,22 +199,24 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
                 }`}
               >
                 <span
-                  className={`w-full rounded-md transition-[height] duration-700 ease-out ${
+                  className={`w-full transition-[height] duration-700 ease-out ${
+                    // Topo reto pelo mesmo motivo da coluna da refeicao: o
+                    // canto arredondado abria vao entre a barra e o traco.
                     !d.registrou
                       ? ''
                       : d.kcal > meta && meta > 0
-                        ? corDoConsumo(d.kcal, meta)
-                        : 'bg-obliq-dim'
+                        ? `rounded-md ${corDoConsumo(d.kcal, meta)}`
+                        : 'rounded-b-md bg-obliq-dim'
                   }`}
                   style={{ height: `${preenchimento(d.kcal, meta, 12)}%` }}
                 />
                 {d.registrou && !(d.kcal > meta && meta > 0) && (
                   <span
-                    className={`absolute inset-x-0 h-0.5 rounded-full transition-[bottom] duration-700 ease-out ${corDoConsumo(
+                    className={`absolute inset-x-0 h-0.5 rounded-t-md transition-[bottom] duration-700 ease-out ${corDoConsumo(
                       d.kcal,
                       meta,
                     )}`}
-                    style={{ bottom: `calc(${preenchimento(d.kcal, meta, 12)}% + 2px)` }}
+                    style={{ bottom: `${preenchimento(d.kcal, meta, 12)}%` }}
                   />
                 )}
               </span>

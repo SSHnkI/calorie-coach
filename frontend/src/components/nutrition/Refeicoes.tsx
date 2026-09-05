@@ -115,26 +115,30 @@ export function Refeicoes({
               </span>
 
               {/* A coluna e uma barra escura que cresce com o consumo, e a
-                  cor e um traco de 2px flutuando logo acima do topo dela. O
-                  traco solto marca o nivel sem virar parte da barra; grudado
-                  nela, ele so engorda a ponta. Estourando, a barra inteira fica
-                  vermelha e o traco some, porque ai a cor ja tomou conta.
+                  cor e um traco de 2px assentado no topo dela, encostado no
+                  preenchimento. Com folga entre os dois ele parecia solto no ar,
+                  desligado da barra que devia estar marcando. Estourando, a
+                  barra inteira fica vermelha e o traco some, porque ai a cor ja
+                  tomou conta.
                   Encher quer dizer teto, nao meta: a meta cai a 80% da altura,
                   e a folga que sobra e onde o traco fica. */}
               <span className="relative mx-auto mt-1.5 flex h-6 w-1.5 items-end">
                 <span
-                  className={`w-full rounded-full transition-[height] duration-500 ease-out ${
-                    j.estourou ? corDoConsumo(j.kcal, j.alvo) : 'bg-obliq-dim'
+                  className={`w-full transition-[height] duration-500 ease-out ${
+                    // Topo reto: a barra e uma pilula, e o topo arredondado
+                    // fazia o traco reto encostar so no meio e abrir vao nas
+                    // duas pontas. Quem arredonda a ponta agora e o traco.
+                    j.estourou ? `rounded-full ${corDoConsumo(j.kcal, j.alvo)}` : 'rounded-b-full bg-obliq-dim'
                   }`}
                   style={{ height: `${j.preenchido}%` }}
                 />
                 {j.itens > 0 && !j.estourou && (
                   <span
-                    className={`absolute inset-x-0 h-0.5 rounded-full transition-[bottom] duration-500 ease-out ${corDoConsumo(
+                    className={`absolute inset-x-0 h-0.5 rounded-t-full transition-[bottom] duration-500 ease-out ${corDoConsumo(
                       j.kcal,
                       j.alvo,
                     )}`}
-                    style={{ bottom: `calc(${j.preenchido}% + 2px)` }}
+                    style={{ bottom: `${j.preenchido}%` }}
                   />
                 )}
               </span>
