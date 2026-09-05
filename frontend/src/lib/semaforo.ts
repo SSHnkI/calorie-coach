@@ -12,6 +12,12 @@
 /** Abaixo disso ainda cabe comida sem susto. */
 export const FOLGA = 0.85
 
+/** Onde a barra enche, em multiplos da meta. Um quarto de folga depois dela. */
+export const TETO = 1.25
+
+/** Onde a meta cai dentro do trilho, em porcentagem. */
+export const MARCA_DA_META = 100 / TETO
+
 export type Faixa = 'vazio' | 'folga' | 'limite' | 'passou'
 
 export function faixaDoConsumo(kcal: number, alvo: number): Faixa {
@@ -36,11 +42,15 @@ export function corDoConsumo(kcal: number, alvo: number): string {
 }
 
 /**
- * Quanto da barra preencher, de 0 a 100.
+ * Onde a barra enche. A meta NAO e o fim do trilho: e a marca em 80% dele.
  *
- * Trava em 100 de proposito: passar da meta ja e dito pelo vermelho, e barra
- * vazando pra fora da caixa nao acrescenta informacao, so quebra o alinhamento
- * das quatro colunas.
+ * Encher no proprio alvo apagava a diferenca entre acertar a meta e estourar,
+ * que e a diferenca que mais importa: 500 de 500 e 900 de 500 desenhavam a
+ * mesma barra cheia. Sobrando um quarto de trilho depois da marca, barra cheia
+ * volta a querer dizer teto, e o quanto passou aparece.
+ *
+ * Passar do teto trava em 100: dali pra frente o vermelho ja disse tudo, e
+ * barra vazando pra fora da caixa so quebraria o alinhamento das colunas.
  *
  * O piso existe pra que registro pequeno apareca: 1% e visualmente identico a
  * coluna vazia, e as duas coisas sao opostas. Ele e parametro porque as duas
@@ -50,5 +60,5 @@ export function corDoConsumo(kcal: number, alvo: number): string {
 export function preenchimento(kcal: number, alvo: number, piso = 4): number {
   if (!(kcal > 0)) return 0
   if (!(alvo > 0)) return 100
-  return Math.max(piso, Math.min(100, (kcal / alvo) * 100))
+  return Math.max(piso, Math.min(100, (kcal / (alvo * TETO)) * 100))
 }

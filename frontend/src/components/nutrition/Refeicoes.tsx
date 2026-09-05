@@ -33,6 +33,7 @@ export function Refeicoes({
       itens: itens.length,
       kcal,
       alvo: metas[j.id],
+      preenchido: preenchimento(kcal, metas[j.id], 6),
       estourou: kcal > metas[j.id],
       fechou: kcal >= metas[j.id] * 0.9 && kcal <= metas[j.id],
       alvoDoRegistro: j.id === selecionado,
@@ -113,17 +114,25 @@ export function Refeicoes({
                 {j.rotulo}
               </span>
 
-              {/* O semaforo mora aqui: a barra cresce com o que entrou e a cor
-                  diz se ainda cabe. Uma tampa fixa no topo dizia so a cor, e
-                  100 kcal desenhava a mesma coisa que 600. */}
-              <span className="mt-1.5 block h-1 overflow-hidden rounded-full bg-obliq-border">
+              {/* O trilho e neutro e mede o quanto entrou. A cor vive so no
+                  marcador de 2px na ponta do preenchimento: ele anda com o
+                  consumo, e so encosta no fim quando bate o teto, que fica um
+                  quarto acima da meta. Preenchimento colorido inteiro pintava
+                  a tela de verde sem dizer nada a mais. */}
+              <span className="relative mt-1.5 block h-1 rounded-full bg-obliq-border">
                 <span
-                  className={`block h-full rounded-full transition-all duration-500 ease-out ${corDoConsumo(
-                    j.kcal,
-                    j.alvo,
-                  )}`}
-                  style={{ width: `${preenchimento(j.kcal, j.alvo)}%` }}
+                  className="absolute inset-y-0 left-0 rounded-full bg-obliq-dim transition-[width] duration-500 ease-out"
+                  style={{ width: `${j.preenchido}%` }}
                 />
+                {j.preenchido > 0 && (
+                  <span
+                    className={`absolute top-1/2 h-2 w-0.5 -translate-y-1/2 rounded-full transition-[left] duration-500 ease-out ${corDoConsumo(
+                      j.kcal,
+                      j.alvo,
+                    )}`}
+                    style={{ left: `calc(${j.preenchido}% - 2px)` }}
+                  />
+                )}
               </span>
             </button>
           </li>

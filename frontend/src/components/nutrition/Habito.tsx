@@ -186,9 +186,9 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
               } enabled:hover:ring-1 enabled:hover:ring-obliq-dim`}
             >
               {/* Mesmo semaforo da coluna da refeicao, mesma regra: o dia e uma
-                  refeicao maior. A cor esta na barra que ja crescia com o
-                  consumo, entao altura e cor dizem a mesma coisa duas vezes,
-                  uma pro olho de longe e outra pro de perto. */}
+                  refeicao maior. O corpo da barra continua cinza, e quem leva a
+                  cor e a linha de 2px no topo dela, que anda com o consumo.
+                  Encostar no teto da caixa quer dizer teto, nao meta. */}
               <span
                 className={`flex h-8 items-end overflow-hidden rounded ${
                   d.registrou
@@ -199,12 +199,18 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
                 }`}
               >
                 <span
-                  className={`w-full rounded transition-[height] duration-700 ease-out ${corDoConsumo(
-                    d.kcal,
-                    meta,
-                  )}`}
+                  className="relative w-full rounded transition-[height] duration-700 ease-out"
                   style={{ height: `${preenchimento(d.kcal, meta, 12)}%` }}
-                />
+                >
+                  {d.registrou && (
+                    <>
+                      <span className="absolute inset-0 rounded-b bg-obliq-dim" />
+                      <span
+                        className={`absolute inset-x-0 top-0 h-0.5 ${corDoConsumo(d.kcal, meta)}`}
+                      />
+                    </>
+                  )}
+                </span>
               </span>
               <span
                 className={`mt-0.5 block text-center font-mono text-[10px] ${
