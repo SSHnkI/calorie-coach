@@ -114,30 +114,29 @@ export function Refeicoes({
                 {j.rotulo}
               </span>
 
-              {/* A coluna e uma barra: o corpo escuro cresce com o que entrou
-                  e a ponta arredondada leva a cor. Estourando, a barra inteira
-                  fica vermelha, que e o unico caso em que a cor toma conta.
-                  Encher quer dizer teto, nao meta: a meta cai a 80% da altura.
-                  Fica embaixo do rotulo, e nao atras dele, porque a linha
-                  atravessando a caixa virava um risco em cima do numero. */}
-              <span className="mx-auto mt-1.5 flex h-5 w-1.5 items-end">
-                {/* Vazia nao desenha barra nenhuma. Um trilho cheio e cinza
-                    diria "cheio", que e o oposto de nao ter registro. */}
+              {/* A coluna e uma barra escura que cresce com o consumo, e a
+                  cor e um traco de 2px flutuando logo acima do topo dela. O
+                  traco solto marca o nivel sem virar parte da barra; grudado
+                  nela, ele so engorda a ponta. Estourando, a barra inteira fica
+                  vermelha e o traco some, porque ai a cor ja tomou conta.
+                  Encher quer dizer teto, nao meta: a meta cai a 80% da altura,
+                  e a folga que sobra e onde o traco fica. */}
+              <span className="relative mx-auto mt-1.5 flex h-6 w-1.5 items-end">
                 <span
-                  className={`relative w-full overflow-hidden rounded-full transition-[height] duration-500 ease-out ${
+                  className={`w-full rounded-full transition-[height] duration-500 ease-out ${
                     j.estourou ? corDoConsumo(j.kcal, j.alvo) : 'bg-obliq-dim'
                   }`}
                   style={{ height: `${j.preenchido}%` }}
-                >
-                  {j.itens > 0 && !j.estourou && (
-                    <span
-                      className={`absolute inset-x-0 top-0 h-1.5 rounded-full ${corDoConsumo(
-                        j.kcal,
-                        j.alvo,
-                      )}`}
-                    />
-                  )}
-                </span>
+                />
+                {j.itens > 0 && !j.estourou && (
+                  <span
+                    className={`absolute inset-x-0 h-0.5 rounded-full transition-[bottom] duration-500 ease-out ${corDoConsumo(
+                      j.kcal,
+                      j.alvo,
+                    )}`}
+                    style={{ bottom: `calc(${j.preenchido}% + 2px)` }}
+                  />
+                )}
               </span>
             </button>
           </li>

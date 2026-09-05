@@ -186,11 +186,11 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
               } enabled:hover:ring-1 enabled:hover:ring-obliq-dim`}
             >
               {/* Mesma barra da coluna da refeicao, mesma regra: o dia e uma
-                  refeicao maior. Corpo escuro que cresce com o consumo, ponta
-                  arredondada com a cor, e barra inteira vermelha quando estoura.
-                  Encostar no teto da caixa quer dizer teto, nao meta. */}
+                  refeicao maior. Corpo escuro que cresce com o consumo, traco de
+                  2px flutuando logo acima do topo dele, e barra inteira vermelha
+                  quando estoura. Encostar no teto quer dizer teto, nao meta. */}
               <span
-                className={`flex h-8 items-end overflow-hidden rounded ${
+                className={`relative flex h-8 items-end overflow-hidden rounded ${
                   d.registrou
                     ? 'bg-obliq-raised'
                     : d.futuro
@@ -199,7 +199,7 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
                 }`}
               >
                 <span
-                  className={`relative w-full overflow-hidden rounded-md transition-[height] duration-700 ease-out ${
+                  className={`w-full rounded-md transition-[height] duration-700 ease-out ${
                     !d.registrou
                       ? ''
                       : d.kcal > meta && meta > 0
@@ -207,19 +207,19 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
                         : 'bg-obliq-dim'
                   }`}
                   style={{ height: `${preenchimento(d.kcal, meta, 12)}%` }}
-                >
-                  {d.registrou && !(d.kcal > meta && meta > 0) && (
-                    <span
-                      className={`absolute inset-x-0 top-0 h-1.5 rounded-t-md ${corDoConsumo(
-                        d.kcal,
-                        meta,
-                      )}`}
-                    />
-                  )}
-                </span>
+                />
+                {d.registrou && !(d.kcal > meta && meta > 0) && (
+                  <span
+                    className={`absolute inset-x-0 h-0.5 rounded-full transition-[bottom] duration-700 ease-out ${corDoConsumo(
+                      d.kcal,
+                      meta,
+                    )}`}
+                    style={{ bottom: `calc(${preenchimento(d.kcal, meta, 12)}% + 2px)` }}
+                  />
+                )}
               </span>
               <span
-                className={`mt-0.5 block text-center font-mono text-[10px] ${
+                className={`mt-0.5 block text-center font-mono text-[11px] ${
                   d.aberto || d.hoje ? 'text-obliq-chalk' : 'text-obliq-faint'
                 }`}
               >
