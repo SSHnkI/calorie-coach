@@ -1,7 +1,7 @@
 import type { FoodEntry } from '../../types'
 import { metasPorRefeicao } from '../../lib/tdee'
 import { PERIODOS, horaContinua, periodoDe, type PeriodoId } from '../../lib/periodos'
-import { bordaDoConsumo } from '../../lib/semaforo'
+import { corDoConsumo, preenchimento } from '../../lib/semaforo'
 import { Icon } from '../ui/Icon'
 
 // As quatro janelas do dia. O que cria o impulso de registrar tudo nao e
@@ -71,10 +71,7 @@ export function Refeicoes({
               onClick={() => onSelecionar(j.id)}
               aria-pressed={j.alvoDoRegistro}
               aria-label={`Registrar na ${j.rotulo}, ${j.kcal} de ${j.alvo} kcal`}
-              className={`w-full rounded-lg border-t-2 px-1 py-2 text-center transition-colors duration-300 ${bordaDoConsumo(
-                j.kcal,
-                j.alvo,
-              )} ${
+              className={`w-full rounded-lg px-1.5 py-2 text-center transition-colors duration-300 ${
                 j.estourou
                   ? 'bg-obliq-red/10 ring-1 ring-obliq-red/40'
                   : j.itens > 0
@@ -114,6 +111,19 @@ export function Refeicoes({
                 }`}
               >
                 {j.rotulo}
+              </span>
+
+              {/* O semaforo mora aqui: a barra cresce com o que entrou e a cor
+                  diz se ainda cabe. Uma tampa fixa no topo dizia so a cor, e
+                  100 kcal desenhava a mesma coisa que 600. */}
+              <span className="mt-1.5 block h-1 overflow-hidden rounded-full bg-obliq-border">
+                <span
+                  className={`block h-full rounded-full transition-all duration-500 ease-out ${corDoConsumo(
+                    j.kcal,
+                    j.alvo,
+                  )}`}
+                  style={{ width: `${preenchimento(j.kcal, j.alvo)}%` }}
+                />
               </span>
             </button>
           </li>

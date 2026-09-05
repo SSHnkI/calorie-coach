@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { fetchFoodHistory } from '../../lib/foodLog'
 import { marcoDaSequencia, marcoNovo } from '../../lib/recompensa'
-import { bordaDoConsumo } from '../../lib/semaforo'
+import { corDoConsumo, preenchimento } from '../../lib/semaforo'
 import type { FoodEntry } from '../../types'
 
 // Onde fica o ultimo marco comemorado. Por dispositivo, nao por conta: perder a
@@ -83,7 +83,6 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
         rotulo,
         data: d,
         kcal,
-        pct: meta > 0 ? Math.min(100, (kcal / meta) * 100) : 0,
         registrou: kcal > 0,
         hoje: chave(d) === chave(hoje),
         futuro: d > hoje,
@@ -102,7 +101,7 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
     }
 
     return { dias, sequencia }
-  }, [itens, meta, selecionado])
+  }, [itens, selecionado])
 
   // Comemoracao da corrente. Dispara na virada do marco, uma vez por marco, e
   // nunca na primeira carga de um dispositivo que ainda nao conhecia a pessoa.
@@ -186,13 +185,12 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
                 d.aberto ? 'ring-1 ring-obliq-chalk' : d.hoje ? 'ring-1 ring-obliq-red/50' : ''
               } enabled:hover:ring-1 enabled:hover:ring-obliq-dim`}
             >
-              {/* Mesma borda de 2px da coluna da refeicao, mesma regra: o dia
-                  e uma refeicao maior. Dia que ainda vem nao ganha cor, porque
-                  nao ha o que julgar nele. */}
+              {/* Mesmo semaforo da coluna da refeicao, mesma regra: o dia e uma
+                  refeicao maior. A cor esta na barra que ja crescia com o
+                  consumo, entao altura e cor dizem a mesma coisa duas vezes,
+                  uma pro olho de longe e outra pro de perto. */}
               <span
-                className={`flex h-8 items-end overflow-hidden rounded border-t-2 ${
-                  d.futuro ? 'border-t-transparent' : bordaDoConsumo(d.kcal, meta)
-                } ${
+                className={`flex h-8 items-end overflow-hidden rounded ${
                   d.registrou
                     ? 'bg-obliq-raised'
                     : d.futuro
@@ -201,10 +199,11 @@ export function Habito({ meta, versao, selecionado, onSelecionar }: HabitoProps)
                 }`}
               >
                 <span
-                  className={`w-full rounded transition-[height] duration-700 ease-out ${
-                    d.kcal > meta && meta > 0 ? 'bg-obliq-red' : 'bg-obliq-dim'
-                  }`}
-                  style={{ height: `${Math.max(d.registrou ? 12 : 0, d.pct)}%` }}
+                  className={`w-full rounded transition-[height] duration-700 ease-out ${corDoConsumo(
+                    d.kcal,
+                    meta,
+                  )}`}
+                  style={{ height: `${preenchimento(d.kcal, meta, 12)}%` }}
                 />
               </span>
               <span
