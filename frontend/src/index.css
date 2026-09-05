@@ -19,7 +19,7 @@
   --tx-forte: #f7f5f1;
   --tx-medio: #d2d2dd;
   --tx-fraco: #adadbb;
-  --grao: 0.5;
+  --grao: 0.22;
   --sombra: 0 1px 0 rgba(255, 255, 255, 0.03) inset,
     0 12px 28px -18px rgba(6, 6, 10, 0.9);
 }
@@ -84,8 +84,6 @@
     font-family: var(--font-sans);
     background-color: var(--color-obliq-black);
     color: var(--color-obliq-chalk);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
 
   /* Só as laterais aqui. Respiro de topo e rodapé fica em quem é fixo
@@ -98,7 +96,14 @@
     padding-right: env(safe-area-inset-right);
   }
 
-  /* grao fixo: tira o aspecto de vetor liso sem custar layout */
+  /* Grao fixo: tira o aspecto de vetor liso sem custar layout.
+     Ele cobre a tela inteira, texto incluido, entao a mao tem que ser leve:
+     no escuro estava em 0,5 e chapava letra pequena, que e quase tudo aqui.
+
+     Aqui tambem NAO entra `-webkit-font-smoothing: antialiased`. No iOS ele
+     afina o traco da letra, e texto claro sobre fundo escuro ja e fino por
+     natureza: as duas coisas juntas apagavam a palavra. Sem ele o Safari usa
+     o proprio rasterizador, com traco cheio. */
   body::after {
     content: "";
     position: fixed;

@@ -133,7 +133,7 @@ export function NutritionStats({
 
         {projetado != null && (
           <p className="shrink-0 text-right">
-            <span className="block font-mono text-[10px] uppercase tracking-[0.14em] text-obliq-faint">
+            <span className="block font-mono text-[11px] uppercase tracking-[0.1em] text-obliq-faint">
               em 4 semanas
             </span>
             <span className="num text-lg font-medium text-obliq-chalk">
@@ -160,14 +160,14 @@ export function NutritionStats({
         </div>
 
         <div className="mt-1 flex items-baseline justify-between gap-2">
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-obliq-faint">
+          <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-obliq-faint">
             déficit
           </span>
           <span className="num text-[11px] text-obliq-dim">
             {saldo > 0 ? '+' : saldo < 0 ? '−' : ''}
             {Math.abs(Math.round(saldo))} kcal/dia
           </span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-obliq-faint">
+          <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-obliq-faint">
             superávit
           </span>
         </div>
