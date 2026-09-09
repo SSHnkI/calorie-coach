@@ -1,7 +1,7 @@
 // node --test supabase/functions/analyze-food/coerencia.test.ts
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { coerir, kcalDosMacros, MAX_KCAL_POR_GRAMA } from './coerencia.ts'
+import { coerir, kcalDosMacros, MAX_KCAL_POR_GRAMA, totaisDaPorcao } from './coerencia.ts'
 
 test('kcal coerente com os macros passa intacto', () => {
   // arroz cozido, 150 g: 195 kcal, 4 P, 42 C, 0.4 G
@@ -115,4 +115,32 @@ test('agua e cafe puro continuam podendo ser zero', () => {
   const r = coerir({ kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, alcohol_g: 0, grams_total: 200 })
   assert.equal(r.kcal, 0)
   assert.equal(r.ajuste, 'nenhum')
+})
+
+test('o total sai da densidade e do peso, nao do chute do modelo', () => {
+  // Arroz cozido: 130 kcal por 100 g. Uma concha de 80 g da 104, sempre.
+  const t = totaisDaPorcao(80, { kcal: 130, protein_g: 2.5, carbs_g: 28, fat_g: 0.3 })
+  assert.equal(t.kcal, 104)
+  assert.equal(t.protein_g, 2)
+  assert.equal(t.carbs_g, 22.4)
+  assert.equal(t.grams_total, 80)
+})
+
+test('densidade impossivel e cortada antes de virar total', () => {
+  // 1900 kcal/100g era o que o Open Food Facts devolvia pra "rice".
+  const t = totaisDaPorcao(100, { kcal: 1900, protein_g: 0, carbs_g: 0, fat_g: 0 })
+  assert.equal(t.kcal, 900)
+})
+
+test('porcao sem peso nao inventa caloria', () => {
+  const t = totaisDaPorcao(0, { kcal: 130, protein_g: 2.5, carbs_g: 28, fat_g: 0.3 })
+  assert.equal(t.kcal, 0)
+})
+
+test('a dose de destilado atravessa a conta com o alcool', () => {
+  // Whisky: 250 kcal e 32 g de etanol por 100 ml. Dose de 50 ml.
+  const t = totaisDaPorcao(50, { kcal: 250, protein_g: 0, carbs_g: 0, fat_g: 0, alcohol_g: 32 })
+  assert.equal(t.kcal, 125)
+  assert.equal(t.alcohol_g, 16)
+  assert.equal(coerir(t).ajuste, 'nenhum')
 })

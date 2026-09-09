@@ -41,6 +41,41 @@ export const MAX_KCAL_POR_GRAMA = 9
 // em arredondamento e em fibra, que nao entra na conta de Atwater.
 export const TOLERANCIA = 0.25
 
+/** Valores de cem gramas do alimento. E o que o modelo sabe de tabela. */
+export type Por100g = {
+  kcal: number
+  protein_g: number
+  carbs_g: number
+  fat_g: number
+  alcohol_g?: number
+}
+
+/**
+ * Total da porcao, calculado da densidade e do peso.
+ *
+ * O modelo passou a devolver kcal por 100 g em vez do total, e a multiplicacao
+ * virou nossa. O motivo e simples: densidade e numero de tabela, que ele sabe de
+ * cor (arroz cozido 130, feijao 76, peito de frango 165), enquanto "quanto tem
+ * numa concha de 80 g" e uma conta, e conta e onde ele erra. Antes dava pra ver
+ * o mesmo arroz sair com 155 kcal numa vez e 420 na outra.
+ *
+ * A trava de densidade vem antes da conta: nada comestivel passa de 900 kcal por
+ * 100 g, que e gordura pura.
+ */
+export function totaisDaPorcao(gramas: number, por100: Por100g) {
+  const fator = n(gramas) / 100
+  const densidade = Math.min(n(por100.kcal), MAX_KCAL_POR_GRAMA * 100)
+  const macro = (v: unknown) => Math.round(n(v) * fator * 10) / 10
+  return {
+    kcal: Math.round(densidade * fator),
+    protein_g: macro(por100.protein_g),
+    carbs_g: macro(por100.carbs_g),
+    fat_g: macro(por100.fat_g),
+    alcohol_g: macro(por100.alcohol_g),
+    grams_total: Math.round(n(gramas)),
+  }
+}
+
 export type Ajuste = 'nenhum' | 'macros' | 'densidade' | 'suspeito'
 
 export type Resultado = { kcal: number; ajuste: Ajuste; confiavel: boolean }

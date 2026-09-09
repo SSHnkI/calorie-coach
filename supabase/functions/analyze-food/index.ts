@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { coerir } from './coerencia.ts'
+import { coerir, totaisDaPorcao, type Por100g } from './coerencia.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,81 +22,94 @@ type Item = {
   quantity: number
   unit: string
   grams_total: number
-  kcal: number
-  protein_g: number
-  carbs_g: number
-  fat_g: number
-  // Etanol puro. So bebida alcoolica traz, e sem ele a energia dela some.
+  // O caminho novo: o modelo da a densidade, o servidor multiplica.
+  por_100g?: Por100g
+  // Caminho velho, mantido porque modelo teimoso ainda devolve o total direto.
+  kcal?: number
+  protein_g?: number
+  carbs_g?: number
+  fat_g?: number
   alcohol_g?: number
   confidence: 'high' | 'medium' | 'low'
 }
 
-const SYSTEM = `Voce e um interpretador de alimentos. Recebe o que uma pessoa comeu, em portugues do Brasil, e devolve JSON.
+const SYSTEM = `Voce e um interpretador de refeicoes. Recebe o que uma pessoa comeu, em portugues do Brasil, e devolve JSON.
 
-Separe em um item por alimento. "arroz com feijao e bife" sao tres itens.
-So junte no mesmo item o que e inseparavel, como "pao de queijo" ou "vitamina de banana".
+REGRA NUMERO UM: UM ITEM POR REFEICAO, NAO POR INGREDIENTE.
+"macarrao com creme de leite e queijo" e UMA coisa que a pessoa comeu, e sai como um
+item so, com esse nome. Quebrar em macarrao, creme de leite e queijo transforma o
+diario dela numa lista de compras, e e o que mais incomoda quem usa o app.
 
-QUANTIDADE. Esta e a regra mais importante e a que mais se erra:
-- quantity e a CONTAGEM que a pessoa disse. "bife" e 1. "2 bifes" e 2. "meio pao" e 0.5.
-- unit e a unidade natural DAQUELE alimento, no singular: "bife", "pao de queijo", "fatia",
-  "colher", "concha", "copo", "prato". Nao use "porcao" quando existe unidade contavel.
-- kcal, grams_total e os tres macros sao SEMPRE o total da quantidade inteira, nunca de
-  uma unidade. Dois bifes de 300 kcal cada saem como quantity 2 e kcal 600.
-- se a pessoa nao disse quantidade, quantity e 1 e a unidade e uma porcao unica daquele
-  alimento, nunca uma porcao dupla ou familiar.
+Separe em itens diferentes so quando sao comidas que chegaram separadas no prato e se
+comem sozinhas:
+  "macarrao com creme de leite e queijo" -> 1 item, o macarrao inteiro
+  "strogonoff com arroz e batata palha"  -> 1 item, e um prato montado
+  "vitamina de banana com aveia"         -> 1 item
+  "arroz, feijao e bife"                 -> 3 itens, prato feito, tres coisas soltas
+  "pao com manteiga e um cafe"           -> 2 itens, o pao com manteiga, e o cafe
+  "x-burger, fritas e coca"              -> 3 itens, sanduiche, acompanhamento, bebida
 
-Exemplos do contrato:
-  "bife"      -> quantity 1, unit "bife",          grams_total 120, kcal 300
-  "2 bifes"   -> quantity 2, unit "bife",          grams_total 240, kcal 600
-  "3 paes de queijo" -> quantity 3, unit "pao de queijo", grams_total 90, kcal 260
-  "arroz"     -> quantity 1, unit "concha",        grams_total 120, kcal 155
+Unem num item so: "com", "ao", "de", "recheado", "molho", "gratinado", e qualquer
+coisa preparada junto e servida junto.
+Sempre item proprio: bebida, sobremesa, e acompanhamento que chegou a parte.
+NA DUVIDA, UM ITEM. Poucas linhas com o total certo valem mais que muitas linhas.
 
-Para cada item:
-- grams_total: peso total em gramas (ou ml para liquidos) da quantidade inteira.
-- name: nome em portugues, como o usuario reconheceria.
-- Considere o alimento COMO SE COME, pronto no prato, nunca o ingrediente cru. Arroz e
-  arroz cozido, macarrao e macarrao cozido, feijao e feijao cozido. Isso muda muito o
-  numero: 100 g de arroz cru tem quase o triplo de 100 g de arroz cozido.
-- Porcao caseira brasileira: uma colher de servir de arroz e cerca de 60 g cozido, uma
-  concha de feijao cerca de 80 g, um bife de contra file cerca de 120 g, uma esfiha
-  aberta de padaria cerca de 80 g, um pao de queijo cerca de 30 g.
-- Na duvida entre uma porcao modesta e uma generosa, fique com a modesta. Superestimar
-  todo dia estraga o saldo calorico mais do que subestimar uma vez.
-- Estime kcal e macros da porcao inteira. Nunca recuse, sempre estime.
-- kcal precisa bater com os macros: 4 por grama de proteina, 4 por grama de carboidrato,
-  9 por grama de gordura. Confira antes de responder, inclusive que nenhum macro ficou
-  de fora: alimento com gordura nao pode sair com fat_g igual a zero.
+Fala longa pode citar mais de uma refeicao ("de manha comi X, no almoco Y"): ai sim
+separe, uma por refeicao, e dentro de cada uma vale a mesma regra de cima.
 
-BEBIDA CONTA, e e onde o app mais errava. Cerveja, refrigerante, suco, vitamina, leite,
-cafe com acucar, whisky, cachaca, vinho, chope e drink sao itens como qualquer outro.
-- unidade de bebida: "copo", "lata", "long neck", "taca", "dose", "garrafa", "caneca".
-- grams_total de liquido vai em ml.
-- ALCOOL: etanol tem 7 kcal por grama e NAO aparece em proteina, carboidrato nem gordura.
-  Quando a bebida tem alcool, preencha alcohol_g com os gramas de etanol puro da porcao
-  inteira: ml x teor alcoolico x 0,79. Sem esse campo a bebida entra no diario como se
-  nao tivesse energia nenhuma.
-- destilado puro tem os tres macros zerados. Isso e correto, nao e falta de dado.
+NUMEROS. Nao calcule o total: devolva o peso e a densidade, que a conta e nossa.
+- grams_total: peso da porcao INTEIRA em gramas, ou ml se for liquido.
+- por_100g: kcal, protein_g, carbs_g, fat_g e alcohol_g de CEM gramas dessa comida.
+  Isso e numero de tabela, e voce sabe de cor: arroz cozido 130, feijao cozido 76,
+  macarrao cozido 158, peito de frango grelhado 165, contra file 220, pao frances 300,
+  mussarela 330, creme de leite 210, coca-cola 42, cerveja 43, whisky 250.
+- Prato montado usa a densidade do PRATO PRONTO, nao a media dos ingredientes:
+  macarrao ao creme com queijo fica perto de 200 por 100 g, strogonoff com arroz perto
+  de 170, feijoada perto de 200, x-burger perto de 260.
+- Densidade de coisa simples, pra nao errar o facil: cafe puro 2, cha sem acucar 1,
+  agua 0, leite integral 62, suco de laranja 45, banana 90, ovo cozido 155, ovo frito
+  195, azeite 880, acucar 400.
+- alcohol_g e o etanol puro em 100 ml: cerveja 3,9, vinho 10, destilado 32. Zero em
+  tudo que nao e bebida alcoolica. Etanol tem 7 kcal por grama e nao aparece em
+  proteina, carboidrato nem gordura, entao destilado puro tem os tres zerados e mesmo
+  assim tem caloria.
 
-Referencia de bebida:
-  "dose de whisky"   -> quantity 1, unit "dose",  grams_total 50,  alcohol_g 16, kcal 110
-  "lata de cerveja"  -> quantity 1, unit "lata",  grams_total 350, alcohol_g 12, carbs_g 11, kcal 145
-  "taca de vinho"    -> quantity 1, unit "taca",  grams_total 150, alcohol_g 15, carbs_g 4,  kcal 125
-  "caipirinha"       -> quantity 1, unit "copo",  grams_total 250, alcohol_g 25, carbs_g 25, kcal 280
-  "lata de refri"    -> quantity 1, unit "lata",  grams_total 350, carbs_g 37, kcal 148
+PESO DA PORCAO. E aqui que erra quem erra:
+- quantity e a contagem que a pessoa disse: "bife" e 1, "2 bifes" e 2, "meio pao" 0.5.
+- unit e a unidade natural daquela comida, no singular e em portugues: "prato",
+  "concha", "colher", "fatia", "bife", "copo", "lata", "dose", "pao de queijo". Nunca
+  "porcao" quando existe unidade contavel, e nunca "piece", "cup", "serving", "unit".
+- grams_total e o peso de TUDO que ela comeu, nao de uma unidade: 2 bifes de 120 g
+  sao 240.
+- Referencia caseira brasileira: colher de servir de arroz 60 g, concha de feijao 80 g,
+  bife de contra file 120 g, file de frango 130 g, pao frances 50 g, pao de queijo
+  30 g, fatia de queijo 20 g, colher de sopa de creme de leite 15 g, prato de macarrao
+  300 g, esfiha de padaria 80 g, copo 200 ml, lata 350 ml, dose 50 ml.
+- Comida COMO SE COME, pronta no prato, nunca crua: arroz e arroz cozido, macarrao e
+  macarrao cozido. 100 g de arroz cru tem quase o triplo do cozido.
+- Entre uma porcao modesta e uma generosa, fique com a modesta. Superestimar todo dia
+  estraga o saldo mais do que subestimar uma vez.
 
-NUNCA devolva a lista vazia e nunca se recuse a responder. Marca, prato regional, gorduroso,
-doce, suplemento, bebida alcoolica, remedio com acucar: tudo estima. Se nao reconhecer o
-nome exato, use o alimento mais parecido que voce conhece e marque confidence "low". Item
-estimado por semelhanca e util; item ausente vira zero caloria no diario da pessoa, e zero
-e sempre a resposta mais errada possivel.
+LITERAL. Nao acrescente nada que a pessoa nao disse, e nao tire nada que ela disse.
+"cafe" e cafe puro, coado, sem acucar e sem leite: 2 kcal por 100 ml, e o total de uma
+xicara e um numero de um digito. Se ela toma com acucar ou com leite, ela escreve.
+"pao" e pao frances: 300 kcal por 100 g. Nao e pao doce, nem pao de leite, nem pao com
+manteiga. Se fosse, ela escreveria.
+"leite" e leite integral, "iogurte" e o natural, "suco" e o da fruta, "salada" e a
+folha sem molho. A pessoa conhece a comida dela e escreve o que comeu.
 
-A unidade sempre em portugues. Nunca "piece", "cup", "portion", "serving", "unit", nem
-"ml" para comida solida.
+MESMA ENTRADA, MESMO NUMERO. "cafe" tem que dar hoje o mesmo que deu ontem. Nao varie
+a estimativa entre chamadas, nao alterne entre uma leitura generosa e uma modesta: use
+sempre o valor de tabela do alimento exatamente como ele foi escrito.
+
+name: o nome da refeicao como a propria pessoa se referiria a ela, em minusculas.
+
+NUNCA devolva lista vazia e NUNCA recuse. Marca, prato regional, doce, suplemento,
+bebida alcoolica, remedio com acucar: tudo estima. Nao reconheceu o nome exato? Use o
+mais parecido que voce conhece e marque confidence "low".
 
 Responda SOMENTE com JSON neste formato:
-{"items":[{"name":string,"quantity":number,"unit":string,"grams_total":number,"kcal":number,"protein_g":number,"carbs_g":number,"fat_g":number,"alcohol_g":number,"confidence":"high"|"medium"|"low"}]}
-
-alcohol_g e 0 em tudo que nao for bebida alcoolica.`
+{"items":[{"name":string,"quantity":number,"unit":string,"grams_total":number,"por_100g":{"kcal":number,"protein_g":number,"carbs_g":number,"fat_g":number,"alcohol_g":number},"confidence":"high"|"medium"|"low"}]}`
 
 const EXTRA_FOTO = `
 A entrada inclui uma foto. Identifique cada alimento visivel e estime a porcao pelo
@@ -181,7 +194,13 @@ async function askGroq(foodInput: string, key: string, image?: string): Promise<
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
       body: JSON.stringify({
         model,
-        temperature: 0.2,
+        // Zero, nao 0.2: "cafe" dava 2 kcal numa chamada e 50 na seguinte, e
+        // numero de diario que muda sozinho destroi a confianca na conta toda.
+        temperature: 0,
+        // O teto corta a resposta que enrola. Com um item por refeicao em vez de
+        // um por ingrediente, o JSON ficou curto, e isso tambem e o que faz a
+        // insercao aparecer mais rapido na tela.
+        max_completion_tokens: 900,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: image ? SYSTEM + EXTRA_FOTO : SYSTEM },
@@ -226,13 +245,49 @@ async function askGroq(foodInput: string, key: string, image?: string): Promise<
   throw new Error(`groq_indisponivel: ${ultimoErro}`)
 }
 
-// Aplica a checagem de coerencia em cima do que o modelo devolveu. Ver
-// coerencia.ts para o porque de nao haver mais consulta a base externa.
-function conferir(item: Item): Item & { ajuste: string } {
-  const { kcal, ajuste, confiavel } = coerir(item)
+/** O que vai pro diario, depois da conta e das travas. */
+type Registro = {
+  name: string
+  quantity: number
+  unit: string
+  kcal: number
+  protein_g: number
+  carbs_g: number
+  fat_g: number
+  confidence: 'high' | 'medium' | 'low'
+  ajuste: string
+}
+
+function num(v: unknown): number {
+  const x = Number(v)
+  return Number.isFinite(x) && x > 0 ? x : 0
+}
+
+// Monta o total da porcao e passa pelas travas de coerencia. Ver coerencia.ts
+// para o porque de nao haver mais consulta a base externa.
+function montar(item: Item): Registro {
+  // Caminho normal: densidade x peso, com a conta feita aqui. O caminho de
+  // baixo e so pra modelo que ignorou o formato e mandou o total direto.
+  const bruto = item.por_100g
+    ? totaisDaPorcao(item.grams_total, item.por_100g)
+    : {
+        kcal: num(item.kcal),
+        protein_g: num(item.protein_g),
+        carbs_g: num(item.carbs_g),
+        fat_g: num(item.fat_g),
+        alcohol_g: num(item.alcohol_g),
+        grams_total: num(item.grams_total),
+      }
+
+  const { kcal, ajuste, confiavel } = coerir(bruto)
   return {
-    ...item,
+    name: String(item.name ?? '').slice(0, 120) || 'refeicao',
+    quantity: num(item.quantity) || 1,
+    unit: String(item.unit ?? '').slice(0, 40) || 'porcao',
     kcal,
+    protein_g: bruto.protein_g,
+    carbs_g: bruto.carbs_g,
+    fat_g: bruto.fat_g,
     // Contradicao interna derruba a confianca declarada pelo modelo: ele errou
     // uma conta que ele mesmo forneceu os numeros para fazer.
     confidence: confiavel ? item.confidence : 'low',
@@ -315,27 +370,45 @@ Deno.serve(async (req) => {
     }
 
     const brutos = await askGroq(texto, groqKey, image)
-    const itens = brutos.map(conferir)
+    const itens = brutos.map(montar)
     const ajustados = itens.filter((i) => i.ajuste !== 'nenhum')
     if (ajustados.length) {
       console.log('coerencia ajustou:', ajustados.map((i) => `${i.name}:${i.ajuste}`).join(', '))
     }
 
+    // Devolve as linhas gravadas, com id e hora, pra tela poder mostrar o item
+    // na hora em vez de recarregar o dia inteiro numa segunda ida de rede.
+    //
+    // E confere o erro do insert: antes ele era ignorado, entao falha de gravacao
+    // respondia sucesso e a comida simplesmente nao aparecia. Quem usa o app
+    // chamava isso de "deu erro, tive que inserir de novo".
+    const COLS = 'id, name, quantity, unit, kcal, protein_g, carbs_g, fat_g, confidence, logged_at'
+    let gravados: Record<string, unknown>[] = []
+
     if (log) {
-      await supabase.from('food_log').insert(
-        itens.map((n) => ({
-          user_id: user.id,
-          name: n.name,
-          quantity: n.quantity,
-          unit: n.unit,
-          kcal: n.kcal,
-          protein_g: n.protein_g,
-          carbs_g: n.carbs_g,
-          fat_g: n.fat_g,
-          confidence: n.confidence,
-          ...(quando ? { logged_at: quando } : {}),
-        })),
-      )
+      const { data: linhas, error: erroInsert } = await supabase
+        .from('food_log')
+        .insert(
+          itens.map((n) => ({
+            user_id: user.id,
+            name: n.name,
+            quantity: n.quantity,
+            unit: n.unit,
+            kcal: n.kcal,
+            protein_g: n.protein_g,
+            carbs_g: n.carbs_g,
+            fat_g: n.fat_g,
+            confidence: n.confidence,
+            ...(quando ? { logged_at: quando } : {}),
+          })),
+        )
+        .select(COLS)
+
+      if (erroInsert || !linhas?.length) {
+        console.error('food_log insert:', erroInsert)
+        return json({ error: 'nao_gravou' }, 502)
+      }
+      gravados = linhas as Record<string, unknown>[]
     }
 
     await supabase
@@ -343,8 +416,12 @@ Deno.serve(async (req) => {
       .update({ analyses_today: aiToday + 1, analyses_date: today })
       .eq('id', user.id)
 
+    // `ajuste` e diagnostico de servidor, nao sai na resposta.
+    const semAjuste = itens.map(({ ajuste: _ajuste, ...resto }) => resto)
+    const resposta = gravados.length ? gravados : semAjuste
+
     // Compatibilidade: quem le um item so continua funcionando.
-    return json({ ...itens[0], items: itens, transcricao })
+    return json({ ...resposta[0], items: resposta, transcricao })
   } catch (err) {
     console.error('analyze-food:', err)
     return json({ error: 'analyze_failed' }, 502)
