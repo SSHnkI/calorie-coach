@@ -24,6 +24,21 @@ const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sáb
 
 const MACROS_ABERTOS = 'obliq:macros-abertos'
 
+/**
+ * Registro em analise. Guarda o proprio conteudo enviado, e nao so o rotulo,
+ * porque falhar sem guardar era o que obrigava a pessoa a digitar tudo de novo.
+ * Com o conteudo na mao, "tentar de novo" e um toque.
+ */
+type Pendente = {
+  id: string
+  rotulo: string
+  texto: string
+  foto?: string
+  fala?: string
+  quando?: Date
+  erro?: string
+}
+
 function meiaNoite(d = new Date()) {
   const x = new Date(d)
   x.setHours(0, 0, 0, 0)
@@ -45,7 +60,7 @@ export function DashboardPage() {
   const [novoId, setNovoId] = useState<string | null>(null)
   const [versao, setVersao] = useState(0)
   const [ganho, setGanho] = useState<string | null>(null)
-  const [pendentes, setPendentes] = useState<{ id: string; texto: string; foto?: string }[]>([])
+  const [pendentes, setPendentes] = useState<Pendente[]>([])
   const [dia, setDia] = useState(() => meiaNoite())
   const [gasto, setGasto] = useState(0)
   // Em qual janela do dia entra o proximo registro. Comeca na janela de agora e
@@ -63,25 +78,9 @@ export function DashboardPage() {
 
   const ehHoje = mesmoDia(dia, new Date())
 
-  const loadToday = useCallback((marcarNovo = false) => {
+  const loadToday = useCallback(() => {
     fetchFoodByDay(dia)
-      .then((novos) => {
-        setEntries((antigos) => {
-          if (marcarNovo) {
-            const vistos = new Set(antigos.map((e) => e.id))
-            const recem = novos.find((e) => !vistos.has(e.id))
-            if (recem) {
-              setNovoId(recem.id)
-              setGanho(`+${recem.kcal}`)
-              navigator.vibrate?.(12)
-              setTimeout(() => setNovoId(null), 1200)
-              setTimeout(() => setGanho(null), 1100)
-            }
-          }
-          return novos
-        })
-        if (marcarNovo) setVersao((v) => v + 1)
-      })
+      .then(setEntries)
       .catch(() => {})
   }, [dia])
 
@@ -148,31 +147,79 @@ export function DashboardPage() {
 
   // Otimista: a linha entra na hora e o calculo corre atras.
   // Varios registros podem estar em analise ao mesmo tempo.
-  const handleAnalyze = (texto: string, foto?: string, fala?: string) => {
-    const id = `pend-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
-    const rotulo = texto.trim() || (fala ? 'ouvindo o que você disse' : 'foto da refeição')
-    setPendentes((p) => [{ id, texto: rotulo, foto }, ...p])
-    setError('')
+  const analisar = useCallback(
+    (p: Pendente) => {
+      setPendentes((atuais) => [
+        { ...p, erro: undefined },
+        ...atuais.filter((x) => x.id !== p.id),
+      ])
+      setError('')
 
+      analyzeFood(p.texto, p.foto, p.fala, p.quando)
+        .then((r) => {
+          if (!r.ok) {
+            // Teto de analises do dia nao e coisa que tentar de novo resolve.
+            if (r.error === 'limit_reached') {
+              setError(t.dashboard.limitReached)
+              setPendentes((atuais) => atuais.filter((x) => x.id !== p.id))
+              return
+            }
+            // O resto fica na lista, com o conteudo intacto e um botao.
+            setPendentes((atuais) =>
+              atuais.map((x) =>
+                x.id === p.id
+                  ? { ...x, erro: r.error === 'nao_gravou' ? 'não salvou' : 'não entendi' }
+                  : x,
+              ),
+            )
+            return
+          }
+
+          // As linhas gravadas vem na resposta, com id e hora: entram na tela
+          // direto, sem uma segunda ida de rede pra buscar o dia inteiro.
+          const doDiaAberto = r.itens.filter((i) => mesmoDia(new Date(i.logged_at), dia))
+          if (doDiaAberto.length) {
+            setEntries((antigos) => {
+              const vistos = new Set(antigos.map((e) => e.id))
+              const novos = doDiaAberto.filter((i) => !vistos.has(i.id))
+              return [...novos, ...antigos].sort(
+                (a, b) => +new Date(b.logged_at) - +new Date(a.logged_at),
+              )
+            })
+
+            const somado = doDiaAberto.reduce((soma, i) => soma + i.kcal, 0)
+            setNovoId(doDiaAberto[0].id)
+            setGanho(`+${somado}`)
+            navigator.vibrate?.(12)
+            setTimeout(() => setNovoId(null), 1200)
+            setTimeout(() => setGanho(null), 1100)
+          }
+
+          setVersao((v) => v + 1)
+          setPendentes((atuais) => atuais.filter((x) => x.id !== p.id))
+        })
+        .catch(() =>
+          setPendentes((atuais) =>
+            atuais.map((x) => (x.id === p.id ? { ...x, erro: 'sem conexão' } : x)),
+          ),
+        )
+    },
+    [dia, t],
+  )
+
+  const handleAnalyze = (texto: string, foto?: string, fala?: string) => {
     // Sem carimbo, o servidor usa a hora de agora. So carimbamos quando o
     // destino nao e este instante: dia passado, ou outra janela do dia.
     const naJanelaDeAgora = ehHoje && periodo === periodoAgora()
-    const quando = naJanelaDeAgora ? undefined : horaNoPeriodo(dia, periodo, entries)
 
-    analyzeFood(texto, foto, fala, quando)
-      .then((result) => {
-        if (!result.ok) {
-          setError(
-            result.error === 'limit_reached'
-              ? t.dashboard.limitReached
-              : t.dashboard.analyzeError,
-          )
-          return
-        }
-        loadToday(true)
-      })
-      .catch(() => setError(t.dashboard.analyzeError))
-      .finally(() => setPendentes((p) => p.filter((x) => x.id !== id)))
+    analisar({
+      id: `pend-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      rotulo: texto.trim() || (fala ? 'ouvindo o que você disse' : 'foto da refeição'),
+      texto,
+      foto,
+      fala,
+      quando: naJanelaDeAgora ? undefined : horaNoPeriodo(dia, periodo, entries),
+    })
   }
 
   const handleDelete = async (id: string) => {
@@ -433,20 +480,53 @@ export function DashboardPage() {
               </div>
             ) : (
               <div className="mt-3 divide-y divide-obliq-border border-y border-obliq-border">
+                {/* Registro em analise, e o que falhou. O que falhou NAO sai da
+                    lista: o conteudo fica guardado e "tentar de novo" reenvia,
+                    porque perder o texto e obrigar a pessoa a digitar de novo
+                    era a pior parte de qualquer erro aqui. */}
                 {pendentes.map((p) => (
-                  <div key={p.id} className="rise flex items-center gap-3 py-2.5">
-                    {p.foto && (
-                      <img
-                        src={p.foto}
-                        alt=""
-                        className="h-8 w-8 shrink-0 rounded object-cover opacity-60 ring-1 ring-obliq-border"
-                      />
+                  <div key={p.id} className="rise py-2.5">
+                    <div className="flex items-center gap-3">
+                      {p.foto && (
+                        <img
+                          src={p.foto}
+                          alt=""
+                          className="h-8 w-8 shrink-0 rounded object-cover opacity-60 ring-1 ring-obliq-border"
+                        />
+                      )}
+                      <span className="truncate text-obliq-dim">{p.rotulo}</span>
+                      <span className="leader" aria-hidden="true" />
+                      <span
+                        className={`num shrink-0 text-[12px] ${
+                          p.erro ? 'text-obliq-red' : 'animate-pulse text-obliq-faint'
+                        }`}
+                      >
+                        {p.erro ?? 'calculando'}
+                      </span>
+                    </div>
+
+                    {/* Os botoes em linha propria: no celular eles disputavam a
+                        largura com o texto e sobrava "pao c..." na tela. */}
+                    {p.erro && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => analisar(p)}
+                          className="num rounded-lg px-3 py-1.5 text-[12px] text-obliq-chalk ring-1 ring-obliq-border transition-colors hover:text-obliq-red"
+                        >
+                          tentar de novo
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPendentes((atuais) => atuais.filter((x) => x.id !== p.id))
+                          }
+                          className="num rounded-lg px-3 py-1.5 text-[12px] text-obliq-faint transition-colors hover:text-obliq-red"
+                        >
+                          descartar
+                        </button>
+                      </div>
                     )}
-                    <span className="truncate text-obliq-dim">{p.texto}</span>
-                    <span className="leader" aria-hidden="true" />
-                    <span className="num shrink-0 animate-pulse text-[12px] text-obliq-faint">
-                      calculando
-                    </span>
                   </div>
                 ))}
 

@@ -1,9 +1,13 @@
 import { supabase } from './supabase'
-import type { NutritionResult } from '../types'
+import type { FoodEntry, NutritionResult } from '../types'
+
+export type ErroDeAnalise = 'limit_reached' | 'unauthorized' | 'nao_gravou' | 'failed'
 
 export type AnalyzeResult =
-  | { ok: true; nutrition: NutritionResult; analysesRemaining: number | null }
-  | { ok: false; error: 'limit_reached' | 'unauthorized' | 'failed'; analysesUsed?: number; limit?: number }
+  // `itens` sao as linhas gravadas, com id e hora: a tela mostra elas direto em
+  // vez de recarregar o dia inteiro numa segunda ida de rede.
+  | { ok: true; itens: FoodEntry[]; analysesRemaining: number | null }
+  | { ok: false; error: ErroDeAnalise; analysesUsed?: number; limit?: number }
 
 // Estima macros de um alimento SEM registrar no diário (para edição de dieta).
 export async function estimateFood(input: string): Promise<NutritionResult | null> {
@@ -17,7 +21,7 @@ export async function estimateFood(input: string): Promise<NutritionResult | nul
   return n as NutritionResult
 }
 
-// Chama a Edge Function `analyze-food` (Groq + Open Food Facts).
+// Chama a Edge Function `analyze-food`.
 export async function analyzeFood(
   input: string,
   image?: string,
@@ -45,6 +49,11 @@ export async function analyzeFood(
       if (body?.error === 'unauthorized') {
         return { ok: false, error: 'unauthorized' }
       }
+      // A analise foi, a gravacao nao. Vale tentar de novo, e o texto continua
+      // na mao de quem escreveu.
+      if (body?.error === 'nao_gravou') {
+        return { ok: false, error: 'nao_gravou' }
+      }
     } catch {
       // corpo nao-JSON, cai no erro generico abaixo
     }
@@ -53,6 +62,12 @@ export async function analyzeFood(
 
   if (!data) return { ok: false, error: 'failed' }
 
-  const { analyses_remaining, ...nutrition } = data as NutritionResult & { analyses_remaining: number | null }
-  return { ok: true, nutrition, analysesRemaining: analyses_remaining ?? null }
+  const corpo = data as {
+    items?: FoodEntry[]
+    analyses_remaining?: number | null
+  } & NutritionResult
+  const itens = (corpo.items ?? []).filter((i) => !!i?.id)
+  if (!itens.length) return { ok: false, error: 'failed' }
+
+  return { ok: true, itens, analysesRemaining: corpo.analyses_remaining ?? null }
 }
