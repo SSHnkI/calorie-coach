@@ -8,13 +8,10 @@ function keyOf(d: Date) {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
 }
 
-// Onde a barra do saldo satura. Passou disso, o problema nao e a escala.
-const TETO_DA_BARRA = 1000
-
-const CORES: Record<Rumo, { texto: string; barra: string }> = {
-  certo: { texto: 'text-obliq-green', barra: 'bg-obliq-green' },
-  parado: { texto: 'text-obliq-amber', barra: 'bg-obliq-amber' },
-  contra: { texto: 'text-obliq-red', barra: 'bg-obliq-red' },
+const CORES: Record<Rumo, string> = {
+  certo: 'text-obliq-green',
+  parado: 'text-obliq-amber',
+  contra: 'text-obliq-red',
 }
 
 const FRASES: Record<Objetivo, Record<Rumo, string>> = {
@@ -113,9 +110,6 @@ export function NutritionStats({
   const mostraDestino =
     projetado != null && currentWeight != null && !fraco && projetado > 25 && projetado < 400
 
-  const largura = Math.min(Math.abs(saldo) / TETO_DA_BARRA, 1) * 50
-  const esquerda = saldo < 0 ? 50 - largura : 50
-
   return (
     <section>
       <div className="flex items-baseline justify-between gap-3">
@@ -125,58 +119,45 @@ export function NutritionStats({
         </span>
       </div>
 
-      <div className="mt-2">
-        <p>
-          <span className={`num text-[2rem] font-medium leading-none ${cor.texto}`}>
-            {kgSemana > 0 ? '+' : kgSemana < 0 ? '−' : ''}
-            {br(Math.abs(kgSemana), 2)}
-          </span>
-          <span className="num ml-1.5 text-[11px] text-obliq-faint">kg por semana</span>
-        </p>
-        <p className={`mt-1 text-[12px] ${cor.texto}`}>{FRASES[objetivo][rumo]}</p>
+      {/* O numero e a frase, e depois duas linhas de livro-caixa, que e a
+          lingua do resto da tela. Saiu a barra com o zero no meio: ela era um
+          desenho de outro app no meio deste, e o saldo cabe numa linha. */}
+      <p className="mt-2 flex items-baseline gap-2">
+        <span className={`num text-[2rem] font-medium leading-none ${cor}`}>
+          {kgSemana > 0 ? '+' : kgSemana < 0 ? '−' : ''}
+          {br(Math.abs(kgSemana), 2)}
+        </span>
+        <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-obliq-faint">
+          kg por semana
+        </span>
+      </p>
+      <p className={`mt-1 text-[13px] ${cor}`}>{FRASES[objetivo][rumo]}</p>
 
-        {/* Frase inteira, com o peso de agora do lado do previsto. Antes era uma
-            coluna a direita, "EM 4 SEMANAS / 80,3 kg", colada no numero grande:
-            dava pra ler que os 80,3 kg eram o que ia SAIR do corpo. Numero de
-            peso sozinho na tela nao diz se e destino ou diferenca. */}
-        {mostraDestino && (
-          <p className="num mt-1 text-[12px] text-obliq-dim">
-            de {br(currentWeight as number, 1)} kg para{' '}
-            <span className="text-obliq-chalk">{br(projetado as number, 1)} kg</span> em 4
-            semanas
-          </p>
-        )}
-      </div>
-
-      {/* Saldo medio contra a manutencao. Zero no meio: e o unico ponto em que
-          o peso nao se mexe, e ver de que lado dele voce esta explica o numero
-          grande la em cima melhor do que qualquer frase. */}
-      <div className="mt-3">
-        <div className="relative h-2 overflow-hidden rounded-full bg-obliq-surface ring-1 ring-obliq-border">
-          <span
-            aria-hidden="true"
-            className="absolute inset-y-0 left-1/2 z-10 w-0.5 -translate-x-1/2 bg-obliq-chalk/70"
-          />
-          <span
-            aria-hidden="true"
-            className={`absolute inset-y-0 transition-all duration-500 ease-out ${cor.barra}`}
-            style={{ left: `${esquerda}%`, width: `${Math.max(largura, 1)}%` }}
-          />
-        </div>
-
-        <div className="mt-1 flex items-baseline justify-between gap-2">
-          <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-obliq-faint">
-            déficit
-          </span>
-          <span className="num text-[11px] text-obliq-dim">
+      <dl className="mt-3 divide-y divide-obliq-border border-y border-obliq-border">
+        <div className="flex items-baseline py-2">
+          <dt className="text-[13px] text-obliq-dim">
+            {saldo > 0 ? 'superávit por dia' : 'déficit por dia'}
+          </dt>
+          <span className="leader" aria-hidden="true" />
+          <dd className="num shrink-0 text-obliq-chalk">
             {saldo > 0 ? '+' : saldo < 0 ? '−' : ''}
-            {Math.abs(Math.round(saldo))} kcal/dia
-          </span>
-          <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-obliq-faint">
-            superávit
-          </span>
+            {Math.abs(Math.round(saldo))}
+            <span className="ml-1 font-mono text-[12px] text-obliq-faint">kcal</span>
+          </dd>
         </div>
-      </div>
+
+        {mostraDestino && (
+          <div className="flex items-baseline py-2">
+            <dt className="text-[13px] text-obliq-dim">em 4 semanas</dt>
+            <span className="leader" aria-hidden="true" />
+            <dd className="num shrink-0">
+              <span className="text-obliq-faint">{br(currentWeight as number, 1)}</span>
+              <span className="mx-1.5 text-obliq-faint">&rarr;</span>
+              <span className="text-obliq-chalk">{br(projetado as number, 1)} kg</span>
+            </dd>
+          </div>
+        )}
+      </dl>
     </section>
   )
 }
