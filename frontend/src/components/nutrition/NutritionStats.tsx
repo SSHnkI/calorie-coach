@@ -108,6 +108,10 @@ export function NutritionStats({
   const cor = CORES[rumo]
   // Poucos dias na conta e chute com cara de numero. Diz isso em vez de esconder.
   const fraco = diasComRegistro < 3
+  // Projetar quatro semanas em cima de dois dias e adivinhacao com virgula. E
+  // peso fora da faixa humana e conta errada em algum lugar, nao previsao.
+  const mostraDestino =
+    projetado != null && currentWeight != null && !fraco && projetado > 25 && projetado < 400
 
   const largura = Math.min(Math.abs(saldo) / TETO_DA_BARRA, 1) * 50
   const esquerda = saldo < 0 ? 50 - largura : 50
@@ -121,24 +125,25 @@ export function NutritionStats({
         </span>
       </div>
 
-      <div className="mt-2 flex items-end justify-between gap-4">
-        <p className="min-w-0">
+      <div className="mt-2">
+        <p>
           <span className={`num text-[2rem] font-medium leading-none ${cor.texto}`}>
             {kgSemana > 0 ? '+' : kgSemana < 0 ? '−' : ''}
             {br(Math.abs(kgSemana), 2)}
           </span>
-          <span className="num ml-1.5 text-[11px] text-obliq-faint">kg/semana</span>
-          <span className={`mt-1 block text-[12px] ${cor.texto}`}>{FRASES[objetivo][rumo]}</span>
+          <span className="num ml-1.5 text-[11px] text-obliq-faint">kg por semana</span>
         </p>
+        <p className={`mt-1 text-[12px] ${cor.texto}`}>{FRASES[objetivo][rumo]}</p>
 
-        {projetado != null && (
-          <p className="shrink-0 text-right">
-            <span className="block font-mono text-[11px] uppercase tracking-[0.1em] text-obliq-faint">
-              em 4 semanas
-            </span>
-            <span className="num text-lg font-medium text-obliq-chalk">
-              {br(projetado, 1)} kg
-            </span>
+        {/* Frase inteira, com o peso de agora do lado do previsto. Antes era uma
+            coluna a direita, "EM 4 SEMANAS / 80,3 kg", colada no numero grande:
+            dava pra ler que os 80,3 kg eram o que ia SAIR do corpo. Numero de
+            peso sozinho na tela nao diz se e destino ou diferenca. */}
+        {mostraDestino && (
+          <p className="num mt-1 text-[12px] text-obliq-dim">
+            de {br(currentWeight as number, 1)} kg para{' '}
+            <span className="text-obliq-chalk">{br(projetado as number, 1)} kg</span> em 4
+            semanas
           </p>
         )}
       </div>
