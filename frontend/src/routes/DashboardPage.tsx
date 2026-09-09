@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { useI18n } from '../i18n/I18nContext'
 import { analyzeFood } from '../lib/analyzeFood'
-import { deleteFood, fetchFoodByDay, updateFoodKcal } from '../lib/foodLog'
+import { deleteFood, fetchFoodByDay, fetchFoodHistory, inserirFood, updateFoodKcal } from '../lib/foodLog'
+import { atalhosDoHistorico, type Atalho } from '../lib/atalhos'
 import { calculateDailyKcal, calculateMacroTargets } from '../lib/tdee'
 import { horaNoPeriodo } from '../lib/horaDoRegistro'
 import { PERIODOS, periodoAgora, periodoDe, type PeriodoId } from '../lib/periodos'
@@ -15,7 +16,7 @@ import { Tabs } from '../components/ui/Tabs'
 import { Habito } from '../components/nutrition/Habito'
 import { Refeicoes } from '../components/nutrition/Refeicoes'
 import { Gasto } from '../components/nutrition/Gasto'
-import { Composer } from '../components/nutrition/Composer'
+import { Composer, type EstadoDoEnvio } from '../components/nutrition/Composer'
 import { useCountUp } from '../lib/useCountUp'
 import { NutritionHistory } from '../components/nutrition/NutritionHistory'
 import { NutritionStats } from '../components/nutrition/NutritionStats'
@@ -61,6 +62,9 @@ export function DashboardPage() {
   const [versao, setVersao] = useState(0)
   const [ganho, setGanho] = useState<string | null>(null)
   const [pendentes, setPendentes] = useState<Pendente[]>([])
+  // Confirmacao do que acabou de entrar, mostrada na barra por alguns segundos.
+  const [entrou, setEntrou] = useState<{ rotulo: string; kcal: number } | null>(null)
+  const [atalhos, setAtalhos] = useState<Atalho[]>([])
   const [dia, setDia] = useState(() => meiaNoite())
   const [gasto, setGasto] = useState(0)
   // Em qual janela do dia entra o proximo registro. Comeca na janela de agora e
@@ -101,6 +105,42 @@ export function DashboardPage() {
     document.addEventListener('visibilitychange', aoVoltar)
     return () => document.removeEventListener('visibilitychange', aoVoltar)
   }, [loadToday, dia])
+
+  useEffect(() => {
+    fetchFoodHistory(30)
+      .then((h) => setAtalhos(atalhosDoHistorico(h)))
+      .catch(() => {})
+  }, [versao])
+
+  // Uma linha entrou: a tela mostra, o rodape confirma, o habito recarrega.
+  const registrou = useCallback((novos: FoodEntry[], rotulo: string) => {
+    const doDiaAberto = novos.filter((i) => mesmoDia(new Date(i.logged_at), dia))
+    if (doDiaAberto.length) {
+      setEntries((antigos) => {
+        const vistos = new Set(antigos.map((e) => e.id))
+        const inedito = doDiaAberto.filter((i) => !vistos.has(i.id))
+        return [...inedito, ...antigos].sort(
+          (a, b) => +new Date(b.logged_at) - +new Date(a.logged_at),
+        )
+      })
+
+      const somado = doDiaAberto.reduce((soma, i) => soma + i.kcal, 0)
+      setNovoId(doDiaAberto[0].id)
+      setGanho(`+${somado}`)
+      setEntrou({ rotulo, kcal: somado })
+      navigator.vibrate?.(12)
+      setTimeout(() => setNovoId(null), 1200)
+      setTimeout(() => setGanho(null), 1100)
+    }
+    setVersao((v) => v + 1)
+  }, [dia])
+
+  // A confirmacao na barra vive alguns segundos e sai sozinha.
+  useEffect(() => {
+    if (!entrou) return
+    const t = setTimeout(() => setEntrou(null), 2600)
+    return () => clearTimeout(t)
+  }, [entrou])
 
   const totals = useMemo(
     () =>
@@ -177,25 +217,7 @@ export function DashboardPage() {
 
           // As linhas gravadas vem na resposta, com id e hora: entram na tela
           // direto, sem uma segunda ida de rede pra buscar o dia inteiro.
-          const doDiaAberto = r.itens.filter((i) => mesmoDia(new Date(i.logged_at), dia))
-          if (doDiaAberto.length) {
-            setEntries((antigos) => {
-              const vistos = new Set(antigos.map((e) => e.id))
-              const novos = doDiaAberto.filter((i) => !vistos.has(i.id))
-              return [...novos, ...antigos].sort(
-                (a, b) => +new Date(b.logged_at) - +new Date(a.logged_at),
-              )
-            })
-
-            const somado = doDiaAberto.reduce((soma, i) => soma + i.kcal, 0)
-            setNovoId(doDiaAberto[0].id)
-            setGanho(`+${somado}`)
-            navigator.vibrate?.(12)
-            setTimeout(() => setNovoId(null), 1200)
-            setTimeout(() => setGanho(null), 1100)
-          }
-
-          setVersao((v) => v + 1)
+          registrou(r.itens, r.itens[0]?.name ?? p.rotulo)
           setPendentes((atuais) => atuais.filter((x) => x.id !== p.id))
         })
         .catch(() =>
@@ -204,7 +226,22 @@ export function DashboardPage() {
           ),
         )
     },
-    [dia, t],
+    [registrou, t],
+  )
+
+  // Atalho: copia do que ja foi analisado antes. Vai direto pro banco, sem
+  // modelo no meio, entao a linha aparece na hora e nao gasta a cota do dia.
+  const registrarAtalho = useCallback(
+    (a: Atalho) => {
+      const naJanelaDeAgora = ehHoje && periodo === periodoAgora()
+      setEntrou(null)
+      inserirFood(a.modelo, naJanelaDeAgora ? undefined : horaNoPeriodo(dia, periodo, entries))
+        .then((linha) => {
+          if (linha) registrou([linha], linha.name)
+        })
+        .catch(() => setError(t.dashboard.analyzeError))
+    },
+    [dia, periodo, entries, ehHoje, registrou, t],
   )
 
   const handleAnalyze = (texto: string, foto?: string, fala?: string) => {
@@ -254,6 +291,19 @@ export function DashboardPage() {
     { l: t.dashboard.carbs, cur: totals.carbs_g, tgt: macros.carbs_g },
     { l: t.dashboard.fat, cur: totals.fat_g, tgt: macros.fat_g },
   ]
+
+  // O rodape mostra um estado por vez, e nesta ordem: erro pede acao, analise
+  // em curso avisa que algo esta rodando, e a confirmacao e o premio de quem
+  // acabou de registrar.
+  const comErro = pendentes.find((p) => p.erro)
+  const emAnalise = pendentes.find((p) => !p.erro)
+  const estadoDoEnvio: EstadoDoEnvio | null = comErro
+    ? { tipo: 'erro', rotulo: comErro.rotulo, texto: comErro.erro ?? 'não entrou' }
+    : emAnalise
+      ? { tipo: 'calculando', rotulo: emAnalise.rotulo, fila: pendentes.length }
+      : entrou
+        ? { tipo: 'entrou', rotulo: entrou.rotulo, kcal: entrou.kcal }
+        : null
 
   const rotuloDoDia = DIAS[dia.getDay()]
   const rotuloPeriodo = PERIODOS.find((p) => p.id === periodo)?.rotulo ?? ''
@@ -471,7 +521,7 @@ export function DashboardPage() {
               {t.dashboard.foodLog}
             </span>
 
-            {entries.length === 0 && pendentes.length === 0 ? (
+            {entries.length === 0 ? (
               <div className="mt-3 border-y border-obliq-border py-12 text-center">
                 <p className="text-obliq-dim">{t.dashboard.foodLogEmpty}</p>
                 <p className="mt-1 text-sm text-obliq-faint">
@@ -484,52 +534,6 @@ export function DashboardPage() {
                     lista: o conteudo fica guardado e "tentar de novo" reenvia,
                     porque perder o texto e obrigar a pessoa a digitar de novo
                     era a pior parte de qualquer erro aqui. */}
-                {pendentes.map((p) => (
-                  <div key={p.id} className="rise py-2.5">
-                    <div className="flex items-center gap-3">
-                      {p.foto && (
-                        <img
-                          src={p.foto}
-                          alt=""
-                          className="h-8 w-8 shrink-0 rounded object-cover opacity-60 ring-1 ring-obliq-border"
-                        />
-                      )}
-                      <span className="truncate text-obliq-dim">{p.rotulo}</span>
-                      <span className="leader" aria-hidden="true" />
-                      <span
-                        className={`num shrink-0 text-[12px] ${
-                          p.erro ? 'text-obliq-red' : 'animate-pulse text-obliq-faint'
-                        }`}
-                      >
-                        {p.erro ?? 'calculando'}
-                      </span>
-                    </div>
-
-                    {/* Os botoes em linha propria: no celular eles disputavam a
-                        largura com o texto e sobrava "pao c..." na tela. */}
-                    {p.erro && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => analisar(p)}
-                          className="num rounded-lg px-3 py-1.5 text-[12px] text-obliq-chalk ring-1 ring-obliq-border transition-colors hover:text-obliq-red"
-                        >
-                          tentar de novo
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setPendentes((atuais) => atuais.filter((x) => x.id !== p.id))
-                          }
-                          className="num rounded-lg px-3 py-1.5 text-[12px] text-obliq-faint transition-colors hover:text-obliq-red"
-                        >
-                          descartar
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-
                 {/* Uma secao por janela do dia. `details` e do navegador: abre e
                     fecha sozinho, sem estado nosso pra manter em sincronia.
                     Abre a janela que esta recebendo registro; as outras ficam
@@ -617,7 +621,18 @@ export function DashboardPage() {
         </>
       )}
 
-      <Composer onEnviar={handleAnalyze} erro={error} destino={destinoDoRegistro} />
+      <Composer
+        onEnviar={handleAnalyze}
+        erro={error}
+        destino={destinoDoRegistro}
+        estado={estadoDoEnvio}
+        onTentarDeNovo={() => comErro && analisar(comErro)}
+        onDescartar={() =>
+          comErro && setPendentes((atuais) => atuais.filter((x) => x.id !== comErro.id))
+        }
+        atalhos={atalhos}
+        onAtalho={registrarAtalho}
+      />
     </AppShell>
   )
 }

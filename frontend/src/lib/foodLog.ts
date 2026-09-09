@@ -77,6 +77,33 @@ export async function fetchFoodHistory(days = 30): Promise<FoodEntry[]> {
   return (data ?? []) as FoodEntry[]
 }
 
+/**
+ * Grava uma refeicao ja conhecida, sem passar pela IA.
+ *
+ * E o caminho do atalho: repetir o cafe de ontem e copia, nao analise. Sem
+ * modelo no meio, a linha aparece na tela na hora, e nao gasta a cota diaria.
+ */
+export async function inserirFood(
+  entrada: Omit<FoodEntry, 'id' | 'logged_at'>,
+  quando?: Date,
+): Promise<FoodEntry | null> {
+  const uid = await meuId()
+  if (!uid) return null
+
+  const { data, error } = await supabase
+    .from('food_log')
+    .insert({
+      user_id: uid,
+      ...entrada,
+      ...(quando ? { logged_at: quando.toISOString() } : {}),
+    })
+    .select(COLS)
+    .single()
+
+  if (error) throw error
+  return data as FoodEntry
+}
+
 export async function deleteFood(id: string): Promise<void> {
   const { error } = await supabase.from('food_log').delete().eq('id', id)
   if (error) throw error

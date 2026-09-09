@@ -1,11 +1,28 @@
 import { type CSSProperties, type FormEvent, useEffect, useRef, useState } from 'react'
 import { prepararFoto } from '../../lib/imagem'
 import { gravar, type Gravador } from '../../lib/audio'
+import type { Atalho } from '../../lib/atalhos'
 import { Icon } from '../ui/Icon'
+
+/**
+ * O que aconteceu com o ultimo envio. Mora aqui, na barra, e nao la no meio da
+ * pagina: a pessoa registra com o polegar no rodape e olhando pro rodape, e o
+ * retorno acontecia num pedaco da tela que ela nem estava vendo. Sumia.
+ */
+export type EstadoDoEnvio =
+  | { tipo: 'calculando'; rotulo: string; fila: number }
+  | { tipo: 'entrou'; rotulo: string; kcal: number }
+  | { tipo: 'erro'; rotulo: string; texto: string }
 
 type ComposerProps = {
   onEnviar: (texto: string, foto?: string, fala?: string) => void
   erro?: string
+  estado?: EstadoDoEnvio | null
+  onTentarDeNovo?: () => void
+  onDescartar?: () => void
+  // O que a pessoa repete todo dia, a um toque de distancia.
+  atalhos?: Atalho[]
+  onAtalho?: (a: Atalho) => void
   // Preenchido quando o registro NAO vai para este instante: dia passado, ou
   // outra janela do dia. Sem esse aviso a barra fica identica a de agora e a
   // pessoa lanca no lugar errado sem perceber.
@@ -16,7 +33,16 @@ type ComposerProps = {
  * Barra de registro fixa no rodape. No celular, registrar comida e a acao
  * que se repete o dia todo: ela mora onde o polegar alcanca, nao no meio da pagina.
  */
-export function Composer({ onEnviar, erro, destino }: ComposerProps) {
+export function Composer({
+  onEnviar,
+  erro,
+  destino,
+  estado,
+  onTentarDeNovo,
+  onDescartar,
+  atalhos = [],
+  onAtalho,
+}: ComposerProps) {
   const [texto, setTexto] = useState('')
   const [foto, setFoto] = useState<string | null>(null)
   const [preparando, setPreparando] = useState(false)
@@ -181,6 +207,77 @@ export function Composer({ onEnviar, erro, destino }: ComposerProps) {
           <p className="mb-2 font-mono text-[12px] text-obliq-faint">
             registrando em <span className="text-obliq-chalk">{destino}</span>
           </p>
+        )}
+
+        {estado && (
+          <div className="mb-2 text-[12px]">
+            <div className="flex items-center gap-2">
+              {estado.tipo === 'calculando' && (
+                <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-obliq-dim" />
+              )}
+              {estado.tipo === 'entrou' && (
+                <Icon name="check" className="h-3 w-3 shrink-0 text-obliq-green" />
+              )}
+
+              <span className="truncate text-obliq-dim">{estado.rotulo}</span>
+              <span className="leader" aria-hidden="true" />
+
+              {estado.tipo === 'calculando' && (
+                <span className="num shrink-0 animate-pulse font-mono text-obliq-faint">
+                  calculando
+                  {estado.fila > 1 ? ` (${estado.fila})` : ''}
+                </span>
+              )}
+              {estado.tipo === 'entrou' && (
+                <span className="num bater shrink-0 font-mono text-obliq-green">
+                  +{estado.kcal} kcal
+                </span>
+              )}
+              {estado.tipo === 'erro' && (
+                <span className="num shrink-0 font-mono text-obliq-red">{estado.texto}</span>
+              )}
+            </div>
+
+            {/* Os botoes em linha propria: espremidos ao lado do texto, sobrava
+                "macarrao com crem..." e o nome do que falhou sumia. */}
+            {estado.tipo === 'erro' && (
+              <div className="mt-1.5 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onTentarDeNovo}
+                  className="num rounded-lg px-3 py-1.5 font-mono text-obliq-chalk ring-1 ring-obliq-border transition-colors hover:text-obliq-red"
+                >
+                  tentar de novo
+                </button>
+                <button
+                  type="button"
+                  onClick={onDescartar}
+                  className="num rounded-lg px-3 py-1.5 font-mono text-obliq-faint transition-colors hover:text-obliq-red"
+                >
+                  descartar
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Atalho do que se repete: um toque, sem teclado e sem IA, porque o
+            numero ja esta no historico. Some assim que a pessoa comeca a
+            digitar, que e quando ela quer o campo e nao a lista. */}
+        {atalhos.length > 0 && !texto && !foto && estado?.tipo !== 'erro' && (
+          <div className="-mx-4 mb-2 flex gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {atalhos.map((a) => (
+              <button
+                key={a.chave}
+                type="button"
+                onClick={() => onAtalho?.(a)}
+                className="flex shrink-0 items-baseline gap-1.5 rounded-full bg-obliq-surface px-3 py-1.5 ring-1 ring-obliq-border transition-colors active:scale-95"
+              >
+                <span className="max-w-[9rem] truncate text-[12px] text-obliq-dim">{a.nome}</span>
+                <span className="num text-[11px] text-obliq-faint">{a.kcal}</span>
+              </button>
+            ))}
+          </div>
         )}
         {foto && (
           <div className="mb-2 flex items-center gap-2">
