@@ -204,13 +204,17 @@ export function DashboardPage() {
               setPendentes((atuais) => atuais.filter((x) => x.id !== p.id))
               return
             }
-            // O resto fica na lista, com o conteudo intacto e um botao.
+            // O resto fica na barra, com o conteudo intacto e um botao. Cada
+            // erro com o seu nome: "nao salvou" e gravacao, "sem foto" e
+            // modelo de visao fora do ar, e ai tentar de novo nao ajuda.
+            const texto =
+              r.error === 'nao_gravou'
+                ? 'não salvou'
+                : r.error === 'sem_visao'
+                  ? 'foto indisponível, descreva'
+                  : 'não entendi'
             setPendentes((atuais) =>
-              atuais.map((x) =>
-                x.id === p.id
-                  ? { ...x, erro: r.error === 'nao_gravou' ? 'não salvou' : 'não entendi' }
-                  : x,
-              ),
+              atuais.map((x) => (x.id === p.id ? { ...x, erro: texto } : x)),
             )
             return
           }

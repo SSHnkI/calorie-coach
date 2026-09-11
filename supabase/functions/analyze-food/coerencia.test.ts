@@ -1,7 +1,13 @@
 // node --test supabase/functions/analyze-food/coerencia.test.ts
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { coerir, kcalDosMacros, MAX_KCAL_POR_GRAMA, totaisDaPorcao } from './coerencia.ts'
+import {
+  coerir,
+  kcalDosMacros,
+  MAX_KCAL_POR_GRAMA,
+  montarRegistro,
+  totaisDaPorcao,
+} from './coerencia.ts'
 
 test('kcal coerente com os macros passa intacto', () => {
   // arroz cozido, 150 g: 195 kcal, 4 P, 42 C, 0.4 G
@@ -143,4 +149,110 @@ test('a dose de destilado atravessa a conta com o alcool', () => {
   assert.equal(t.kcal, 125)
   assert.equal(t.alcohol_g, 16)
   assert.equal(coerir(t).ajuste, 'nenhum')
+})
+
+// Os casos abaixo sao saidas REAIS do qwen/qwen3.8-27b, copiadas da API da Groq
+// em 10 de setembro de 2026, com o prompt que esta no ar. Nao sao exemplos
+// inventados: e o que o modelo devolve mesmo, passando pela conta de verdade.
+// O gabarito de kcal veio do historico do app.
+
+test('pao com ovo: uma refeicao so, e o total bate', () => {
+  const r = montarRegistro({
+    name: 'pao com ovo',
+    quantity: 1,
+    unit: 'prato',
+    grams_total: 100,
+    por_100g: { kcal: 248, protein_g: 12.5, carbs_g: 25, fat_g: 10, alcohol_g: 0 },
+    confidence: 'medium',
+  })
+  assert.equal(r.kcal, 248)
+  assert.equal(r.name, 'pao com ovo')
+  assert.equal(r.protein_g, 12.5)
+})
+
+test('cafe puro tem caloria de um digito, nao 50', () => {
+  // A queixa era exatamente esta: "coloco cafe, ele diz 2kcal. coloco de novo,
+  // da 50". Uma xicara de 150 ml a 2 kcal/100 ml da 3.
+  const r = montarRegistro({
+    name: 'cafe',
+    quantity: 1,
+    unit: 'xicara',
+    grams_total: 150,
+    por_100g: { kcal: 2, protein_g: 0.1, carbs_g: 0.3, fat_g: 0, alcohol_g: 0 },
+    confidence: 'high',
+  })
+  assert.equal(r.kcal, 3)
+  assert.ok(r.kcal < 10, 'cafe puro nao pode passar de dois digitos')
+})
+
+test('pao e pao frances de 50 g', () => {
+  const r = montarRegistro({
+    name: 'pao',
+    quantity: 1,
+    unit: 'pao',
+    grams_total: 50,
+    por_100g: { kcal: 300, protein_g: 9, carbs_g: 58, fat_g: 3, alcohol_g: 0 },
+    confidence: 'high',
+  })
+  assert.equal(r.kcal, 150)
+})
+
+test('macarrao com creme de leite e queijo: um prato de 600', () => {
+  const r = montarRegistro({
+    name: 'macarrao com creme de leite e queijo',
+    quantity: 1,
+    unit: 'prato',
+    grams_total: 300,
+    por_100g: { kcal: 200, protein_g: 8, carbs_g: 25, fat_g: 8, alcohol_g: 0 },
+    confidence: 'high',
+  })
+  assert.equal(r.kcal, 600)
+  assert.equal(r.unit, 'prato')
+})
+
+test('dose de whiskey: sem macro nenhum e com caloria', () => {
+  const r = montarRegistro({
+    name: 'whiskey',
+    quantity: 1,
+    unit: 'dose',
+    grams_total: 50,
+    por_100g: { kcal: 250, protein_g: 0, carbs_g: 0, fat_g: 0, alcohol_g: 32 },
+    confidence: 'high',
+  })
+  assert.equal(r.kcal, 125)
+  assert.equal(r.confidence, 'high', 'o alcool sustenta a caloria, nao e contradicao')
+})
+
+test('coca zero continua zero', () => {
+  const r = montarRegistro({
+    name: 'coca zero',
+    quantity: 1,
+    unit: 'lata',
+    grams_total: 350,
+    por_100g: { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, alcohol_g: 0 },
+    confidence: 'high',
+  })
+  assert.equal(r.kcal, 0)
+})
+
+test('resposta cortada pelo teto de tokens nao derruba o item', () => {
+  // Real: em "arroz, feijao e bife" o terceiro item chegou sem `confidence`,
+  // porque a geracao bateu no teto. Ele ainda e comida que a pessoa comeu.
+  const r = montarRegistro({
+    name: 'bife',
+    quantity: 1,
+    unit: 'bife',
+    grams_total: 120,
+    por_100g: { kcal: 220, protein_g: 26, carbs_g: 0, fat_g: 12, alcohol_g: 0 },
+  })
+  assert.equal(r.kcal, 264)
+  assert.equal(r.confidence, 'medium')
+})
+
+test('item vazio nao vira linha quebrada no diario', () => {
+  const r = montarRegistro({})
+  assert.equal(r.name, 'refeição')
+  assert.equal(r.unit, 'porção')
+  assert.equal(r.quantity, 1)
+  assert.equal(r.kcal, 0)
 })

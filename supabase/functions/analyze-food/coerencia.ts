@@ -139,3 +139,73 @@ function n(v: unknown): number {
   const x = Number(v)
   return Number.isFinite(x) && x > 0 ? x : 0
 }
+
+/** O que o modelo devolve por item. */
+export type ItemDoModelo = {
+  name?: string
+  quantity?: number
+  unit?: string
+  grams_total?: number
+  /** Caminho normal: densidade, e a conta e nossa. */
+  por_100g?: Por100g
+  /** Caminho velho, de modelo que ignora o formato e manda o total direto. */
+  kcal?: number
+  protein_g?: number
+  carbs_g?: number
+  fat_g?: number
+  alcohol_g?: number
+  confidence?: 'high' | 'medium' | 'low'
+}
+
+/** O que vai pro diario, depois da conta e das travas. */
+export type Registro = {
+  name: string
+  quantity: number
+  unit: string
+  kcal: number
+  protein_g: number
+  carbs_g: number
+  fat_g: number
+  confidence: 'high' | 'medium' | 'low'
+  ajuste: Ajuste
+}
+
+/**
+ * Monta o registro final a partir do que o modelo devolveu.
+ *
+ * Mora aqui, e nao no index.ts, porque isto e a conta do app inteiro e precisa
+ * de teste: os casos do arquivo de teste sao saidas REAIS do modelo, copiadas
+ * da API, e nao exemplos inventados.
+ *
+ * Campo faltando nao derruba nada: resposta cortada no meio por teto de tokens
+ * chega sem `confidence`, e item sem nome ainda e comida que a pessoa comeu.
+ */
+export function montarRegistro(item: ItemDoModelo): Registro {
+  const bruto = item.por_100g
+    ? totaisDaPorcao(n(item.grams_total), item.por_100g)
+    : {
+        kcal: n(item.kcal),
+        protein_g: n(item.protein_g),
+        carbs_g: n(item.carbs_g),
+        fat_g: n(item.fat_g),
+        alcohol_g: n(item.alcohol_g),
+        grams_total: n(item.grams_total),
+      }
+
+  const { kcal, ajuste, confiavel } = coerir(bruto)
+  const declarada = item.confidence ?? 'medium'
+
+  return {
+    name: String(item.name ?? '').trim().slice(0, 120) || 'refeição',
+    quantity: n(item.quantity) || 1,
+    unit: String(item.unit ?? '').trim().slice(0, 40) || 'porção',
+    kcal,
+    protein_g: bruto.protein_g,
+    carbs_g: bruto.carbs_g,
+    fat_g: bruto.fat_g,
+    // Contradicao interna derruba a confianca declarada pelo modelo: ele errou
+    // uma conta que ele mesmo forneceu os numeros para fazer.
+    confidence: confiavel ? declarada : 'low',
+    ajuste,
+  }
+}

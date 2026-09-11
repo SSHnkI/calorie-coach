@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { coerir, totaisDaPorcao, type Por100g } from './coerencia.ts'
+import { montarRegistro, type ItemDoModelo, type Registro } from './coerencia.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,22 +16,6 @@ const json = (body: unknown, status = 200) =>
 const AI_CAP = 100
 // Uma fala solta pode citar muita coisa. Corta pra nao virar insercao em massa.
 const MAX_ITENS = 12
-
-type Item = {
-  name: string
-  quantity: number
-  unit: string
-  grams_total: number
-  // O caminho novo: o modelo da a densidade, o servidor multiplica.
-  por_100g?: Por100g
-  // Caminho velho, mantido porque modelo teimoso ainda devolve o total direto.
-  kcal?: number
-  protein_g?: number
-  carbs_g?: number
-  fat_g?: number
-  alcohol_g?: number
-  confidence: 'high' | 'medium' | 'low'
-}
 
 const SYSTEM = `Voce e um interpretador de refeicoes. Recebe o que uma pessoa comeu, em portugues do Brasil, e devolve JSON.
 
@@ -117,19 +101,36 @@ tamanho aparente, usando talheres, prato ou embalagem como referencia de escala.
 Porcao vinda de foto e estimativa: use confidence "low", ou "medium" quando houver
 embalagem legivel.`
 
-// ponytail: a disponibilidade de modelo varia por conta/chave na Groq.
-const MODELS = [
-  'llama-3.3-70b-versatile',
-  'meta-llama/llama-4-scout-17b-16e-instruct',
-  'openai/gpt-oss-20b',
-  'llama-3.1-8b-instant',
+// Os modelos que a conta TEM, conferidos em GET /v1/models em 10 de setembro de
+// 2026. A lista anterior (llama-3.3-70b-versatile, llama-4-scout, gpt-oss-20b e
+// llama-3.1-8b-instant) foi descontinuada pela Groq e passou a devolver 404 em
+// todas as chamadas: o app parou de reconhecer qualquer alimento, e o erro
+// chegava na tela como "nao entendi". **Antes de mexer num nome aqui, liste os
+// modelos da conta.** Nome de modelo nao se adivinha.
+//
+// Ficaram de fora, testados e reprovados: gpt-oss-20b e qwen3.6-27b devolvem
+// `json_validate_failed` com geracao vazia no modo JSON.
+//
+// `teto` e o max_completion_tokens, e ele nao e economia: a Groq reserva o teto
+// PEDIDO contra o limite de saida por minuto da conta, que e 1000 no plano
+// gratuito. Pedir 900, como estava, consumia quase a cota inteira numa chamada
+// so, e a seguinte tomava 429. 500 cobre tres itens com folga. O gpt-oss-120b
+// fica sem teto de proposito: ele gasta ~1000 tokens pensando antes de
+// responder, e cortado no meio devolve JSON vazio.
+type Modelo = { id: string; teto?: number }
+
+const MODELS: Modelo[] = [
+  { id: 'qwen/qwen3.8-27b', teto: 500 },
+  { id: 'openai/gpt-oss-120b' },
 ]
 
-// So os multimodais aceitam imagem.
-const MODELS_VISAO = [
-  'meta-llama/llama-4-scout-17b-16e-instruct',
-  'meta-llama/llama-4-maverick-17b-128e-instruct',
-]
+// So o qwen aceita imagem hoje, e mesmo ele anda devolvendo 503 "over capacity"
+// nessa rota. Por isso o teto de tempo abaixo: sem ele a foto pendurava 30s
+// antes de falhar, e a pessoa ficava olhando pro "calculando".
+const MODELS_VISAO: Modelo[] = [{ id: 'qwen/qwen3.8-27b', teto: 500 }]
+
+// Modelo que nao responde nisso e modelo que nao vai responder: cai pro proximo.
+const TEMPO_LIMITE = 10_000
 
 const MODELS_AUDIO = ['whisper-large-v3-turbo', 'whisper-large-v3']
 
@@ -177,7 +178,11 @@ async function transcrever(audio: string, key: string): Promise<string> {
   throw new Error(`transcricao_falhou: ${ultimoErro}`)
 }
 
-async function askGroq(foodInput: string, key: string, image?: string): Promise<Item[]> {
+async function askGroq(
+  foodInput: string,
+  key: string,
+  image?: string,
+): Promise<ItemDoModelo[]> {
   let ultimoErro = 'sem modelo disponivel'
   const modelos = image ? MODELS_VISAO : MODELS
 
@@ -188,34 +193,38 @@ async function askGroq(foodInput: string, key: string, image?: string): Promise<
       ]
     : foodInput
 
-  for (const model of modelos) {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-      body: JSON.stringify({
-        model,
-        // Zero, nao 0.2: "cafe" dava 2 kcal numa chamada e 50 na seguinte, e
-        // numero de diario que muda sozinho destroi a confianca na conta toda.
-        temperature: 0,
-        // O teto corta a resposta que enrola. Com um item por refeicao em vez de
-        // um por ingrediente, o JSON ficou curto, e isso tambem e o que faz a
-        // insercao aparecer mais rapido na tela.
-        max_completion_tokens: 900,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: image ? SYSTEM + EXTRA_FOTO : SYSTEM },
-          { role: 'user', content: conteudoUsuario },
-        ],
-      }),
-    })
+  for (const modelo of modelos) {
+    let res: Response
+    try {
+      res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+        signal: AbortSignal.timeout(TEMPO_LIMITE),
+        body: JSON.stringify({
+          model: modelo.id,
+          // Zero, nao 0.2: "cafe" dava 2 kcal numa chamada e 50 na seguinte, e
+          // numero de diario que muda sozinho destroi a confianca na conta toda.
+          temperature: 0,
+          ...(modelo.teto ? { max_completion_tokens: modelo.teto } : {}),
+          response_format: { type: 'json_object' },
+          messages: [
+            { role: 'system', content: image ? SYSTEM + EXTRA_FOTO : SYSTEM },
+            { role: 'user', content: conteudoUsuario },
+          ],
+        }),
+      })
+    } catch (e) {
+      ultimoErro = `${modelo.id} nao respondeu em ${TEMPO_LIMITE}ms: ${e}`
+      console.warn('groq:', ultimoErro)
+      continue
+    }
 
     if (res.ok) {
       // Resposta vazia, JSON quebrado ou recusa do modelo NAO encerram a
       // chamada: cai pro proximo modelo da lista. Era isto que fazia "whisky"
-      // nao ser reconhecido. O primeiro modelo tratava a bebida como fora do
-      // escopo, devolvia lista vazia, e o erro subia como se nenhum modelo
-      // estivesse disponivel, mesmo com tres ainda por tentar.
-      let itens: Item[] = []
+      // nao ser reconhecido, e e o que segura o 503 "over capacity" e o 429 de
+      // limite por minuto, que sao por modelo e nao pela conta inteira.
+      let itens: ItemDoModelo[] = []
       try {
         const data = await res.json()
         const raw = data?.choices?.[0]?.message?.content
@@ -223,80 +232,32 @@ async function askGroq(foodInput: string, key: string, image?: string): Promise<
         // Modelo as vezes devolve um objeto solto em vez da lista.
         itens = Array.isArray(parsed?.items) ? parsed.items : parsed?.name ? [parsed] : []
       } catch (e) {
-        ultimoErro = `${model} devolveu resposta ilegivel: ${e}`
+        ultimoErro = `${modelo.id} devolveu resposta ilegivel: ${e}`
         console.warn('groq:', ultimoErro)
         continue
       }
 
       if (!itens.length) {
-        ultimoErro = `${model} devolveu lista vazia`
+        ultimoErro = `${modelo.id} devolveu lista vazia`
         console.warn('groq:', ultimoErro)
         continue
       }
 
-      console.log('modelo usado:', model, 'itens:', itens.length)
+      console.log('modelo usado:', modelo.id, 'itens:', itens.length)
       return itens.slice(0, MAX_ITENS)
     }
 
-    ultimoErro = `${model} -> ${res.status}: ${await res.text()}`
+    ultimoErro = `${modelo.id} -> ${res.status}: ${await res.text()}`
     console.warn('groq falhou:', ultimoErro)
   }
 
   throw new Error(`groq_indisponivel: ${ultimoErro}`)
 }
 
-/** O que vai pro diario, depois da conta e das travas. */
-type Registro = {
-  name: string
-  quantity: number
-  unit: string
-  kcal: number
-  protein_g: number
-  carbs_g: number
-  fat_g: number
-  confidence: 'high' | 'medium' | 'low'
-  ajuste: string
-}
-
-function num(v: unknown): number {
-  const x = Number(v)
-  return Number.isFinite(x) && x > 0 ? x : 0
-}
-
-// Monta o total da porcao e passa pelas travas de coerencia. Ver coerencia.ts
-// para o porque de nao haver mais consulta a base externa.
-function montar(item: Item): Registro {
-  // Caminho normal: densidade x peso, com a conta feita aqui. O caminho de
-  // baixo e so pra modelo que ignorou o formato e mandou o total direto.
-  const bruto = item.por_100g
-    ? totaisDaPorcao(item.grams_total, item.por_100g)
-    : {
-        kcal: num(item.kcal),
-        protein_g: num(item.protein_g),
-        carbs_g: num(item.carbs_g),
-        fat_g: num(item.fat_g),
-        alcohol_g: num(item.alcohol_g),
-        grams_total: num(item.grams_total),
-      }
-
-  const { kcal, ajuste, confiavel } = coerir(bruto)
-  return {
-    name: String(item.name ?? '').slice(0, 120) || 'refeicao',
-    quantity: num(item.quantity) || 1,
-    unit: String(item.unit ?? '').slice(0, 40) || 'porcao',
-    kcal,
-    protein_g: bruto.protein_g,
-    carbs_g: bruto.carbs_g,
-    fat_g: bruto.fat_g,
-    // Contradicao interna derruba a confianca declarada pelo modelo: ele errou
-    // uma conta que ele mesmo forneceu os numeros para fazer.
-    confidence: confiavel ? item.confidence : 'low',
-    ajuste,
-  }
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+
+  let comFoto = false
 
   try {
     const supabase = createClient(
@@ -332,6 +293,7 @@ Deno.serve(async (req) => {
     if (image && image.length > 6_000_000) {
       return json({ error: 'imagem grande demais' }, 413)
     }
+    comFoto = !!image
     if (audio && (typeof audio !== 'string' || !audio.startsWith('data:audio/'))) {
       return json({ error: 'audio invalido' }, 400)
     }
@@ -370,7 +332,7 @@ Deno.serve(async (req) => {
     }
 
     const brutos = await askGroq(texto, groqKey, image)
-    const itens = brutos.map(montar)
+    const itens: Registro[] = brutos.map(montarRegistro)
     const ajustados = itens.filter((i) => i.ajuste !== 'nenhum')
     if (ajustados.length) {
       console.log('coerencia ajustou:', ajustados.map((i) => `${i.name}:${i.ajuste}`).join(', '))
@@ -424,6 +386,10 @@ Deno.serve(async (req) => {
     return json({ ...resposta[0], items: resposta, transcricao })
   } catch (err) {
     console.error('analyze-food:', err)
-    return json({ error: 'analyze_failed' }, 502)
+    // Foto que nao volta de nenhum modelo tem nome proprio: hoje nao ha modelo
+    // de visao respondendo nesta conta, e mandar "nao entendi" faz a pessoa
+    // tentar de novo pra sempre por uma coisa que nao vai funcionar.
+    const semVisao = comFoto && String(err).includes('groq_indisponivel')
+    return json({ error: semVisao ? 'sem_visao' : 'analyze_failed' }, 502)
   }
 })

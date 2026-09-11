@@ -1,7 +1,13 @@
 import { supabase } from './supabase'
 import type { FoodEntry, NutritionResult } from '../types'
 
-export type ErroDeAnalise = 'limit_reached' | 'unauthorized' | 'nao_gravou' | 'failed'
+export type ErroDeAnalise =
+  | 'limit_reached'
+  | 'unauthorized'
+  | 'nao_gravou'
+  // Nenhum modelo de visao respondendo: a foto nao vai dar certo tentando de novo.
+  | 'sem_visao'
+  | 'failed'
 
 export type AnalyzeResult =
   // `itens` sao as linhas gravadas, com id e hora: a tela mostra elas direto em
@@ -53,6 +59,9 @@ export async function analyzeFood(
       // na mao de quem escreveu.
       if (body?.error === 'nao_gravou') {
         return { ok: false, error: 'nao_gravou' }
+      }
+      if (body?.error === 'sem_visao') {
+        return { ok: false, error: 'sem_visao' }
       }
     } catch {
       // corpo nao-JSON, cai no erro generico abaixo
