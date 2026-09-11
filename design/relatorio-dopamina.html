@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Obliq, o dia completo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   OBLIQ, o dia completo. Retro tecnico clean, com a camada de recompensa.
+
+   A PERGUNTA QUE ESTE ARQUIVO RESPONDE: o que faz querer INSERIR.
+   A resposta nao esta na tela parada, esta no instante logo depois de enviar.
+
+   E a REGRA que segura tudo, porque num app de caloria recompensa mal apontada
+   premia comer menos em vez de premiar anotar:
+
+     SO VIRA FESTA O MARCO QUE SO SE ALCANCA COMENDO OU REGISTRANDO.
+
+   Por isso o marco principal aqui e DIA COMPLETO, que e quatro janelas
+   ANOTADAS, e nao quatro janelas dentro da meta. Nao da pra ganhar comendo
+   menos, e continua alcancavel as 15h de um dia ja estourado, que e justamente
+   o dia que hoje some do historico.
+   ========================================================================== */
+:root{
+  --papel:#FDFBF6;
+  --branco:#FFFFFF;
+  --borda:#EEEEEE;
+  --trilho:#EEEEEE;
+  --tinta:#333333;
+  --tinta-forte:#1A1A1A;
+  --tinta-fraca:#767168;   /* 4,7:1 no papel, passa em AA */
+  --linha:#D9D3C9;
+  --cereja:#A02D3A;
+  --esmeralda:#2A9D6A;
+  --esmeralda-txt:#217D54; /* 4,9:1, o verde de texto pequeno */
+  --agua:#90C8A0;
+  --r:18px;
+  --r-p:12px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  font-family:"JetBrains Mono",ui-monospace,"Roboto Mono","IBM Plex Mono",monospace;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+  color:var(--tinta);
+  font-size:13px;
+  line-height:1.5;
+  padding-bottom:190px;
+  background-color:var(--papel);
+  background-image:url(%22data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27140%27 height=%27140%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.85%27 numOctaves=%273%27/%3E%3C/filter%3E%3Crect width=%27140%27 height=%27140%27 filter=%27url(%23n)%27 opacity=%270.05%27/%3E%3C/svg%3E%22);
+  background-attachment:fixed;
+}
+button,input{font-family:inherit}
+i{font-style:normal}
+:focus-visible{outline:2px solid var(--cereja);outline-offset:2px;border-radius:4px}
+.folha{max-width:420px;margin:0 auto;padding:0 20px}
+section{margin-top:24px}
+.rot{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--tinta-fraca)}
+.rot-linha{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.num{font-variant-numeric:tabular-nums}
+.fraco{color:var(--tinta-fraca)}
+.forte{color:var(--tinta-forte)}
+.lanc{display:flex;align-items:center}
+.leader{flex:1;margin:0 .6rem;border-bottom:1px dotted var(--linha);transform:translateY(-.28em)}
+.cartao{background:var(--branco);border:1px solid var(--borda);border-radius:var(--r);padding:16px 12px;text-align:center;overflow:hidden;position:relative}
+
+/* ---------- CABECALHO ---------- */
+header{padding-top:24px;display:flex;align-items:center;justify-content:space-between}
+.marca{display:flex;align-items:center;gap:8px}
+.marca b{font-size:15px;font-weight:800;letter-spacing:-.02em;color:var(--tinta-forte)}
+.ponto{width:7px;height:7px;border-radius:50%;background:var(--cereja)}
+/* Interruptor de gamificacao. Existe porque, se desligar a festa degradar o app,
+   a festa virou refem, e refem e padrao escuro por definicao. */
+.calmo-btn{background:none;border:1px solid var(--borda);border-radius:999px;padding:5px 11px;font-size:11px;color:var(--tinta-fraca);cursor:pointer;letter-spacing:.06em}
+body.calmo .so-festa{display:none !important}
+body.calmo .respira{animation:none !important;opacity:.5 !important}
+
+/* ---------- O DIA ---------- */
+.dia-topo{display:flex;align-items:baseline;justify-content:space-between;margin-top:20px}
+.meta-linha{display:flex;align-items:baseline;margin-top:8px}
+.consumido{font-size:clamp(3rem,16vw,4.2rem);font-weight:800;line-height:.9;letter-spacing:-.04em;color:var(--cereja);text-shadow:0 0 20px rgba(160,45,58,.16)}
+.barra-txt{flex:1;text-align:center;font-size:20px;font-weight:300;color:var(--tinta-fraca)}
+.alvo-txt{font-size:20px;font-weight:400;color:var(--tinta-fraca)}
+.trilho{background:var(--trilho);border-radius:999px;overflow:hidden}
+.trilho-dia{height:6px;margin-top:16px}
+.trilho-dia i{display:block;height:100%;width:0;background:var(--tinta);border-radius:999px;transition:width .7s cubic-bezier(.2,.7,.3,1)}
+.restante{display:flex;align-items:baseline;justify-content:space-between;margin-top:8px}
+
+/* ---------- O MARCO DO DIA: quatro janelas anotadas ---------- */
+/* Este e o objeto central da tela. Ele mede COBERTURA DE REGISTRO, nao consumo:
+   e a unica barra da tela que a pessoa nao consegue mover comendo menos. */
+.completo{margin-top:24px;border:1px solid var(--borda);border-radius:var(--r);background:var(--branco);padding:14px 14px 16px;position:relative;overflow:hidden}
+.completo-topo{display:flex;align-items:baseline;justify-content:space-between}
+.completo-n{font-size:15px;font-weight:700;color:var(--tinta-forte)}
+.quatro{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
+.tijolo{height:10px;border-radius:3px;background:var(--trilho);position:relative;overflow:hidden}
+.tijolo i{position:absolute;inset:0;background:var(--tinta);transform:scaleX(0);transform-origin:left;transition:transform .42s cubic-bezier(.2,.8,.2,1)}
+.tijolo.cheio i{transform:scaleX(1)}
+/* A janela de agora respira. Um unico elemento vivo na tela inteira: lacuna que
+   pisca vira alarme, lacuna que respira vira convite. */
+@keyframes respirar{0%,100%{opacity:.3}50%{opacity:.85}}
+.tijolo.agora::after{content:"";position:absolute;inset:0;border:1px dashed var(--tinta-fraca);border-radius:3px}
+.tijolo.agora.respira::after{animation:respirar 3.6s ease-in-out infinite}
+.completo-frase{font-size:11px;color:var(--tinta-fraca);margin-top:10px;text-align:left}
+.completo-frase b{color:var(--esmeralda-txt);font-weight:500}
+
+/* ---------- REFEICOES ---------- */
+.grade4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.janela{border:1px solid var(--borda);border-radius:var(--r-p);padding:12px 4px;text-align:center;background:var(--branco);position:relative;transition:background .26s ease,border-color .26s ease}
+.janela.vazia{background:#FBF9F4;border-style:dashed}
+.j-num{font-size:16px;font-weight:700;color:var(--tinta-forte);line-height:1;display:block}
+.j-num.sem{color:var(--tinta-fraca);font-weight:400}
+.j-meta{font-size:11px;color:var(--tinta-fraca);display:block;margin-top:4px}
+.j-rot{font-size:11px;letter-spacing:.06em;margin-top:8px;display:block;color:var(--tinta)}
+.tag{background:var(--cereja);color:#fff;border-radius:999px;padding:2px 8px;font-size:11px;letter-spacing:.06em;display:inline-block}
+.coluna-barra{height:32px;display:flex;align-items:flex-end;justify-content:center;margin-top:8px}
+.barra-v{width:6px;height:100%;background:var(--trilho);border-radius:999px;position:relative;overflow:hidden}
+.barra-v i{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--agua);border-radius:0 0 999px 999px;transition:height .7s cubic-bezier(.2,.7,.3,1)}
+.barra-v i::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--esmeralda);border-radius:999px 999px 0 0}
+
+/* ---------- A FITA: a corrente vira objeto, nao numero ---------- */
+/* Numero e abstrato: 23 vira 0 e nada se ve quebrar. Aversao a perda so opera
+   sobre algo que a pessoa reconhece como propriedade dela, e propriedade precisa
+   de forma. A fita conta REGISTRO e so registro: um dia de 4000 kcal anotado
+   mantem a corrente igualzinho a um dia de 1500. */
+.fita-linha{display:flex;align-items:flex-end;gap:12px}
+.fita{flex:1;display:flex;gap:3px;height:34px;align-items:stretch;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 24px);
+  mask-image:linear-gradient(90deg,transparent 0,#000 24px)}
+.celula{flex:1;border-radius:3px;background:#F3F0E9;position:relative}
+.celula.elo{background:var(--tinta)}
+/* Dia passado sem registro NAO e a celula mais limpa da semana: ausencia de dado
+   nao pode parecer o melhor resultado da tela. Por isso hachura. */
+.celula.buraco{background:repeating-linear-gradient(45deg,#F3F0E9 0 3px,#E6E1D7 3px 6px)}
+.celula.hoje{background:#F3F0E9;border:1px dashed var(--tinta-fraca)}
+.celula.hoje.elo{border:0}
+@keyframes carimbar{0%{transform:scale(1.9);opacity:0}55%{transform:scale(.97);opacity:1}100%{transform:scale(1);opacity:1}}
+.celula.batendo{animation:carimbar .18s cubic-bezier(.2,.8,.2,1.2) both;box-shadow:0 0 0 3px rgba(51,51,51,.10)}
+.fita-n{text-align:right;flex:none}
+.fita-n b{font-size:26px;font-weight:700;color:var(--tinta-forte);line-height:1;display:block;letter-spacing:-.03em}
+.fita-n span{font-size:11px;letter-spacing:.1em;color:var(--tinta-fraca);text-transform:uppercase}
+
+/* ---------- MACROS ---------- */
+.grade3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.anel{position:relative;width:62px;height:62px;margin:0 auto}
+.anel svg{transform:rotate(-90deg)}
+.anel circle{fill:none;stroke-linecap:round}
+.anel .fundo{stroke:var(--trilho)}
+.anel .arco{transition:stroke-dashoffset .48s cubic-bezier(.2,.7,.3,1)}
+.a-p .arco{stroke:#4A4A4A}
+.a-c .arco{stroke:#6F6A62}
+.a-g .arco{stroke:#94908A}
+.anel .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--tinta-forte)}
+.m-rot{font-size:11px;letter-spacing:.06em;margin-top:8px;display:block;font-weight:500}
+.m-val{font-size:11px;color:var(--tinta-fraca);display:block;margin-top:4px}
+
+/* ---------- DIARIO, COM A LINHA EM BRANCO ---------- */
+.diario{text-align:left}
+.grupo-rot{display:flex;align-items:center;margin:14px 0 2px}
+.item{padding:8px 0;border-bottom:1px dotted var(--borda);position:relative}
+.item .sub{font-size:11px;color:var(--tinta-fraca);margin-top:4px;display:flex;gap:12px;flex-wrap:wrap}
+@keyframes subir{from{transform:translateY(6px);opacity:0}to{transform:translateY(0);opacity:1}}
+.item.novo{animation:subir .32s cubic-bezier(.2,.8,.2,1) both}
+/* O carimbo. Texto DETERMINISTICO e verdadeiro, nunca raridade sorteada:
+   reforco variavel ensina a abrir o app, nao a anotar a refeicao. */
+@keyframes bate{0%{transform:scale(1.5) rotate(var(--giro));opacity:0}55%{transform:scale(.97) rotate(var(--giro));opacity:.95}100%{transform:scale(1) rotate(var(--giro));opacity:.82}}
+.selo{position:absolute;right:0;top:2px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;border:1px solid currentColor;border-radius:3px;padding:1px 5px;color:var(--tinta-fraca);animation:bate .18s cubic-bezier(.2,.8,.2,1.2) .12s both;pointer-events:none}
+.selo.bom{color:var(--esmeralda-txt)}
+.selo.marco{color:var(--cereja);box-shadow:1px 1px 0 rgba(160,45,58,.16)}
+/* A linha em branco: a lacuna e o alivio no mesmo objeto. O toque preenche sem
+   teclado, sem IA e sem gastar cota, que e o que derruba o custo de agir. */
+.ghost{display:flex;align-items:center;padding:8px 0;opacity:.42;cursor:pointer;background:none;border:0;width:100%;text-align:left;font:inherit;color:var(--tinta)}
+.ghost .leader{border-bottom-style:dotted}
+.ghost .vaga{border:1px dashed var(--tinta-fraca);border-radius:4px;width:46px;height:20px;flex:none}
+.ghost .mais{margin-left:10px;width:26px;height:26px;border-radius:50%;border:1px solid var(--tinta-fraca);display:flex;align-items:center;justify-content:center;flex:none;font-size:15px;line-height:1}
+
+/* ---------- A FESTA DO DIA COMPLETO ---------- */
+/* Toma o cartao, nao a tela: modal bloquearia justamente quem quer registrar de
+   novo agora, que e a pessoa que a gente quer. */
+@keyframes selar{0%{transform:translate(-50%,-50%) scale(2.2) rotate(-8deg);opacity:0}60%{transform:translate(-50%,-50%) scale(.96) rotate(-3deg);opacity:1}100%{transform:translate(-50%,-50%) scale(1) rotate(-3deg);opacity:1}}
+@keyframes recuo{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+.selo-grande{position:absolute;left:50%;top:50%;z-index:3;border:2px double var(--cereja);color:var(--cereja);border-radius:6px;padding:10px 16px;text-align:center;background:rgba(253,251,246,.96);animation:selar .34s cubic-bezier(.2,.9,.2,1.25) .22s both}
+.selo-grande b{display:block;font-size:15px;letter-spacing:.14em;font-weight:700}
+.selo-grande span{display:block;font-size:10px;letter-spacing:.1em;color:var(--tinta-fraca);margin-top:3px}
+.batido{animation:recuo .06s linear .56s}
+/* Confete de papel picado, em CSS. Nada de brilho nem neon: papel rasgado cai
+   dentro do proprio cartao, com overflow hidden. */
+@keyframes cai{to{transform:translate3d(var(--dx),150px,0) rotate(var(--giro));opacity:0}}
+.papel{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.papel i{position:absolute;top:-12px;left:var(--x);width:5px;height:9px;background:var(--cor);animation:cai 1.8s cubic-bezier(.3,.4,.6,1) var(--atraso) both}
+
+/* ---------- BARRA DE REGISTRO ---------- */
+.rodape{position:fixed;inset-inline:0;bottom:0;z-index:40;background:var(--papel);border-top:1px solid var(--borda);padding:10px 0 max(12px,env(safe-area-inset-bottom))}
+/* O retorno do registro. Cor, tamanho, duracao e vibracao sao IGUAIS para
+   qualquer kcal: retorno proporcional ao numero e um detector de mentira
+   invertido, que paga mais por registrar menos. */
+@keyframes pulo{0%{transform:scale(1.35);opacity:0}100%{transform:scale(1);opacity:1}}
+.retorno{display:flex;align-items:center;gap:8px;font-size:12px;min-height:22px;margin-bottom:8px}
+.retorno .kcal{color:var(--esmeralda-txt);font-weight:700;animation:pulo .16s cubic-bezier(.2,.8,.2,1.25) both}
+.retorno .nome{color:var(--tinta-fraca);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini{display:flex;gap:2px;margin-left:auto;flex:none}
+.mini i{width:7px;height:14px;border-radius:2px;background:#E6E1D7}
+.mini i.on{background:var(--tinta)}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;align-items:center;gap:8px;background:var(--branco);border:1px solid var(--borda);border-radius:999px;padding:8px 14px;font-size:12px;color:var(--tinta);cursor:pointer;min-height:36px}
+.chip span{font-size:11px;color:var(--tinta-fraca)}
+.chip:active{transform:scale(.96)}
+.acao{display:flex;gap:8px;align-items:center}
+.campo{flex:1;height:48px;border:1px solid var(--borda);border-radius:24px;background:var(--branco);padding:0 18px;font:inherit;font-size:14px;color:var(--tinta)}
+.campo::placeholder{color:var(--tinta-fraca)}
+.btn{width:48px;height:48px;border-radius:16px;border:1px solid var(--borda);background:var(--branco);display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
+.btn-env{border:0;background:var(--cereja)}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
+</style>
+</head>
+<body>
+<div class="folha">
+
+  <header>
+    <div class="marca"><i class="ponto"></i><b>OBLIQ</b></div>
+    <button class="calmo-btn" id="calmo">modo calmo</button>
+  </header>
+
+  <section style="margin-top:18px" aria-label="Meta do dia">
+    <div class="dia-topo"><span class="rot">s&aacute;bado</span><span class="rot" id="pct">9%</span></div>
+    <div class="meta-linha">
+      <span class="consumido num" id="grande">210</span>
+      <span class="barra-txt num" aria-hidden="true">/</span>
+      <span class="alvo-txt num">2303</span>
+    </div>
+    <div class="trilho trilho-dia"><i id="barra-dia" style="width:9%"></i></div>
+    <div class="restante">
+      <span class="rot">restante</span>
+      <span class="num forte" id="restante" style="font-size:15px;font-weight:500">2093 <small class="fraco" style="font-size:11px">kcal</small></span>
+    </div>
+  </section>
+
+  <!-- O MARCO DO DIA. Cobertura de registro, a unica barra que nao se move
+       comendo menos. Por isso e ela que ocupa o lugar nobre. -->
+  <div class="completo" id="cartao-completo">
+    <div class="completo-topo">
+      <span class="rot">dia completo</span>
+      <span class="completo-n num"><span id="cobertura">1</span>/4 <span class="rot" style="font-weight:400">janelas anotadas</span></span>
+    </div>
+    <div class="quatro" id="quatro"></div>
+    <p class="completo-frase" id="frase-completo"></p>
+  </div>
+
+  <section aria-label="Refeicoes">
+    <div class="rot-linha"><span class="rot">refei&ccedil;&otilde;es</span><span class="rot" id="rot-ref">1 de 4 anotadas</span></div>
+    <div class="cartao" style="padding:16px 12px"><div class="grade4" id="grade-janelas"></div></div>
+  </section>
+
+  <!-- A CORRENTE COMO OBJETO -->
+  <section aria-label="Corrente de registro">
+    <div class="rot-linha"><span class="rot">corrente</span><span class="rot">conta dia anotado, nao dia magro</span></div>
+    <div class="cartao" style="padding:16px 12px">
+      <div class="fita-linha">
+        <div class="fita" id="fita"></div>
+        <div class="fita-n"><b class="num" id="corrente-n">12</b><span>dias</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-label="Macros">
+    <div class="rot-linha"><span class="rot">macros</span><span class="rot">meta base 2100</span></div>
+    <div class="cartao"><div class="grade3" id="aneis"></div></div>
+  </section>
+
+  <section aria-label="Registro alimentar">
+    <div class="rot-linha"><span class="rot">registro alimentar</span><span class="rot" id="rot-itens">2 itens</span></div>
+    <div class="cartao diario" style="padding:4px 16px 14px" id="diario"></div>
+  </section>
+
+</div>
+
+<div class="rodape">
+  <div class="folha">
+    <div class="retorno" id="retorno"></div>
+    <div class="chips" id="chips"></div>
+    <div class="acao">
+      <input class="campo" placeholder="o que voc&ecirc; comeu?" aria-label="O que voce comeu">
+      <button class="btn" aria-label="Fotografar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5h3l1.5-2h9l1.5 2h3v10H3z"></path><circle cx="12" cy="13" r="3.2"></circle></svg>
+      </button>
+      <button class="btn btn-env" id="enviar" aria-label="Registrar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"></path><path d="M6 11l6-6 6 6"></path></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   O INSTANTE DO REGISTRO.
+   A onda sobe do polegar ate o topo, cada regiao um pouco depois da de baixo,
+   porque o olho esta no rodape e o patrimonio esta la em cima.
+   ========================================================================== */
+var META = 2303, BASE = 2100;
+var MACRO = { p: 158, c: 210, g: 70 };
+
+var JANELAS = [
+  { id: "manha",  rot: "manh&atilde;", meta: 575, kcal: 210, itens: [
+      { nome: "caf&eacute; com leite", kcal: 90,  p: 5, c: 8,  g: 4 },
+      { nome: "banana",                kcal: 120, p: 1, c: 29, g: 0 }
+  ]},
+  { id: "almoco", rot: "almo&ccedil;o", meta: 808, kcal: 0, itens: [] },
+  { id: "tarde",  rot: "tarde",         meta: 345, kcal: 0, itens: [] },
+  { id: "noite",  rot: "noite",         meta: 575, kcal: 0, itens: [] }
+];
+
+/* Atalhos do que a pessoa repete. Cada um cai na proxima janela em aberto, que
+   e o que faz tres toques fecharem o dia nesta demonstracao. */
+var ATALHOS = [
+  { nome: "arroz com feij&atilde;o e bife", kcal: 615, p: 34, c: 62, g: 22 },
+  { nome: "caf&eacute; com leite",          kcal: 90,  p: 5,  c: 8,  g: 4 },
+  { nome: "p&atilde;o com ovo",             kcal: 248, p: 13, c: 25, g: 10 },
+  { nome: "macarr&atilde;o ao creme",       kcal: 600, p: 18, c: 66, g: 27 }
+];
+
+/* A corrente dos ultimos 14 dias. true e dia anotado. O penultimo e um buraco
+   de proposito, pra mostrar que buraco aparece hachurado e nao limpo. */
+var CORRENTE = [true,true,true,true,true,false,true,true,true,true,true,true,true,null];
+
+var seq = 12, proximoMarco = 14, nRegistros = 411;
+var quieto = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var $ = function (id) { return document.getElementById(id); };
+var esc = function (s) { return s; };
+
+function totalKcal() { return JANELAS.reduce(function (s, j) { return s + j.kcal; }, 0); }
+function cobertura() { return JANELAS.filter(function (j) { return j.itens.length > 0; }).length; }
+function todosItens() { return JANELAS.reduce(function (a, j) { return a.concat(j.itens); }, []); }
+function macroSoma(k) { return todosItens().reduce(function (s, i) { return s + i[k]; }, 0); }
+function proximaVaga() { return JANELAS.filter(function (j) { return j.itens.length === 0; })[0]; }
+
+/* ---------- desenho ---------- */
+function pintarDia(anima) {
+  var t = totalKcal(), pct = Math.min(100, Math.round(t / META * 100));
+  $("pct").textContent = pct + "%";
+  $("barra-dia").style.width = pct + "%";
+  /* Acima da meta o app NAO esconde o excedente atras de um zero, e tambem nao
+     pinta de vermelho: enquanto o dia corre, passar da meta e informacao, nao
+     cobranca. A cor de alerta so faz sentido no fechamento, quando ja e
+     historico e nao da mais pra fazer nada com ela. */
+  var sobra = META - t;
+  $("restante").previousElementSibling.textContent = sobra >= 0 ? "restante" : "acima da meta";
+  $("restante").innerHTML = Math.abs(sobra) + " <small class=\"fraco\" style=\"font-size:11px\">kcal</small>";
+  var el = $("grande");
+  if (!anima || quieto) { el.textContent = t; return; }
+  var de = parseInt(el.textContent, 10) || 0, t0 = null;
+  requestAnimationFrame(function passo(ts) {
+    if (!t0) t0 = ts;
+    var k = Math.min((ts - t0) / 620, 1);
+    el.textContent = Math.round(de + (t - de) * (1 - Math.pow(1 - k, 3)));
+    if (k < 1) requestAnimationFrame(passo);
+  });
+}
+
+function pintarCompleto() {
+  var n = cobertura(), atual = proximaVaga();
+  $("cobertura").textContent = n;
+  $("rot-ref").textContent = n + " de 4 anotadas";
+  $("quatro").innerHTML = JANELAS.map(function (j) {
+    var cls = j.itens.length ? "tijolo cheio" : (atual && j.id === atual.id ? "tijolo agora respira" : "tijolo");
+    return "<div class=\"" + cls + "\" title=\"" + j.rot + "\"><i></i></div>";
+  }).join("");
+  var f = $("frase-completo");
+  if (n === 4) {
+    f.innerHTML = "<b>dia completo.</b> as quatro janelas anotadas, qualquer que tenha sido o n&uacute;mero.";
+  } else {
+    var falta = 4 - n;
+    f.innerHTML = "falta" + (falta > 1 ? "m " : " ") + "<b>" + falta + "</b> " +
+      (falta > 1 ? "janelas" : "janela") + " para fechar o dia. vale anotado, n&atilde;o vale magro.";
+  }
+}
+
+function pintarJanelas() {
+  var atual = proximaVaga();
+  $("grade-janelas").innerHTML = JANELAS.map(function (j) {
+    var tem = j.itens.length > 0;
+    var alt = Math.min(100, j.kcal / (j.meta * 1.25) * 100);
+    return "<div class=\"janela " + (tem ? "" : "vazia") + "\">" +
+      "<span class=\"j-num num " + (tem ? "" : "sem") + "\">" + (tem ? j.kcal : "&#183;") + "</span>" +
+      "<span class=\"j-meta num\">/" + j.meta + "</span>" +
+      "<span class=\"j-rot " + (tem ? "" : "fraco") + "\">" +
+        (atual && j.id === atual.id ? "<i class=\"tag\">" + j.rot + "</i>" : j.rot) + "</span>" +
+      "<div class=\"coluna-barra\">" + (tem ? "<div class=\"barra-v\"><i style=\"height:" + alt + "%\"></i></div>" : "") + "</div>" +
+      "</div>";
+  }).join("");
+}
+
+function pintarFita() {
+  $("fita").innerHTML = CORRENTE.map(function (d) {
+    if (d === null) return "<div class=\"celula hoje" + (cobertura() ? " elo" : "") + "\"></div>";
+    return "<div class=\"celula " + (d ? "elo" : "buraco") + "\"></div>";
+  }).join("");
+  $("corrente-n").textContent = seq;
+}
+
+function pintarAneis() {
+  var m = [
+    { k: "p", cls: "a-p", rot: "P", meta: MACRO.p },
+    { k: "c", cls: "a-c", rot: "C", meta: MACRO.c },
+    { k: "g", cls: "a-g", rot: "G", meta: MACRO.g }
+  ];
+  var volta = 2 * Math.PI * 26;
+  $("aneis").innerHTML = m.map(function (x) {
+    var v = macroSoma(x.k), pct = Math.min(100, Math.round(v / x.meta * 100));
+    var off = volta * (1 - pct / 100);
+    return "<div><div class=\"anel " + x.cls + "\">" +
+      "<svg width=\"62\" height=\"62\" viewBox=\"0 0 62 62\" aria-hidden=\"true\">" +
+      "<circle class=\"fundo\" cx=\"31\" cy=\"31\" r=\"26\" stroke-width=\"4\"></circle>" +
+      "<circle class=\"arco\" cx=\"31\" cy=\"31\" r=\"26\" stroke-width=\"4\" " +
+      "style=\"stroke-dasharray:" + volta + ";stroke-dashoffset:" + off + "\"></circle></svg>" +
+      "<span class=\"pct num\">" + pct + "%</span></div>" +
+      "<span class=\"m-rot\">" + x.rot + "</span>" +
+      "<span class=\"m-val num\">" + Math.round(v) + "/" + x.meta + " g</span></div>";
+  }).join("");
+}
+</script>
+
+<script>
+/* ---------- o diario, com a linha em branco que convida ---------- */
+function pintarDiario() {
+  var atual = proximaVaga(), html = "";
+  JANELAS.forEach(function (j) {
+    if (!j.itens.length && (!atual || j.id !== atual.id)) return;
+    html += "<div class=\"grupo-rot\"><span class=\"rot\">" + j.rot + "</span>" +
+            "<span class=\"leader\"></span><strong class=\"num forte\">" + (j.kcal || "&#183;") + "</strong></div>";
+    j.itens.forEach(function (i) {
+      html += "<div class=\"item" + (i.novo ? " novo" : "") + "\">" +
+        (i.selo ? "<span class=\"selo " + (i.seloCls || "") + "\" style=\"--giro:" + (i.giro || -4) + "deg\">" + i.selo + "</span>" : "") +
+        "<div class=\"lanc\"><span>" + i.nome + "</span><span class=\"leader\"></span>" +
+        "<strong class=\"num forte\">" + i.kcal + "</strong></div>" +
+        "<div class=\"sub num\"><span>P " + i.p + "</span><span>C " + i.c + "</span><span>G " + i.g + "</span></div></div>";
+      i.novo = false;
+    });
+    if (atual && j.id === atual.id && !j.itens.length) {
+      /* A lacuna e o alivio no mesmo objeto: o campo vazio mostra a forma da
+         resposta, e um toque preenche sem teclado, sem IA e sem gastar cota. */
+      html += "<button class=\"ghost\" data-vaga=\"1\">" +
+        "<span>o que voc&ecirc; comeu na " + j.rot + "?</span><span class=\"leader\"></span>" +
+        "<span class=\"vaga\"></span><span class=\"mais\">+</span></button>";
+    }
+  });
+  $("diario").innerHTML = html;
+  $("rot-itens").textContent = todosItens().length + " itens";
+  Array.prototype.forEach.call(document.querySelectorAll("[data-vaga]"), function (b) {
+    b.onclick = function () { registrar(ATALHOS[0]); };
+  });
+}
+
+/* ---------- o carimbo: texto verdadeiro, nunca sorteado ---------- */
+function seloDe(janela, ehPrimeiroDoDia, fechouODia) {
+  if (fechouODia) return { txt: "DIA COMPLETO", cls: "marco" };
+  if (ehPrimeiroDoDia) return { txt: "PRIMEIRO DO DIA", cls: "bom" };
+  if (janela.itens.length === 1) return { txt: "JANELA ABERTA", cls: "bom" };
+  return { txt: "N&ordm; " + nRegistros, cls: "" };
+}
+
+/* ---------- a onda ---------- */
+function registrar(alimento) {
+  var j = proximaVaga() || JANELAS[JANELAS.length - 1];
+  var eraVazio = j.itens.length === 0;
+  var primeiroDoDia = cobertura() === 0;
+  nRegistros++;
+
+  var item = { nome: alimento.nome, kcal: alimento.kcal, p: alimento.p, c: alimento.c, g: alimento.g, novo: true };
+  j.itens.push(item);
+  j.kcal += alimento.kcal;
+
+  var fechou = eraVazio && cobertura() === 4;
+  var s = seloDe(j, primeiroDoDia, fechou);
+  item.selo = s.txt; item.seloCls = s.cls; item.giro = (nRegistros % 3) - 4;
+
+  /* t=0: o retorno no polegar. Identico para qualquer kcal, de proposito. */
+  $("retorno").innerHTML = "<span class=\"kcal num\">+" + alimento.kcal + " kcal</span>" +
+    "<span class=\"nome\">" + alimento.nome + "</span>" +
+    "<span class=\"mini\">" + JANELAS.map(function (x) {
+      return "<i class=\"" + (x.itens.length ? "on" : "") + "\"></i>"; }).join("") + "</span>";
+  /* O haptico e IGUAL para qualquer kcal, de proposito: retorno proporcional ao
+     numero paga mais por registrar menos, e vira detector de mentira invertido.
+     So o dia completo tem padrao proprio, porque ele e cobertura, nao consumo. */
+  try { if (navigator.vibrate) navigator.vibrate(fechou ? [12, 50, 12, 50, 28] : 14); } catch (e) {}
+
+  /* t=90: a linha entra no diario, ja com o carimbo. */
+  setTimeout(function () { pintarDiario(); }, quieto ? 0 : 90);
+  /* t=300: a coluna da janela cresce e o tijolo do dia completo fecha. */
+  setTimeout(function () { pintarJanelas(); pintarCompleto(); pintarFita(); }, quieto ? 0 : 300);
+  /* t=380: o numero grande sobe. */
+  setTimeout(function () { pintarDia(true); }, quieto ? 0 : 380);
+  /* t=520: os aneis. */
+  setTimeout(function () { pintarAneis(); }, quieto ? 0 : 520);
+
+  if (fechou) setTimeout(festa, quieto ? 0 : 700);
+}
+
+/* ---------- a festa do dia completo ---------- */
+function festa() {
+  if (document.body.classList.contains("calmo")) return;
+  var cartao = $("cartao-completo");
+  cartao.classList.add("batido");
+
+  var selo = document.createElement("div");
+  selo.className = "selo-grande so-festa";
+  selo.innerHTML = "<b>DIA COMPLETO</b><span>quatro janelas anotadas</span>";
+  cartao.appendChild(selo);
+
+  var cores = ["#A02D3A", "#2A9D6A", "#90C8A0", "#333333", "#D9D3C9"];
+  var papel = document.createElement("div");
+  papel.className = "papel so-festa";
+  var html = "";
+  for (var i = 0; i < 22; i++) {
+    html += "<i style=\"--x:" + (4 + i * 4.3) + "%;--dx:" + (((i * 37) % 60) - 30) + "px;" +
+            "--giro:" + (((i * 53) % 540) - 270) + "deg;--atraso:" + (i * 26) + "ms;" +
+            "--cor:" + cores[i % cores.length] + "\"></i>";
+  }
+  papel.innerHTML = html;
+  cartao.appendChild(papel);
+
+  setTimeout(function () { papel.remove(); cartao.classList.remove("batido"); }, 2600);
+  setTimeout(function () { selo.remove(); }, 3400);
+}
+
+/* ---------- inicio ---------- */
+$("chips").innerHTML = ATALHOS.map(function (a, i) {
+  return "<button class=\"chip\" data-i=\"" + i + "\">" + a.nome + " <span class=\"num\">" + a.kcal + "</span></button>";
+}).join("");
+Array.prototype.forEach.call(document.querySelectorAll("[data-i]"), function (b) {
+  b.onclick = function () { registrar(ATALHOS[+b.dataset.i]); };
+});
+$("enviar").onclick = function () { registrar(ATALHOS[0]); };
+$("calmo").onclick = function () {
+  var on = document.body.classList.toggle("calmo");
+  $("calmo").textContent = on ? "modo festa" : "modo calmo";
+};
+
+$("retorno").innerHTML = "<span class=\"nome\">toque num atalho para ver o registro acontecer</span>";
+pintarDia(false); pintarCompleto(); pintarJanelas(); pintarFita(); pintarAneis(); pintarDiario();
+</script>
+</body>
+</html>
