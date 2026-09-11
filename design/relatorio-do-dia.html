@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Obliq, relatorio do dia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   OBLIQ, relatorio do dia. Estilo retro tecnico clean.
+   Papel creme, tinta carvao, tres acentos pontuais e uma familia de fonte so.
+
+   Grade vertical: tudo cai em multiplo de 4px. E o que mantem o ritmo de
+   impresso em vez de layout de tela, onde cada bloco escolhe o proprio respiro.
+   ========================================================================== */
+:root{
+  --papel:#FDFBF6;          /* fundo da tela, branco sujo, nunca branco puro */
+  --branco:#FFFFFF;         /* fundo de cartao, o unico branco puro da pagina */
+  --borda:#EEEEEE;          /* borda de cartao, fina a ponto de quase sumir */
+  --trilho:#EEEEEE;         /* barra sem preenchimento */
+  --tinta:#333333;          /* texto principal, 12,2:1 no papel */
+  --tinta-forte:#1A1A1A;    /* enfase, o numero que importa, 16,8:1 */
+
+  /* Rotulo e unidade. Comecou em #9A958C, que dava 2,9:1 no papel e reprovava
+     em WCAG AA: era a cor de quase todo texto da tela, em mono de 11px. Este
+     tom da 4,7:1 e continua lendo como cinza de rotulo, nao como tinta cheia. */
+  --tinta-fraca:#767168;
+
+  --linha:#D9D3C9;          /* pontilhado do livro caixa, puxado pro creme */
+  --cereja:#A02D3A;         /* deficit, gasto, consumido, tag MANHA. 6,9:1 */
+  --esmeralda:#2A9D6A;      /* sucesso: projecao e dia fechado na meta */
+  /* Mesma esmeralda, tom escuro, SO para texto pequeno: #2A9D6A da 3,3:1, que
+     passa em texto grande e reprova em 11px. Nao e um quarto acento, e a mesma
+     cor num tom que da 4,9:1. */
+  --esmeralda-txt:#217D54;
+  --agua:#90C8A0;           /* preenchimento da barra da refeicao */
+
+  --r:18px;                 /* raio de cartao: o brief pede 16 a 20, 18 e o meio */
+  --r-p:12px;               /* raio menor, para caixa dentro de cartao */
+}
+
+/* Uma familia so na pagina inteira. A hierarquia sai de peso e tamanho, nunca
+   de troca de fonte: e isso que da o ar de relatorio tecnico. */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  font-family:"JetBrains Mono",ui-monospace,"Roboto Mono","IBM Plex Mono",monospace;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+  color:var(--tinta);
+  font-size:13px;
+  line-height:1.5;
+  padding-bottom:168px;   /* espaco da barra fixa do rodape */
+
+  /* O grao do papel e FUNDO, nao camada por cima. Antes era um body::after
+     cobrindo a tela inteira, texto incluido, e ruido por cima de mono de 11px
+     e o jeito mais rapido de apagar a palavra. Como fundo ele aparece so na
+     margem creme, e o cartao branco fica limpo: o efeito e o de uma etiqueta
+     impressa sobre papel, que e exatamente o que se quer. */
+  background-color:var(--papel);
+  background-image:url(%22data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27140%27 height=%27140%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.85%27 numOctaves=%273%27/%3E%3C/filter%3E%3Crect width=%27140%27 height=%27140%27 filter=%27url(%23n)%27 opacity=%270.05%27/%3E%3C/svg%3E%22);
+  background-attachment:fixed;
+}
+/* NAO usar -webkit-font-smoothing: antialiased. Ele afina o traco da letra, e a
+   pagina inteira e monoespacada pequena, que e justamente o que sofre. */
+
+button,input{font-family:inherit}
+i{font-style:normal}   /* <i> aqui e forma, nao enfase */
+:focus-visible{outline:2px solid var(--cereja);outline-offset:2px;border-radius:4px}
+
+.folha{max-width:420px;margin:0 auto;padding:0 20px}
+section{margin-top:24px}   /* espacamento generoso e sempre o mesmo */
+
+/* Rotulo de secao: minusculo no HTML, maiusculo na tela. Quem edita o texto nao
+   precisa lembrar de digitar em caixa alta. */
+.rot{
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--tinta-fraca);
+}
+.rot-linha{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.num{font-variant-numeric:tabular-nums}
+.fraco{color:var(--tinta-fraca)}
+.forte{color:var(--tinta-forte)}
+
+/* Linha de lancamento: nome ....... valor. O translateY assenta o pontilhado na
+   linha de base do texto em vez da base da caixa. */
+.lanc{display:flex;align-items:center}
+.leader{flex:1;margin:0 .6rem;border-bottom:1px dotted var(--linha);transform:translateY(-.28em)}
+.lanc>strong{font-weight:500;white-space:nowrap;flex:none}
+
+/* ---------- CABECALHO ---------- */
+header{padding-top:24px}
+.marca{display:flex;align-items:center;gap:8px}
+.marca b{font-size:15px;font-weight:800;letter-spacing:-.02em;color:var(--tinta-forte)}
+.ponto{width:7px;height:7px;border-radius:50%;background:var(--cereja)}
+.abas{display:flex;gap:24px;border-bottom:1px solid var(--borda);margin-top:16px}
+.abas button{background:none;border:0;padding:0 0 8px;font-size:12px;color:var(--tinta-fraca);cursor:pointer}
+.abas .on{color:var(--tinta-forte);font-weight:500;box-shadow:inset 0 -2px 0 var(--cereja)}
+
+/* ---------- META DO DIA ---------- */
+.dia-topo{display:flex;align-items:baseline;justify-content:space-between;margin-top:20px}
+.meta-linha{display:flex;align-items:baseline;margin-top:8px}
+.consumido{
+  font-size:clamp(3.2rem,17vw,4.4rem);
+  font-weight:800;
+  line-height:.9;
+  letter-spacing:-.04em;   /* mono em corpo grande abre demais, isto recolhe */
+  color:var(--cereja);
+  /* Tela digital classica resolvida no halo, e nao em faixas de varredura por
+     cima do numero: faixa de 1px a cada 3px e candidata a moire justamente no
+     numero mais importante da pagina. O halo da o ar de tela acesa, risco zero. */
+  text-shadow:0 0 20px rgba(160,45,58,.16);
+}
+.barra-txt{flex:1;text-align:center;font-size:20px;font-weight:300;color:var(--tinta-fraca)}
+.alvo-txt{font-size:20px;font-weight:400;color:var(--tinta-fraca)}
+.trilho{background:var(--trilho);border-radius:999px;overflow:hidden}
+.trilho-dia{height:6px;margin-top:16px}
+.trilho-dia i{display:block;height:100%;width:0;background:var(--tinta);border-radius:999px;transition:width 1s cubic-bezier(.2,.7,.3,1)}
+.restante{display:flex;align-items:baseline;justify-content:space-between;margin-top:8px}
+.restante .v{font-size:15px;font-weight:500}
+
+/* ---------- CARTOES ---------- */
+.cartao{
+  background:var(--branco);
+  border:1px solid var(--borda);
+  border-radius:var(--r);
+  padding:16px 12px;
+  text-align:center;   /* o brief pede conteudo centralizado no cartao */
+  overflow:hidden;     /* a regua sangra ate a borda e para exatamente nela */
+}
+.dupla{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
+.cartao .valor{font-size:22px;font-weight:700;color:var(--tinta-forte);letter-spacing:-.02em;margin-top:8px;display:block}
+.cartao .valor small{font-size:11px;font-weight:400;color:var(--tinta-fraca);margin-left:4px}
+.v-cereja{color:var(--cereja)}
+.regua{height:1px;background:var(--borda);margin:12px -12px}
+.nota{font-size:11px;color:var(--tinta-fraca);display:block}
+
+/* ---------- REFEICOES ---------- */
+.grade4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.janela{border:1px solid var(--borda);border-radius:var(--r-p);padding:12px 4px;text-align:center;background:var(--branco)}
+.janela.vazia{background:#FBF9F4;border-style:dashed}
+.j-num{font-size:16px;font-weight:700;color:var(--tinta-forte);line-height:1;display:block}
+.j-num.sem{color:var(--tinta-fraca);font-weight:400}
+.j-meta{font-size:11px;color:var(--tinta-fraca);display:block;margin-top:4px}
+.j-rot{font-size:11px;letter-spacing:.06em;margin-top:8px;display:block;color:var(--tinta)}
+/* Tag da janela que recebe o proximo registro. 11px, nao 10px: maiuscula pequena
+   e espacada e o texto que mais sofre em tela de celular em movimento, e 11px e
+   o piso adotado no projeto. */
+.tag{background:var(--cereja);color:#fff;border-radius:999px;padding:2px 8px;font-size:11px;letter-spacing:.06em;display:inline-block}
+.coluna-barra{height:32px;display:flex;align-items:flex-end;justify-content:center;margin-top:8px}
+.barra-v{width:6px;height:100%;background:var(--trilho);border-radius:999px;position:relative;overflow:hidden}
+/* O preenchimento tem topo RETO e o traco colorido se assenta em cima dele. Com
+   topo curvo o traco reto toca so no meio e abre vao nas pontas, e de longe
+   parece um marcador solto no ar. */
+.barra-v i{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--agua);border-radius:0 0 999px 999px;transition:height .9s cubic-bezier(.2,.7,.3,1)}
+.barra-v i::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--esmeralda);border-radius:999px 999px 0 0}
+.vazio-espaco{height:32px;margin-top:8px}   /* sem registro nao desenha barra, so guarda o lugar */
+
+/* ---------- SEMANA ---------- */
+/* Retangulo horizontal por dia, cheio, como o brief pede: cinza escuro quando o
+   dia tem registro, cinza muito claro quando nao tem. A leitura e presenca ou
+   ausencia de registro, nao quanto se comeu.
+   A primeira versao fazia barra vertical com preenchimento parcial, o que mudava
+   a pergunta que a tela responde e, pior, deixava a linha verde na altura do
+   preenchimento de cada dia: como cada dia enchia diferente, os marcadores saiam
+   desalinhados e o olho nao conseguia varrer a semana numa linha so. Aqui a
+   linha verde fica no TOPO DO RETANGULO, entao os sete dias compartilham a mesma
+   linha de leitura. */
+.grade7{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dia-col{text-align:center}
+.dia-cx{height:28px;border-radius:6px;position:relative;overflow:hidden;background:#F3F0E9}
+.dia-cx.tem{background:var(--tinta)}
+.dia-cx.meta::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--esmeralda)}
+.dia-rot{font-size:11px;color:var(--tinta-fraca);margin-top:8px;display:block}
+.hoje .dia-rot{color:var(--tinta-forte);font-weight:700}
+
+/* ---------- MACROS ---------- */
+.grade3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.anel{position:relative;width:64px;height:64px;margin:0 auto}
+.anel svg{transform:rotate(-90deg)}   /* comeca no topo, como relogio */
+.anel circle{fill:none;stroke-linecap:round}
+.anel .fundo{stroke:var(--trilho)}
+.anel .arco{transition:stroke-dashoffset 1.1s cubic-bezier(.2,.7,.3,1)}
+/* Uma cor sobria por macro, todas puxadas da tinta: o anel nao compete com os
+   tres acentos, que tem significado reservado. */
+.a-p .arco{stroke:#4A4A4A}
+.a-c .arco{stroke:#6F6A62}
+.a-g .arco{stroke:#94908A}
+.anel .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--tinta-forte)}
+.m-rot{font-size:11px;letter-spacing:.06em;margin-top:8px;display:block;font-weight:500}
+.m-val{font-size:11px;color:var(--tinta-fraca);display:block;margin-top:4px}
+
+/* ---------- PROJECAO ---------- */
+.proj-num{font-size:2.4rem;font-weight:700;line-height:1;letter-spacing:-.04em;color:var(--esmeralda)}
+.proj-un{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--esmeralda-txt);margin-left:8px}
+.ritmo{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--esmeralda-txt);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-top:12px}
+.ritmo svg{flex:none}
+.bloco-lanc{border-top:1px solid var(--borda);margin-top:16px;text-align:left}
+.bloco-lanc .lanc{padding:8px 0;border-bottom:1px solid var(--borda);font-size:12px}
+.bloco-lanc .lanc:last-child{border-bottom:0;padding-bottom:0}
+.bloco-lanc dt{color:var(--tinta)}
+.bloco-lanc dd{margin:0;flex:none;white-space:nowrap}
+
+/* ---------- DIARIO ---------- */
+.grupo{padding-top:8px}
+.item{padding:8px 0;border-bottom:1px dotted var(--borda)}
+.item:last-child{border-bottom:0}
+.item .sub{font-size:11px;color:var(--tinta-fraca);margin-top:4px;display:flex;gap:12px;flex-wrap:wrap}
+.vazio-nota{font-size:11px;color:var(--tinta-fraca);text-align:center;padding:12px 0 0}
+
+/* ---------- BARRA DE REGISTRO ---------- */
+.rodape{
+  position:fixed;inset-inline:0;bottom:0;z-index:40;
+  /* Fundo chapado, sem backdrop-filter. Vidro fosco e vocabulario de sistema
+     operacional, e esta pagina quer parecer papel. Opaco tambem garante o
+     contraste do texto do rodape, que blur nao garante. */
+  background:var(--papel);
+  border-top:1px solid var(--borda);
+  padding:12px 0 max(12px,env(safe-area-inset-bottom));
+}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:12px}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:none;display:flex;align-items:center;gap:8px;
+  background:var(--branco);border:1px solid var(--borda);border-radius:999px;
+  padding:8px 14px;font-size:12px;color:var(--tinta);cursor:pointer;min-height:36px;
+}
+.chip span{font-size:11px;color:var(--tinta-fraca)}
+.acao{display:flex;gap:8px;align-items:center}
+.campo{
+  flex:1;height:48px;border:1px solid var(--borda);border-radius:24px;
+  background:var(--branco);padding:0 18px;font:inherit;font-size:14px;color:var(--tinta);
+}
+/* Placeholder no mesmo tom dos rotulos. Estava em #BDB8AF, que dava 1,9:1 e era
+   praticamente invisivel: placeholder e texto, e vale a mesma regra de contraste. */
+.campo::placeholder{color:var(--tinta-fraca)}
+.btn{width:48px;height:48px;border-radius:16px;border:1px solid var(--borda);background:var(--branco);display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
+/* Cereja chapada, sem gradiente e sem glow: gradiente e brilho sao o vocabulario
+   de app movel generico, que e o que o brief manda evitar. */
+.btn-env{border:0;background:var(--cereja)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<div class="folha">
+
+  <header>
+    <div class="marca"><i class="ponto"></i><b>OBLIQ</b></div>
+    <nav class="abas">
+      <button class="on" aria-current="page">Hoje</button>
+      <button>Hist&oacute;rico</button>
+    </nav>
+  </header>
+
+  <!-- META DO DIA. 210 de 2303, que e a meta base 2100 mais 203 de gasto ativo. -->
+  <section style="margin-top:20px" aria-label="Meta do dia">
+    <div class="dia-topo">
+      <span class="rot">s&aacute;bado</span>
+      <span class="rot">9%</span>
+    </div>
+    <div class="meta-linha">
+      <span class="consumido num" id="grande">210</span>
+      <span class="barra-txt num" aria-hidden="true">/</span>
+      <span class="alvo-txt num">2303</span>
+    </div>
+    <div class="trilho trilho-dia" role="img" aria-label="210 de 2303 kcal, 9 por cento do dia">
+      <i data-w="9"></i>
+    </div>
+    <div class="restante">
+      <span class="rot">restante</span>
+      <span class="num forte v">2093 <small class="fraco" style="font-size:11px">kcal</small></span>
+    </div>
+  </section>
+
+  <!-- DEFICIT SEMANAL e META, leitura rapida. -->
+  <div class="dupla">
+    <div class="cartao">
+      <span class="rot">d&eacute;ficit semanal</span>
+      <!-- Cereja porque cereja e a cor do que sai: gasto e deficit. -->
+      <span class="valor v-cereja num">&#8722;8008<small>kcal</small></span>
+    </div>
+    <div class="cartao">
+      <span class="rot">meta</span>
+      <span class="valor num">2303<small>kcal</small></span>
+    </div>
+  </div>
+
+  <!-- REFEICOES: quatro janelas do dia, 25, 35, 15 e 25 por cento da meta. -->
+  <section aria-label="Refeicoes do dia">
+    <div class="rot-linha">
+      <span class="rot">refei&ccedil;&otilde;es</span>
+      <span class="rot">em dia &nbsp;1/4</span>
+    </div>
+    <div class="cartao" style="padding:16px 12px">
+      <div class="grade4">
+        <div class="janela">
+          <span class="j-num num">210</span>
+          <span class="j-meta num">/575</span>
+          <span class="j-rot"><i class="tag">MANH&Atilde;</i></span>
+          <div class="coluna-barra">
+            <div class="barra-v" role="img" aria-label="manha: 210 de 575 kcal, com folga">
+              <i data-h="37"></i>
+            </div>
+          </div>
+        </div>
+        <div class="janela vazia">
+          <span class="j-num sem" aria-hidden="true">&#183;</span>
+          <span class="j-meta num">/808</span>
+          <span class="j-rot fraco">almo&ccedil;o</span>
+          <div class="vazio-espaco"></div>
+        </div>
+        <div class="janela vazia">
+          <span class="j-num sem" aria-hidden="true">&#183;</span>
+          <span class="j-meta num">/345</span>
+          <span class="j-rot fraco">tarde</span>
+          <div class="vazio-espaco"></div>
+        </div>
+        <div class="janela vazia">
+          <span class="j-num sem" aria-hidden="true">&#183;</span>
+          <span class="j-meta num">/575</span>
+          <span class="j-rot fraco">noite</span>
+          <div class="vazio-espaco"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GASTO ATIVO -->
+  <section aria-label="Gasto ativo">
+    <div class="rot-linha"><span class="rot">gasto ativo</span><span class="rot">09:40</span></div>
+    <div class="cartao">
+      <span class="rot">registrado &agrave; m&atilde;o</span>
+      <span class="valor v-cereja num">+203<small>kcal</small></span>
+      <div class="regua"></div>
+      <span class="nota">caminhada, 45 min &nbsp;&#183;&nbsp; abre espa&ccedil;o na meta do dia</span>
+    </div>
+  </section>
+
+  <!-- SEMANA: retangulo cheio por dia. Escuro com registro, claro sem. -->
+  <section aria-label="Semana">
+    <div class="rot-linha"><span class="rot">semana</span><span class="rot">6 dias seguidos</span></div>
+    <div class="cartao" style="padding:16px 12px">
+      <div class="grade7">
+        <div class="dia-col"><div class="dia-cx tem meta" role="img" aria-label="segunda: 1750 kcal, fechou dentro da meta"></div><span class="dia-rot">seg</span></div>
+        <div class="dia-col"><div class="dia-cx tem meta" role="img" aria-label="terca: 1680 kcal, fechou dentro da meta"></div><span class="dia-rot">ter</span></div>
+        <div class="dia-col"><div class="dia-cx tem" role="img" aria-label="quarta: 2210 kcal, passou da meta"></div><span class="dia-rot">qua</span></div>
+        <div class="dia-col"><div class="dia-cx tem meta" role="img" aria-label="quinta: 1660 kcal, fechou dentro da meta"></div><span class="dia-rot">qui</span></div>
+        <div class="dia-col"><div class="dia-cx tem meta" role="img" aria-label="sexta: 1620 kcal, fechou dentro da meta"></div><span class="dia-rot">sex</span></div>
+        <div class="dia-col hoje"><div class="dia-cx tem" role="img" aria-label="sabado, hoje: 210 kcal, dia em andamento"></div><span class="dia-rot">s&aacute;b</span></div>
+        <div class="dia-col"><div class="dia-cx" role="img" aria-label="domingo: sem registro"></div><span class="dia-rot">dom</span></div>
+      </div>
+      <div class="regua"></div>
+      <span class="nota">escuro: dia com registro &nbsp;&#183;&nbsp; linha verde no topo: fechou dentro da meta</span>
+    </div>
+  </section>
+
+  <!-- MACROS: anel com o percentual dentro, um por macro. -->
+  <section aria-label="Macros">
+    <div class="rot-linha"><span class="rot">macros</span><span class="rot">meta base 2100</span></div>
+    <div class="cartao">
+      <div class="grade3">
+        <div>
+          <div class="anel a-p">
+            <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="fundo" cx="32" cy="32" r="27" stroke-width="4"></circle>
+              <circle class="arco" cx="32" cy="32" r="27" stroke-width="4" data-pct="4"></circle>
+            </svg>
+            <span class="pct num">4%</span>
+          </div>
+          <span class="m-rot">P</span>
+          <span class="m-val num">6/158 g</span>
+        </div>
+        <div>
+          <div class="anel a-c">
+            <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="fundo" cx="32" cy="32" r="27" stroke-width="4"></circle>
+              <circle class="arco" cx="32" cy="32" r="27" stroke-width="4" data-pct="18"></circle>
+            </svg>
+            <span class="pct num">18%</span>
+          </div>
+          <span class="m-rot">C</span>
+          <span class="m-val num">37/210 g</span>
+        </div>
+        <div>
+          <div class="anel a-g">
+            <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="fundo" cx="32" cy="32" r="27" stroke-width="4"></circle>
+              <circle class="arco" cx="32" cy="32" r="27" stroke-width="4" data-pct="6"></circle>
+            </svg>
+            <span class="pct num">6%</span>
+          </div>
+          <span class="m-rot">G</span>
+          <span class="m-val num">4/70 g</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECAO -->
+  <section aria-label="Projecao">
+    <div class="rot-linha"><span class="rot">proje&ccedil;&atilde;o</span><span class="rot">6 de 7 dias</span></div>
+    <div class="cartao">
+      <div>
+        <span class="proj-num num">&#8722;1,04</span><span class="proj-un">kg por semana</span>
+      </div>
+      <div class="ritmo">
+        <!-- Alvo com flecha: o que importa e o rumo, nao o sinal do saldo. -->
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#217D54" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="13" r="8"></circle>
+          <circle cx="11" cy="13" r="3.2"></circle>
+          <path d="M13.4 10.6 L20.5 3.5"></path>
+          <path d="M16.6 3.2 L20.8 3.2 L20.8 7.4"></path>
+        </svg>
+        <span>ritmo ideal para emagrecer</span>
+      </div>
+      <dl class="bloco-lanc">
+        <div class="lanc">
+          <dt>d&eacute;ficit por dia</dt><span class="leader" aria-hidden="true"></span>
+          <dd class="num forte">&#8722;1144 <small class="fraco" style="font-size:11px">kcal</small></dd>
+        </div>
+        <div class="lanc">
+          <dt>em 4 semanas</dt><span class="leader" aria-hidden="true"></span>
+          <dd class="num"><span class="fraco">71,0</span> <span class="fraco" aria-hidden="true">&#8594;</span> <span class="forte">66,8 kg</span></dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- REGISTRO ALIMENTAR: os dois itens somam os 210 do cabecalho. -->
+  <section aria-label="Registro alimentar">
+    <div class="rot-linha"><span class="rot">registro alimentar</span><span class="rot">2 itens</span></div>
+    <div class="cartao" style="text-align:left;padding:8px 16px 16px">
+      <div class="grupo">
+        <div class="lanc">
+          <span class="rot">manh&atilde;</span>
+          <span class="leader" aria-hidden="true"></span>
+          <strong class="num forte">210</strong>
+        </div>
+        <div class="item">
+          <div class="lanc"><span>caf&eacute; com leite</span><span class="leader" aria-hidden="true"></span><strong class="num forte">90</strong></div>
+          <div class="sub num"><span>1 x&iacute;cara</span><span>P 5</span><span>C 8</span><span>G 4</span></div>
+        </div>
+        <div class="item">
+          <div class="lanc"><span>banana</span><span class="leader" aria-hidden="true"></span><strong class="num forte">120</strong></div>
+          <div class="sub num"><span>1 unidade</span><span>P 1</span><span>C 29</span><span>G 0</span></div>
+        </div>
+      </div>
+      <div class="vazio-nota">almo&ccedil;o, tarde e noite ainda sem registro</div>
+    </div>
+  </section>
+
+</div>
+
+<!-- BARRA DE REGISTRO: chips de um toque acima do campo. -->
+<div class="rodape">
+  <div class="folha">
+    <div class="chips" aria-label="Atalhos do que voce repete">
+      <button class="chip">arroz <span class="num">155</span></button>
+      <button class="chip">caf&eacute; com leite <span class="num">90</span></button>
+      <button class="chip">banana <span class="num">120</span></button>
+      <button class="chip">p&atilde;o franc&ecirc;s <span class="num">150</span></button>
+    </div>
+    <div class="acao">
+      <input class="campo" placeholder="o que voc&ecirc; comeu?" aria-label="O que voce comeu">
+      <button class="btn" aria-label="Fotografar a refeicao">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 8.5h3l1.5-2h9l1.5 2h3v10H3z"></path><circle cx="12" cy="13" r="3.2"></circle>
+        </svg>
+      </button>
+      <button class="btn btn-env" aria-label="Registrar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 19V5"></path><path d="M6 11l6-6 6 6"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Animacao minima: a barra cresce do zero, o anel desenha, o numero conta.
+   O valor mora no data-attribute, entao o HTML continua sendo a fonte do numero
+   e a pagina fica correta mesmo com o JS desligado. */
+(function () {
+  var quieto = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var RAIO = 27, VOLTA = 2 * Math.PI * RAIO;
+
+  function pintar() {
+    document.querySelectorAll("[data-w]").forEach(function (e) { e.style.width = e.dataset.w + "%"; });
+    document.querySelectorAll("[data-h]").forEach(function (e) { e.style.height = e.dataset.h + "%"; });
+  }
+
+  document.querySelectorAll(".arco").forEach(function (c) {
+    c.style.strokeDasharray = VOLTA;
+    c.style.strokeDashoffset = quieto ? VOLTA * (1 - c.dataset.pct / 100) : VOLTA;
+  });
+
+  if (quieto) {
+    /* Quem pediu menos movimento recebe o numero final, nao a contagem. A media
+       query do CSS zera transicao, mas nao alcanca requestAnimationFrame: sem
+       este ramo a contagem continuava rodando contra a vontade da pessoa. */
+    pintar();
+    return;
+  }
+
+  requestAnimationFrame(function () {
+    pintar();
+    document.querySelectorAll(".arco").forEach(function (c) {
+      c.style.strokeDashoffset = VOLTA * (1 - c.dataset.pct / 100);
+    });
+  });
+
+  var el = document.getElementById("grande"), alvo = 210, t0 = null;
+  requestAnimationFrame(function passo(t) {
+    if (!t0) t0 = t;
+    var p = Math.min((t - t0) / 600, 1);
+    el.textContent = Math.round(alvo * (1 - Math.pow(1 - p, 3)));
+    if (p < 1) requestAnimationFrame(passo);
+  });
+})();
+</script>
+</body>
+</html>
