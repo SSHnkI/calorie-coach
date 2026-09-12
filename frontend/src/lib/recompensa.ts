@@ -34,7 +34,22 @@ export function marcoNovo(
   return { marco: null, guardar: ultimoComemorado }
 }
 
-export type Desfecho = 'vazio' | 'andando' | 'dentro' | 'acima' | 'atingiu'
+export type Desfecho = 'vazio' | 'andando' | 'dentro' | 'acima' | 'atingiu' | 'anotado'
+
+/**
+ * Chao do dia, em fracao da meta. Abaixo disto o dia fecha NEUTRO, sem festa.
+ *
+ * Antes, `dentro` valia para qualquer consumo acima de zero abaixo da meta: 800
+ * kcal de uma meta de 1800 fechava o dia com exatamente a mesma comemoracao que
+ * 1750. A regra de ouro protegia o teto e deixava o chao escancarado, e o
+ * resultado era reforco positivo direto de restricao, cada vez mais facil de
+ * obter quanto menos a pessoa comesse.
+ *
+ * O segundo motivo e igualmente importante: uma unica linha de 300 kcal fechava
+ * o dia em festa. O app pagava pelo buraco no dado, e ensinava em poucos dias
+ * que anotar menos rende mais festa do que anotar tudo.
+ */
+export const PISO_DO_DIA = 0.7
 
 /**
  * Como o dia está indo, no idioma do objetivo da pessoa.
@@ -56,7 +71,11 @@ export function desfechoDoDia(p: {
   if (p.objetivo === 'gain') return p.kcal >= p.meta ? 'atingiu' : 'andando'
 
   if (p.kcal > p.meta) return 'acima'
-  return p.fechado ? 'dentro' : 'andando'
+  if (!p.fechado) return 'andando'
+
+  // Dia fechado muito abaixo da meta nao e vitoria: ou faltou comida, ou faltou
+  // registro, e nenhuma das duas merece festa. Fecha anotado, que e neutro.
+  return p.kcal >= p.meta * PISO_DO_DIA ? 'dentro' : 'anotado'
 }
 
 export function comemora(d: Desfecho): boolean {

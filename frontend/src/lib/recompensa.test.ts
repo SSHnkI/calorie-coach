@@ -1,7 +1,7 @@
 // node --test src/lib/recompensa.test.ts
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { comemora, desfechoDoDia, marcoDaSequencia, marcoNovo } from './recompensa.ts'
+import { comemora, desfechoDoDia, marcoDaSequencia, marcoNovo, PISO_DO_DIA } from './recompensa.ts'
 
 test('marco so aparece nos degraus', () => {
   assert.equal(marcoDaSequencia(0), null)
@@ -51,4 +51,38 @@ test('quem quer ganhar peso tem a meta como alvo, e comemora ao alcancar', () =>
 test('dia sem registro nao comemora nada, nem fechado', () => {
   assert.equal(desfechoDoDia({ ...base, kcal: 0, fechado: true }), 'vazio')
   assert.equal(comemora(desfechoDoDia({ ...base, kcal: 0, fechado: true })), false)
+})
+
+// O piso do dia. Sem ele, 800 kcal de uma meta de 1800 fechava o dia com a mesma
+// festa que 1750, e o app premiava tanto a restricao quanto o dia mal anotado.
+
+test('dia fechado muito abaixo da meta nao comemora', () => {
+  const d = desfechoDoDia({ objetivo: 'lose', kcal: 800, meta: 1800, fechado: true })
+  assert.equal(d, 'anotado')
+  assert.equal(comemora(d), false)
+})
+
+test('uma linha solta nao fecha o dia em festa', () => {
+  // O caso do registro incompleto: quem anotou so o cafe da manha e esqueceu o
+  // resto recebia premio por ter esquecido.
+  const d = desfechoDoDia({ objetivo: 'lose', kcal: 300, meta: 2000, fechado: true })
+  assert.equal(comemora(d), false)
+})
+
+test('dia comedido de verdade continua comemorando', () => {
+  const d = desfechoDoDia({ objetivo: 'lose', kcal: 1750, meta: 1800, fechado: true })
+  assert.equal(d, 'dentro')
+  assert.equal(comemora(d), true)
+})
+
+test('o piso fica exatamente onde foi declarado', () => {
+  const meta = 2000
+  assert.equal(desfechoDoDia({ objetivo: 'lose', kcal: meta * PISO_DO_DIA, meta, fechado: true }), 'dentro')
+  assert.equal(desfechoDoDia({ objetivo: 'lose', kcal: meta * PISO_DO_DIA - 1, meta, fechado: true }), 'anotado')
+})
+
+test('quem quer ganhar peso nao e afetado pelo piso', () => {
+  // Para `gain` a meta e alvo a alcancar, e a regra continua sendo outra.
+  assert.equal(desfechoDoDia({ objetivo: 'gain', kcal: 2100, meta: 2000, fechado: true }), 'atingiu')
+  assert.equal(desfechoDoDia({ objetivo: 'gain', kcal: 800, meta: 2000, fechado: true }), 'andando')
 })
