@@ -18,7 +18,7 @@ export function aplicarTema(t: Tema) {
   document.documentElement.dataset.theme = t === 'claro' ? 'light' : 'dark'
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute('content', t === 'claro' ? '#f6f4f1' : '#101015')
+    ?.setAttribute('content', t === 'claro' ? '#fdfbf6' : '#101015')
   try {
     localStorage.setItem(CHAVE, t)
   } catch {

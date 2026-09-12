@@ -19,21 +19,35 @@
   --tx-forte: #f7f5f1;
   --tx-medio: #d2d2dd;
   --tx-fraco: #adadbb;
+  /* A marca muda de tom com o tema, e por isso mora aqui e nao no @theme. No
+     escuro ela e o vermelho vivo de sempre; no claro, a cereja do relatorio
+     impresso, porque vermelho de tela sobre papel creme vira aviso de sistema. */
+  --marca: #e8000d;
+  --marca-funda: #9e0009;
   --grao: 0.22;
   --sombra: 0 1px 0 rgba(255, 255, 255, 0.03) inset,
     0 12px 28px -18px rgba(6, 6, 10, 0.9);
 }
 
 :root[data-theme="light"] {
-  --ink-900: #f6f4f1;
-  --ink-800: #ffffff;
-  --ink-700: #efebe6;
-  --ink-border: #ddd7ce;
-  --ink-line: #b8b0a4;
-  --tx-forte: #0b0b10;
-  --tx-medio: #33333d;
-  --tx-fraco: #4e4e5a;
-  --grao: 0.25;
+  /* Papel creme, tinta carvao e cereja: o tema claro virou o "retro tecnico
+     clean" desenhado em design/relatorio-do-dia.html. Branco sujo em vez de
+     branco puro e carvao em vez de preto sao o que tira o brilho de tela e
+     deixam a pagina com cara de impresso. */
+  --ink-900: #fdfbf6;   /* papel */
+  --ink-800: #ffffff;   /* cartao, o unico branco puro */
+  --ink-700: #f3f0e9;   /* caixa dentro de cartao */
+  --ink-border: #eeeeee;
+  --ink-line: #cfc9bc;  /* pontilhado do livro caixa, precisa ser visivel */
+  --tx-forte: #1a1a1a;
+  --tx-medio: #333333;
+  /* #9a948a era a escolha do desenho, mas da 2,9:1 no papel e reprova em AA, e
+     esta e a cor de quase todo rotulo do app, em mono de 11px. Este tom da
+     5,5:1 e continua lendo como cinza de rotulo. */
+  --tx-fraco: #6b665e;
+  --marca: #a02d3a;
+  --marca-funda: #7c2029;
+  --grao: 0.18;
   --sombra: 0 1px 0 rgba(255, 255, 255, 0.7) inset,
     0 12px 28px -20px rgba(40, 35, 30, 0.35);
 }
@@ -54,8 +68,8 @@
   --color-obliq-green: #12a150;
   --color-obliq-amber: #cc8800;
 
-  --color-obliq-red: #e8000d;
-  --color-obliq-red-deep: #9e0009;
+  --color-obliq-red: var(--marca);
+  --color-obliq-red-deep: var(--marca-funda);
   --color-obliq-white: #ffffff;
 
   --font-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
@@ -81,7 +95,10 @@
   body {
     margin: 0;
     transition: background-color 0.25s ease, color 0.25s ease;
-    font-family: var(--font-sans);
+    /* Uma familia so na tela inteira. A hierarquia sai de peso e tamanho, nunca
+       de troca de fonte, e e isso que da o ar de relatorio tecnico em vez de
+       interface generica. */
+    font-family: var(--font-mono);
     background-color: var(--color-obliq-black);
     color: var(--color-obliq-chalk);
   }
